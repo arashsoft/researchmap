@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<link rel="stylesheet" href="stylesheet.css" type="text/css">
+<title>ResearchMap | Western University</title>
+</head>
+<body>
+  <div class="header">
+    <div class="row">
+    <img src="img/rmlogo.png"></img>
+    <a href="index.html"><h1>ResearchMap</h1></a>
+    <div class="nav right">
+      <ul>
+        <a href="about.html">
+        <li>login</li></a>
+        <a href="demo.html">
+        <li>help</li></a> 
+      <a href="help.html">
+        <li>contact</li></a>
+      </ul> 
+    </div>
+    </div>  
+  </div>
+
+<div class="navbar group">
+  <ul class="dropdown row group">
+    <li><a class="active" href="overview.html">Overview</a>
+    </li>
+    <li><a href="publications_map.html">Publications</a>
+    </li>
+    <li><a href="faculty.html">Faculty</a>
+    </li>
+    <li><a href="grants2.html">Grants</a>
+    </li>
+    <li><a href="industry.html">Industry</a>
+    </li>
+    <img src="img/settings.png"></img>
+  </ul>
+</div>
+
+<!-- <div class="navbarsub group">
+  <ul class="dropdown row group">
+    <li><a class="active"href="">Overview</a>
+    </li>
+    <li><a class="active" href="publications.html">Map</a>
+    </li>
+    <li><a href="xxx.html">Option3</a>
+    </li>
+  </ul>
+</div> -->
+
+  <div class="primary group">
+    <div class="row group">
+    <h2 class="textcenter">ResearchMap Overview</h2>
+    <hr>
+  <div class="row">
+    <a class="logo" href="www.sci.uwo.ca"><img class="pic" src="img/science_logo.png" alt="Western Science"></a>
+  </div>
+  </div>
+  </div>
+
+<!-- <div id="vizarea1 group">
+    <div class="sectitle">
+    </div>
+</div> -->
+
+<div class="footer group">
+  <div class="row group">
+    <p>contact information
+      <br>
+      <br>
+      <br>
+      science&#64uwo.ca
+      <br><br>
+      (519) 661-2111 x 86152
+      <br>
+      <br>
+Faculty of Science
+      <br> western science centre
+      <br>
+      room 191
+      <br><br>
+      western university
+      <br>
+      1151 richmond street
+      <br>
+      london, on, canada
+      <br>
+      n6a 5b7
+       <br>
+      <br>
+      <br>
+      &#169 2013 paul parsons
+    </p>
+  </div>
+</div>
+  
+</body>
+</html>
+
+<script src="../d3/d3.v3.min.js"></script>
+
+
+<script>
+
+//set the width to be used for the svg space on the page
+var width = 700,
+    height = 700;
+
+var svg = d3.select("#vizarea1").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("id", "networkViz");
+
+
+
+
+var dataset;
+
+
+d3.csv("data/Subject Stats.csv", function(data) {
+  dataset = data;
+
+  console.log(dataset);
+
+  
+
+})
+
+
+
+// removes duplicates and returns distinct array
+function eliminateDuplicates(arr) {
+  var i,
+      len=arr.length,
+      out=[],
+      obj={};
+
+  for (i=0;i<len;i++) {
+    obj[arr[i]]=0;
+  }
+  for (i in obj) {
+    out.push(i);
+  }
+  return out;
+}
+
+
+</script>

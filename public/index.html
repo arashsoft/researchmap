@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<link rel="stylesheet" href="stylesheet.css" type="text/css">
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+
+<title>ResearchMap | Western University</title>
+</head>
+<body>
+  <div class="header">
+    <div class="row">
+    <img src="img/rmlogo.png"></img>
+    <a href="index.html"><h1>ResearchMap</h1></a>
+    <div class="nav right">
+      <ul>
+        <a href="#login-box" class="login-window">
+        <li>login</li></a>
+        <a href="demo.html">
+        <li>help</li></a> 
+      <a href="help.html">
+        <li>contact</li></a>
+      </ul> 
+    </div>
+    </div>  
+  </div>
+
+
+
+  <div id="login-box" class="login-popup">
+    <a href="" class="close"><img src="img/close_pop.png" class="btn_close" title="Close Window" alt="Close" /></a>
+    <form method="post" class="signin" action="#">
+          <fieldset class="textbox">
+          <label class="username">
+          <span>Username</span>
+          <input id="username" name="username" value="" type="text" autocomplete="on" placeholder="Username">
+          </label>
+          <label class="password">
+          <span>Password</span>
+          <input id="password" name="password" value="" type="password" placeholder="Password">
+          </label>
+          <button class="submit loginbutton" type="button">Sign in</button>      
+          </fieldset>
+    </form>
+  </div>
+
+
+
+
+  <div class="primary group">
+    <div class="row group">
+    <h2>Welcome to ResearchMap at Western University</h2> 
+    <p>Please login or continue browsing the examples on this page.</p>
+    <br><br>
+    
+    <img class="screenshot" src="img/ex1.png" alt="screenshot">
+  <hr>
+  <div class="row">
+    <a class="logo" href="www.sci.uwo.ca"><img class="pic" src="img/science_logo.png" alt="Western Science"></a>
+  </div>
+  </div>
+  </div>
+
+  <div class="secondary group">
+    <div class="row group">
+    <p class="textcenter">Features</p>
+    <div class="left">
+      <ul>
+    <li>data analytics
+      <li>visualization of data
+      <li>...
+      <li>...
+    </ul>
+    </div>
+    <div class="right">
+    <ul>
+      <li>rich interaction
+      <li>decision support
+      <li>...
+      <li>...
+    </ul>
+    </div>
+    </div>
+    <div class="row group more">
+        <a href="/about.html" class="group"><button>learn more</button></a> 
+  </div>
+  </div>
+  <div class="footer group">
+    <div class="row group">
+      <p>contact information
+        <br>
+        <br>
+        <br>
+        science&#64uwo.ca
+        <br><br>
+        (519) 661-2111 x 86152
+        <br>
+        <br>
+Faculty of Science
+        <br> western science centre
+        <br>
+        room 191
+        <br><br>
+        western university
+        <br>
+        1151 richmond street
+        <br>
+        london, on, canada
+        <br>
+        n6a 5b7
+         <br>
+        <br>
+        <br>
+        &#169 2013 paul parsons
+      </p>
+    </div>
+  </div>
+
+
+<script type="text/javascript" language="javascript" src="js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery.dropdownPlain.js"></script>
+<script type="text/javascript" language="javascript" src="js/underscore-min.js"></script>
+<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="js/chosen/chosen.jquery.js" type="text/javascript"></script>
+<script type="text/javascript"> $(".chzn-select").chosen(); $(".chzn-select-deselect").chosen({allow_single_deselect:true}); </script>
+<script>
+
+$(document).ready(function() {
+$('a.login-window').click(function() {
+    
+    //Getting the variable's value from a link 
+    var loginBox = $(this).attr('href');
+
+    //Fade in the Popup
+    $(loginBox).fadeIn(300);
+    
+    //Set the center alignment padding + border see css style
+    var popMargTop = ($(loginBox).height() + 24) / 2; 
+    var popMargLeft = ($(loginBox).width() + 24) / 2; 
+    
+    $(loginBox).css({ 
+        'margin-top' : -popMargTop,
+        'margin-left' : -popMargLeft
+    });
+    
+    // Add the mask to body
+    $('body').append('<div id="mask"></div>');
+    $('#mask').fadeIn(300);
+    
+    return false;
+});
+
+// When clicking on the button close or the mask layer the popup closed
+$('a.close, #mask').live('click', function() { 
+  $('#mask , .login-popup').fadeOut(300 , function() {
+    $('#mask').remove();  
+}); 
+return false;
+});
+});
+</script>
+  
+</body>
+</html>
