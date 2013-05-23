@@ -16,6 +16,8 @@ var async = require('async');
 var d3 = require('d3');
 var app = express();
 
+var publication = require('./routes/publication');
+
 var science = [];
 var grants = [];
 var supervisors = [];
@@ -46,9 +48,12 @@ app.configure(function(){
 });
 
 app.get("/", function(req, res) {
+	console.log("going home!");
 	res.render('home');
 	
 });
+
+app.get("/publications_map", publication.map);
 
 app.get("/deletedb", function(req, res) {
 	//check if the database exists yet
