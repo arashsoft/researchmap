@@ -1,0 +1,1534 @@
+
+  <div class="header">
+    <div class="row">
+    <img src="img/rmlogo.png"></img>
+    <a href="index.html"><h1>ResearchMap</h1></a>
+    <div class="nav right">
+      <ul>
+        <a href="#login-box" class="login-window">
+        <li>logout</li></a>
+       	<a href="demo.html">
+        <li>help</li></a> 
+    	<a href="help.html">
+        <li>contact</li></a>
+      </ul> 
+    </div>
+    </div>  
+  </div>
+
+  <div class="navbar group">
+    <ul class="dropdown row group">
+      <li><a href="overview.html">Overview</a>
+      </li>
+      <li><a class="active" href="publications_map.html">Publications</a>
+      </li>
+      <li><a href="faculty.html">Faculty</a>
+      </li>
+      <li><a href="grants2.html">Grants</a>
+      </li>
+      <li><a href="industry.html">Industry</a>
+      </li>
+      <img src="img/settings.png"></img>
+    </ul>
+  </div>
+
+<!--   <div class="navbarsub group">
+    <ul class="dropdown row group">
+      <li><a href="publications.html">Overview</a>
+      </li>
+      <li><a class="active" href="publications_map.html">Network</a>
+      </li>
+    </ul>
+  </div> -->
+
+
+
+  <div id="login-box" class="login-popup">
+  <a href="#" class="close"><img src="img/close_pop.png" class="btn_close" title="Close Window" alt="Close" /></a>
+    <form method="post" class="signin" action="#">
+          <fieldset class="textbox">
+          <label class="username">
+          <span>Username</span>
+          <input id="username" name="username" value="" type="text" autocomplete="on" placeholder="Username">
+          </label>
+          <label class="password">
+          <span>Password</span>
+          <input id="password" name="password" value="" type="password" placeholder="Password">
+          </label>
+          <button class="submit loginbutton" type="button">Sign in</button>      
+          </fieldset>
+    </form>
+  </div>
+
+
+
+  <div class="row group">
+    <div id="overview">
+      <h2 class="textcenter">Co-Publication Explorer</h2>
+      <div class="options">
+        Faculty:
+        <select data-placeholder="Choose a Faculty..." class="chzn-select" style="width:150px;" tabindex="1"> 
+          <option value="science">Science</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+
+  <!--#######################################################################################################-->
+  <!--                           This contains the hidden content for lightbox                               -->
+
+  <!-- starting choice-->
+  <div style='display:none'>
+    <div id='VRchoice' style='padding:10px; background:#fff;'>
+      <p class="textcenter">Choose a starting visualization</p>
+      <img src="img/network.png" class="left" id="networkchoice"></img>
+      <img src="img/matrix.png" class="right" id="matrixchoice"></img>
+    </div>
+  </div>
+
+  <!-- progress bar for data loading and processing-->
+  <div style='display:none'>
+    <div id="dataLoader">    
+      <p class="textcenter">Please wait. Data is being loaded and processed.</p>
+      <img src="img/ajax-loader.gif"></img>  
+    </div>
+  </div>
+
+  <!--                                   end of hidden content for lightbox                                  -->
+  <!--#######################################################################################################-->
+
+
+
+  <div class="vizarea group">
+
+    <div id="vizcontainer">
+      <div id="networkviz" style="display: none;">
+        <div id="networkbar">
+          <img id="networkzoomin" src="img/zoomin.png"></img>
+          <img id="networkzoomout" src="img/zoomout.png"></img>
+          <div class="ui-widget">
+            <input id="tags" />
+          </div>
+
+  <!--         <div id="selectcontainer">
+            <select id="tasks" data-placeholder="Choose an automated task to perform..." class="chzn-select" style="width:250px;" tabindex="2"> 
+              <option value=""></option>
+              <option value="ii_clusters">Identify and isolate clusters</option>
+              <option value="department">task2</option>
+            </select>
+          </div> -->
+          <button id="networkreset">reset</button>
+        </div>
+        <div id="networklegend">
+        </div>
+      </div>
+      <div id="matrixviz" style="display: none;">
+        <div id="matrixbar">
+          <img id="matrixzoomin" src="img/zoomin.png"></img>
+          <img id="matrixzoomout" src="img/zoomout.png"></img>
+          <div id="selectcontainer">
+
+  <!--           <select id="order" data-placeholder="Arrange matrix according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
+              <option value=""></option>
+              <option value="name" selected>by Name</option>
+              <option value="count">by Count</option>
+              <option value="department">by Department</option>
+            </select><br>  -->
+          </div>
+          <button id="matrixreset">reset</button>
+        </div>
+        <div id="matrixlegend">
+        </div>
+  <!--       <p>Order: 
+          <select id="order">
+            <option value="name" selected>by Name</option>
+            <option value="count">by Count</option>
+            <option value="department">by Department</option>
+          </select>
+        </p> -->
+      </div>
+    </div>
+
+
+
+    <div id="actionpanel">
+      <h2>Action Panel</h2>
+        <p>Select actions that you would like to perform on the visualization. Click on an action to expand its options.</p>
+      
+      <div id="networkactions">
+
+        <h3>automated tasks</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+          <select id="tasks" data-placeholder="Choose an automated task..." class="chzn-select" style="width:150px;" tabindex="1"> 
+            <option value=""></option>
+            <option value="ii_clusters">Identify and isolate clusters</option>
+            <option value="department">task2</option>
+          </select>
+        </div>
+
+        <h3>arrange</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+          <select id="arrange" data-placeholder="Arrange network according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
+            <option value=""></option>
+            <option value="random">Random</option>
+            <option value="department">Department</option>
+          </select>
+        </div>
+        
+        <h3>filter</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+            <p>Departments:</p><select id="filterdepartments" data-placeholder="Click to add departments" style="width:350px;" multiple class="chzn-select" tabindex="8">
+              <option value=""></option>
+          </select>
+            <p>
+              <label for="networkyear">Year range:</label>
+              <input type="text" id="networkyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
+          <div id="networkyearrange">
+          </div>
+            <p>Show: </p>
+            <select id="filterlinks" class="chzn-select" style="width:150px;" tabindex="2"> 
+                <option value="all" selected>All Faculty Members</option>
+                <option value="withlinks">Only co-publications</option>
+          </select>
+        </div>
+
+        <h3>granularity</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+          <select id="granularity" data-placeholder="View at level of ..." class="chzn-select" style="width:150px;" tabindex="2"> 
+            <option value=""></option>
+            <option value="individuals">Individuals</option>
+            <option value="departments">Departments</option>
+          </select><br>
+        </div>    
+        <h3>other</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+              
+          <form>
+           <h4>Density: </h4>
+           <input id="gravitySlider" type="range" onchange="network_force.gravity(value).start()" min ="0" max="1" step =".01"  value=".1" /><input type="text" value=".1" /><br>
+           <h4>Charge: </h4>
+           <input id="chargeSlider" type="range" onchange="network_force.charge(value).start()" min ="-300" max="200" step ="10"  value="-120" /><br>
+           <h4>linkDistance: </h4>
+           <input id="distanceSlider" type="range" onchange="network_force.linkDistance(value).start()" min ="0" max="100" step ="10"  value="20" /><br>
+           <h4>linkStrength: </h4>
+           <input id="strengthSlider" type="range" onchange="network_force.linkStrength(value).start()" min ="0" max="1" step ="0.1"  value="1" /><br> 
+           <h4>Friction: </h4>
+           <input id="frictionSlider" type="range" onchange="network_force.friction(value).start()" min ="0" max="1" step ="0.1"  value="0.9" /><br>             
+          </form>
+        
+        </div>   
+        <h3>scope</h3><img src="img/info.png"></img><hr>
+         <div class="action">
+    <!--       <h4>Year: </h4><br><div id="slider"></div>-->   
+          <p>By Year: </p>
+          <input id="yearSlider" type="range" min ="2008" max="2013" step ="1"  value="2013" /><br>
+          <p>include nodes</p>
+          <input type="checkbox" id="scopeNodes"></input><br>
+        </div>
+        
+<!--         <h3>gather</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+        </div> -->
+
+        <h3>transform</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+          <select id="sizeNodes" data-placeholder="Size nodes by ..." class="chzn-select" style="width:150px;" tabindex="2"> 
+            <option value=""></option>
+            <option value="copubs">Co-Publications</option>
+            <option value="pubs">Publications</option>
+          </select><br>
+          <br>  
+          <input type="checkbox" id="fisheye" value="distortion"><h4>Fisheye Distortion</h4></input><br>
+        </div>
+        
+        <h3>translate</h3><img src="img/info.png"></img><hr>
+        <div class="action">  
+          <select id="translate" data-placeholder="Translate to..." class="chzn-select" style="width:150px;" tabindex="4">
+            <option value=""></option>
+            <option value="network">network</option>
+            <option value="table">table</option>
+            <option value="matrix">co-matrix</option>
+          </select><br>
+          <h4>
+            Tip:<br>
+            - scroll while hovering on the visualization to zoom
+        </h4>
+        </div>
+
+      </div>
+
+      <div id="matrixactions">
+        <h3>arrange</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+         <!--  <select id="order" data-placeholder="Arrange matrix according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
+            <option value=""></option>
+            <option value="name" selected>by Name</option>
+            <option value="count">by Count</option>
+            <option value="department">by Department</option>
+          </select><br>  -->
+                            <select id="order">
+            <option value="name" selected>by Name</option>
+            <option value="count">by Count</option>
+            <option value="department">by Department</option>
+          </select>  <br>    
+        </div> 
+        <h3>translate</h3><img src="img/info.png"></img><hr>
+        <div class="action">
+          <select id="translatematrix" data-placeholder="Translate to..." class="chzn-select" style="width:150px;" tabindex="4">
+            <option value=""></option>
+            <option value="network">network</option>
+            <option value="table">table</option>
+            <option value="matrix">co-matrix</option>
+          </select><br> 
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="secondary group">
+    <div class="row">
+      <a class="logo" href="www.sci.uwo.ca"><img class="pic" src="img/science_logo.png" alt="Western Science"></a>
+    </div>
+  </div>
+
+  <div class="footer group">
+    <div class="row group">
+      <p>contact information
+        <br>
+        <br>
+        <br>
+        science&#64uwo.ca
+        <br><br>
+        (519) 661-2111 x 86152
+        <br>
+        <br>
+        Faculty of Science
+        <br> western science centre
+        <br>
+        room 191
+        <br><br>
+        western university
+        <br>
+        1151 richmond street
+        <br>
+        london, on, canada
+        <br>
+        n6a 5b7
+         <br>
+        <br>
+        <br>
+        &#169 2013 paul parsons
+      </p>
+    </div>
+  </div>
+  
+
+<script src="../d3/d3.v3.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/queue.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery.dropdownPlain.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery.textchildren.js"></script>
+<script type="text/javascript" language="javascript" src="js/underscore-min.js"></script>
+<script type="text/javascript" language="javascript" src="js/more-show.js"></script>
+<script type="text/javascript" language="javascript" src="js/fisheye.js"></script>
+<script type="text/javascript" language="javascript" src="js/preprocessing.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery.colorbox-min.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery.autocomplete.js"></script>
+<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="js/chosen/chosen.jquery.js" type="text/javascript"></script>
+
+<script type="text/javascript"> $(".chzn-select").chosen(); $(".chzn-select-deselect").chosen({allow_single_deselect:true}); </script>
+
+<script>
+
+//get vars from the server response
+var viz_data = {{{viz_data}}};
+var processed_data = {{{processed_data}}};
+var science_faculty_data = {{{science_faculty_data}}};
+
+var links_for_network = viz_data.links_for_network;
+var links_for_matrix = viz_data.links_science_exclusive_unique;
+var departments_uniq = processed_data.lists.departments;
+var pub_years_uniq = processed_data.lists.publication_years;
+
+
+$( "#networkviz" ).tooltip({
+  items: "circle",
+  content: function() {
+    var element = $( this );
+    if ( element.attr("class") == "node" ) {
+      var name = element.attr("name");
+      var depart = element.attr("department");
+      var cop = element.attr("copubs");
+      var rank = element.attr("rank");
+      var cont = element.attr("contract");
+      var text = "<b>" + name + "</b><br><hr>Department: " + depart + "<br>Rank: " + rank + "<br>Contract: " + cont + "<br>Co-Pubs: " + cop;
+      return text;
+    }
+
+    // if ( element.is( ".link" ) ) {
+    //   return element.attr( "title" );
+    // }
+    // if ( element.is( "img" ) ) {
+    //   return element.attr( "alt" );
+    // }
+  }
+});
+
+$('#matrixviz').tooltip({
+  items: "rect, text",
+  content: function() {
+    var element = $( this );
+    if ( element.is( "rect" ) ) {
+      var text = element.text();
+      return text;
+    }
+    if ( element.is( "text" ) ) {
+      var text = element.text();
+      return text;
+    }
+  }
+});
+
+
+$(function() {
+  $( "#slider" ).slider();
+});
+
+$(document).ready(function() {
+
+  //for the sliding divs in the action panel
+  //gets every div that is a child of networkactions and hides it
+  $('#networkactions:eq(0)> div').hide();
+
+  //bind a click handler to each action (i.e., each h3)
+  $('#networkactions:eq(0)> h3').click(function() { 
+    $(this).next().next().next().slideToggle('fast');
+   });
+
+  //for the sliding divs in the action panel
+  //gets every div that is a child of networkactions and hides it
+  $('#matrixactions:eq(0)> div').hide();
+
+  //bind a click handler to each action (i.e., each h3)
+  $('#matrixactions:eq(0)> h3').click(function() { 
+    $(this).next().next().next().slideToggle('fast');
+   });
+
+
+  //start with the actions hidden
+  $('#networkactions').hide();
+  $('#matrixactions').hide();
+
+  //for the initial popup choice
+  $('#matrixchoice').click(function() {
+    $.colorbox.close()
+    $('#matrixviz').show();
+    constructMatrix();
+    $('#matrixactions').delay(800).show(800);
+  });
+  $('#networkchoice').click(function() {
+    $.colorbox.close()
+    $('#networkviz').show();
+    constructNetwork();
+    $('#networkactions').delay(800).show(800);
+  });
+
+});
+
+$( "#networkyearrange" ).slider({
+  range: true,
+  min: 2008,
+  max: 2013,
+  values: [ 2008, 2013 ],
+  slide: function( event, ui ) {
+    $( "#networkyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+
+  d3.selectAll("line.link").each( function () {
+    if (ui.values[0] < this.attributes.year.value || this.attributes.year.value > ui.values[1] ) {
+      d3.select(this).style("opacity", 0);
+      d3.select(this).style("visibility", "hidden");
+    }
+    else {
+      //only want to set opacity to 0 and then fade it in if it is not currently visible
+      if (this.style.visibility == "hidden"){
+        d3.select(this).style("visibility", "visible").style("opacity", 0);
+        d3.select(this).style("opacity", 1);
+      }
+    }
+  });
+
+  }
+});
+$( "#networkyear" ).val( $( "#networkyearrange" ).slider( "values", 0 ) +
+  " - " + $( "#networkyearrange" ).slider( "values", 1 ) );
+
+$("#filterdepartments").chosen().change( function () {
+  var removed = _.difference(filterdepartmentsvisible, $("#filterdepartments").val()); //if a value was removed, this will not be empty
+  var added = _.difference($("#filterdepartments").val(), filterdepartmentsvisible);   //if a value was added, this will not be empty
+  var filterdepartmentshidden = _.difference(departments_uniq, $("#filterdepartments").val());
+  d3.selectAll('.node').each(function (node) {
+    if (removed == node.Department){
+      d3.select(this).transition().duration(1000).style("opacity", 0);
+    }
+    else if (added == node.Department){
+      d3.select(this).transition().duration(1000).style("opacity", 1);
+    }
+  });
+
+  d3.selectAll('.sankeylink').each(function (link) {
+      if (removed == link.source.name){
+        d3.select(this).transition().duration(1000).style("opacity", 0);
+      }
+      else if (added == link.source.name){
+        d3.select(this).transition().duration(1000).style("opacity", 1);
+      }
+  }); 
+
+  filterdepartmentsvisible = $("#filterdepartments").val(); //update which sources are visible now
+
+});
+
+
+  //load the lightbox option for data loading progress
+  //when that finishes, VRchoice is loaded in the lightbox (new lightbox)
+  //$('#htmltest').colorbox({iframe:true, open:true, width: "80%", height:"80%"});
+  // $('#dataLoader').colorbox({inline:true, width:"30%", href:"#dataLoader", opacity:0.98, scrolling:false, open:true, overlayClose: false, fadeOut: 300, onClosed:function(){ 
+    $('#VRchoice').colorbox({inline:true, width:"70%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300 })//; } }); 
+
+
+var filterPopulated = false;
+
+
+//populates the filter area based on department data
+function populateFilter(departments_uniq) {
+
+  //loop through each grantDept and append it
+  departments_uniq.forEach(function(element){
+      $('#filterdepartments')
+      .append($("<option selected></option>")
+      .attr("value",element)
+      .text(element))
+      .trigger("liszt:updated");
+  });  
+
+  filterdepartmentsvisible = $('#filterdepartments').val(); //for the filtering later
+
+  //update the fields for chzn
+  $("#filterdepartments").trigger("liszt:updated");
+
+  filterPopulated = true;
+}
+
+
+
+
+
+var dataset;
+var pubdata;
+var departments = [];
+var names = [];
+var ranks = [];
+var years = [];
+var contractTypes = [];
+var namesUnique = [];
+//var departments_uniq = [];
+//var ranksUnique = [];
+var contractTypesUnique = [];
+var departmentCounts = new Object();
+var rankCounts = new Object();
+var contractTypesCounts = new Object();
+var departmentsHighestCount;
+var dcounts = []; //1D array for the department counts
+var rcounts = []; //1D array for the rank counts
+var ctcounts = [];
+var males = 0;
+var females = 0;
+var genderDistribution = new Object();
+var autharr_surnames = [];
+var pubdata_filtered;
+var count1 = 0;
+var count2 = 0;
+var pubs_science = [];
+var links_science = []; //containing links where at least one node (author) is a member of the faculty of science
+var links_science_exclusive = []; //containing links where every node (author) is a member of the faculty of science
+var links_science_exclusive_unique = []; //containing links where every node (author) is a member of the faculty of science where duplicates are removed
+//var links_for_network = []; //this is a copy of links_science_exclusive_unique. A copy is needed because without one links_science_exclusive_unique will be modified while constructing the network
+var network_constructed = false;
+var matrix_constructed = false;
+var copubscounted = false;//to keep track of whether copubs have been counted
+
+var fisheye = d3.fisheye.circular()
+  .radius(200)
+  .distortion(6);
+
+//=======================================================================================
+//                            Matrix variables
+
+var margin = {top: 0, right: 0, bottom: 10, left: 180},
+    matrix_margin = {top: 100, right: 0, bottom: 10, left: 100},
+    width = 350,
+    height = 250,
+    matrix_height = 1800,
+    matrix_width = 1800;
+
+var matrix_x = d3.scale.ordinal().rangeBands([0, matrix_width]),
+    matrix_z = d3.scale.linear().domain([0, 21]).range([0,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
+    matrix_c = d3.scale.category10().domain(d3.range(10));
+
+var matrixsvg = d3.select("#matrixviz").append("svg:svg")
+    // .attr("width", matrix_width + matrix_margin.left + matrix_margin.right)
+    // .attr("height", matrix_height + matrix_margin.top + matrix_margin.bottom)
+    .attr("width", $('#vizcontainer').width())
+    .attr("height", $('#vizcontainer').height())    
+    //.style("margin-left", -matrix_margin.left + "px")
+
+  .append("svg:g")
+    //.attr("transform", "translate(" + matrix_margin.left + "," + matrix_margin.top + ")")
+
+
+    //to make it fit on the screen properly
+    .attr("transform", "scale(0.5)")
+    .call(d3.behavior.zoom().on("zoom", redrawMatrix))
+  .append("svg:g")
+      .attr("transform", "translate(175, 175)");
+
+var matrixlegend = d3.select("#matrixlegend"); //where the matrix legend will go
+
+
+//=======================================================================================
+
+
+//=======================================================================================
+//                            Network variables
+
+//get the width and height of the div containing the svg--this way the dimensions are specified dynamically
+var svgwidth = $('#vizcontainer').width();
+var svgheight = $('#vizcontainer').height();
+
+var networkzoom = d3.behavior.zoom();
+
+var networksvg = d3.select("#networkviz").append("svg:svg").attr("width", svgwidth).attr("height", svgheight)
+    .append('svg:g')
+    .attr("pointer-events", "all")
+   .append('svg:g')
+    .call(networkzoom.on("zoom", redrawNetwork))
+    .call(d3.behavior.drag().on("drag", pan))
+   .append('svg:g')
+  ;
+
+//this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the network), it allows the visualization
+//to be panned
+var networksvgbackground = networksvg.append("svg:rect").attr("width", svgwidth).attr("height", svgheight).style("fill", "aliceblue").style("opacity", 0);
+
+  //this will be used to calculate the positions of the nodes when rearranged
+var  circleOutline = networksvg.append("svg:circle").attr("cx", svgwidth/2).attr("cy", svgheight/2).attr("r", svgwidth/2.5).style("stroke", "gray").style("stoke-width", "1px").style("fill", "white").style("opacity", 0);
+
+
+// var department_centers = [];//REMOVE?
+var normal_center = {
+  y: svgheight/2,
+  x: svgwidth/2
+  };
+
+//default values for the network
+var dcharge = -100;
+var dlinkDistance = 70;
+var dgravity = 0.2;
+var dfriction = 0.9;
+var dlinkStrength = 1;
+
+//consructs the new force-directed layout
+var network_force = d3.layout.force().size([svgwidth,svgheight]);
+
+var networklegend = d3.select("#networklegend"); //where the network legend will go
+
+var node;
+var link;
+var deptCircle;
+var deptCircles = []; //contains information about the circles used for departments
+
+
+var color10 = d3.scale.ordinal().range(["#00ffff", "#ff9900", "#0100b3", "#9c9284", "#ffff4e", "#ff0000", "#333333", "#ff00ff", "#41924B", "#cc0000"]);
+
+var science_faculty_members = [];
+var science_faculty_members_unique = [];
+var science_faculty_data;
+
+
+
+
+//=======================================================================================
+// load the data from multiple files using queue.js
+//=======================================================================================
+// setTimeout(function(){
+//   queue()
+//     .defer(d3.csv,"data/faculty.csv")
+//     .defer(d3.csv,"data/pub_data.csv")
+//     .defer(d3.csv,"data/science_faculty.csv")
+//     .awaitAll(preprocessing); 
+// }, 1000);
+
+
+
+
+//===========================================================
+//JQuery listening for changes to action selectors
+//===========================================================
+
+$(document).ready(function() {
+
+  //populate the autocomplete search box with the science members
+      $( "#tags" ).autocomplete({
+      source: science_faculty_members_unique,
+      delay: 500,
+      minLength: 2,
+      select: function (event, ui) {
+        var name = ui.item.value;
+        highlightSelectedNode(name);
+      }
+    });
+
+  //listen to the zoom buttons 
+  $('#networkzoomin').click(function() {
+    console.log("uip");
+      networkzoom.scale(networkzoom.scale()+0.1);
+      networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+  });
+  $('#networkzoomout').click(function() {
+      networkzoom.scale(networkzoom.scale()-0.1);
+      networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+  }); 
+});
+
+//if the user empties the search box, restore the opacity of all links and nodes
+$('#tags').change(function() {
+  if ($('#tags').val() == "") {
+    d3.selectAll("circle.node").each( function () {
+      d3.select(this).transition().duration(1000).style("opacity", 1).style("stroke", "gray").style("stroke-width", 1);
+    });
+    d3.selectAll("line.link").each( function () {
+      d3.select(this).transition().duration(1000).style("opacity", 1);
+    });
+  }
+});
+
+$('#sizeNodes').change(function() {
+  if ($('#sizeNodes').val() == "copubs"){
+    if(!copubscounted){
+      countLinks();
+    }
+    sizeNodesByCopubs();
+  }
+});
+
+$('#networkreset').click(function() {
+  //show all nodes
+  d3.selectAll("circle.node").each( function () {
+    //if the current node is currently hidden
+    //if (this.style.visibility == "hidden"){
+      //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+      d3.select(this).style("visibility", "visible").style("opacity", 0);
+      d3.select(this).transition().duration(1000).style("opacity", 1).style("stroke", "gray").style("stroke-width", 1).attr("r", 10);
+    //}
+  });
+
+  //show all links
+  d3.selectAll("line.link").each( function () {
+    //only want to set opacity to 0 and then fade it in if it is not currently visible
+    //if (this.style.visibility == "hidden"){
+      d3.select(this).style("visibility", "visible").style("opacity", 0);
+      d3.select(this).transition().duration(1000).style("opacity", 1);
+    //}
+  });
+
+  //reset the search bar
+  $('#tags').val("")
+
+  //reset the scale and translate vector
+  networkzoom.scale(1);
+  networkzoom.translate([10, 00]);
+  networksvg.transition().duration(2000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+
+
+
+  //reset the network
+  
+  network_force.gravity(dgravity).friction(dfriction).linkDistance(dlinkDistance).linkStrength(dlinkStrength).charge(dcharge).start();
+
+  if ($('#arrange').val() == "department"){
+    //moves each node towards the normal_center
+    node
+      .attr("cx", function(d) { 
+        return d.x += (normal_center.x - d.x) * 0.12 * network_force.alpha();
+        })
+      .attr("cy", function(d) { 
+        return d.y += (normal_center.y - d.y) * 0.12 * network_force.alpha(); 
+        })
+      .style("stroke", "gray")
+      .style("stroke-width", "1px")
+      ;
+
+    link.attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+  }
+
+})
+
+$('#arrange').change(function() {
+  if(this.value == "random"){
+    network_force.linkStrength(dlinkStrength).charge(dcharge).gravity(dgravity).linkDistance(dlinkDistance).start();
+  }
+  else if(this.value == "department"){
+    network_force.linkStrength(0).charge(-250).start();
+  }
+});
+
+$('#granularity').change(function() {
+  if(this.value == "individuals"){
+    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
+    d3.selectAll("circle.dept").style("visibility", "hidden");
+    d3.selectAll("circle.node").style("visibility", "visible");
+  }
+  if(this.value == "departments"){
+    d3.selectAll("circle.dept").style("visibility", "visible");
+    d3.selectAll("circle.dept").transition().delay(1000).duration(1500).style("opacity", 1).attr("r", function(d){ 
+     return departmentCounts[d[0]] * 2; 
+    })
+    d3.selectAll("circle.node").transition().delay(2000).style("visibility", "hidden");    
+  }
+});
+
+$('#tasks').change(function() {
+
+  if(this.value == "ii_clusters") {
+    networkzoom.scale(0.4);
+    networkzoom.translate([350, 250]);
+    networksvg.transition().duration(2000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+    setTimeout(function() {
+      network_force.start().gravity(-0.1).friction(dfriction);
+    }, 2000);
+  
+    //filter out all nodes that have no connections
+    setTimeout(function() {
+      d3.selectAll("circle.node").each( function () {
+      that = this;//because of the nested loop
+        var match = false;
+        d3.selectAll("line.link").each( function() {
+            if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
+             match = true;
+           }
+        }); 
+        if (match == false){
+          d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0);
+          d3.select(this).transition().delay(1000).style("visibility", "hidden");
+          
+        }
+        else {
+          d3.select(this).style("visibility", "visible").style("opacity", 1);
+        }
+      });
+    }, 3000);//end setTimout
+
+  }
+})
+
+
+$('#translate').change(function () {
+
+  if (this.value == "matrix"){
+    //hide the network and show the matrix
+    $('#networkviz').hide();
+    $('#matrixviz').show();
+    $('#networkactions').hide('slow');
+    $('#matrixactions').show('slow');
+    //if matrix has not yet been constructed, construct it
+    if(!matrix_constructed)
+      constructMatrix();
+    $('#translate').val('').trigger('liszt:updated'); 
+  }
+});
+
+$('#translatematrix').change(function () {
+
+  if (this.value == "network"){
+    //hide the matrix and show the network
+    $('#matrixviz').hide();
+    $('#networkviz').show();
+    $('#matrixactions').hide('slow');
+    $('#networkactions').show('slow');
+    //if network is not yet constructed, construct it
+    if(!network_constructed)
+      constructNetwork();
+    else
+      network_force.start();
+    $('#translatematrix').val('').trigger('liszt:updated'); 
+  }
+});
+
+//listens to the filterlinks selector
+//if the user selects "All", all nodes are changed to visible
+//otherwise, nodes with no links to them are changed to hidden
+$('#filterlinks').change(function () {
+  if (this.value == "all"){
+    // 
+    d3.selectAll("circle.node").each( function () {
+      //if the current node is currently hidden
+      if (this.style.visibility == "hidden"){
+        //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+        d3.select(this).style("visibility", "visible").style("opacity", 0);
+        d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+      }
+   });
+  }
+
+  else {
+    d3.selectAll("circle.node").each( function () {
+    that = this;//because of the nested loop
+      var match = false;
+      d3.selectAll("line.link").each( function() {
+          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
+           match = true;
+         }
+      }); 
+      if (match == false){
+        d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0);
+        d3.select(this).transition().delay(1000).style("visibility", "hidden");
+        
+      }
+      else {
+        d3.select(this).style("visibility", "visible").style("opacity", 1);
+        // d3.select(this).transition().duration(2000).style("opacity", 1);
+      }
+    });
+    // network_force.gravity(0.02);
+  }
+
+  setTimeout(function(){network_force.start()}, 1000);
+});
+
+//listens to the slider for scoping by year
+//
+$('#yearSlider').change(function () {
+  yearSelected = this.value;
+
+  d3.selectAll("line.link").each( function () {
+    if (yearSelected < this.attributes.year.value ) {
+      d3.select(this).style("opacity", 0);
+      d3.select(this).style("visibility", "hidden");
+    }
+    else {
+      //only want to set opacity to 0 and then fade it in if it is not currently visible
+      if (this.style.visibility == "hidden"){
+        d3.select(this).style("visibility", "visible").style("opacity", 0);
+        d3.select(this).style("opacity", 1);
+      }
+    }
+  });
+
+  //if the user wants to include the nodes in the scoping
+  if($('#scopeNodes').is(':checked')) {
+    d3.selectAll("circle.node").each( function () {
+    that = this;//because of the nested loop
+      var match = false;
+      //compare each line (link) to the current node. if their coordinates match (i.e., the link is a connection to the node) and the link is currently visible (i.e., it has not been hidden during the scoping)
+      //then set the match boolean to true
+      //don't forget to delay 500ms 
+      d3.selectAll("line.link").each( function() {
+          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a link to the current node set the boolean flag to true
+           match = true;
+         }
+      });
+
+      if (match == false){
+        //only want to set opacity to 0 and then fade it in if it is not currently visible
+        if (this.style.visibility == "visible"){        
+          d3.select(this).style("opacity", 0);
+          d3.select(this).style("visibility", "hidden");
+        } 
+
+      }
+      else {
+        d3.select(this).style("visibility", "visible").style("opacity", 1);
+        // d3.select(this).transition().duration(2000).style("opacity", 1);
+      }
+    })
+  }
+  else
+    d3.selectAll("circle.node").style("visibility", function () { return "visible"; });    
+});
+
+// $('#filteryear').change(function () {
+
+// });
+
+
+//==========================================================================================================================
+//populate the action panel based on the data
+//
+//==========================================================================================================================
+
+  // var filteryears = d3.select("#filteryear")
+  //   .data(pub_years_uniq)
+  //   .enter().append("option")
+  //   .attr("value", function(d){ return d; })
+  //   .text(function (d) { return d; });
+
+
+
+//==========================================================================================================================
+//                                constructs the network visualization
+//
+//==========================================================================================================================
+function constructNetwork() {
+  //construct the legend
+  constructNetworkLegend();
+
+  //populate the filter are with departments
+  populateFilter(departments_uniq);
+
+  var filteryears = d3.select("#matrixviz")
+    .data(pub_years_uniq)
+    .enter().append("p")
+    // .attr("value", function(d){ return d; })
+    .text(function(d){ return d; });
+
+  ////////////////populate the networkviz based on the data we just got above/////////////
+  network_force
+    .nodes(science_faculty_data)
+    .links(links_for_network);
+
+  network_force
+    .gravity(dgravity)
+    .friction(dfriction)
+    .charge(dcharge)
+    .linkDistance(dlinkDistance)
+      .start();           
+
+      //transition is to match the transition of the nodes
+  link = networksvg.selectAll("line.link")
+      .data(links_for_network)
+    .enter().append("svg:line")
+      .attr("class", "link")
+      .attr("year", function (d) { return d.year; })
+      .style("visibility", "visible")
+      .style("stroke", "gray")
+      .style("stroke-width", function (d) { return d.value/4; });
+
+  deptCircle = networksvg.selectAll("circle.dept")
+    .data(deptCircles)
+    .enter()
+    .append("svg:circle")
+    .attr("class", "dept")
+    .attr("r", 1)
+    .attr("cx", function(d) { return d[1]; })
+    .attr("cy", function(d) { return d[2]; })
+    .style("visibility", "hidden")
+    .style("opacity", 0)
+    .style("fill", "white")
+    .style("stroke", function(d){ return color10(d[0]); })
+    .style("stroke-width", 2)
+    ;
+
+  node = networksvg.selectAll("circle.node")
+    .data(science_faculty_data)
+    .enter().append("svg:circle")
+    .attr("class", "node")
+    .attr("r", 1)
+    .style("visibility", "visible")
+    .attr("department", function (d) { 
+      return d.Department; })
+    .attr("copubs", 0)
+    .attr("name", function (d) { return d.Name; })
+    .attr("rank", function (d) { return d.Rank; })
+    .attr("contract", function (d) { return d.Contract; })
+    .style("fill", function(d){ return color10(d.Department); })
+    .call(network_force.drag);
+
+  node.transition().duration(2000).attr("r", 10);
+
+  network_constructed = true;
+
+  // /*Registers the specified listener to receive events of the specified type from the force layout. Currently, only "tick" events are supported, which are dispatched for each tick of the simulation. Listen to tick events to update the displayed positions of nodes and links.*/
+  network_force.on("tick", tick)
+
+}//end constructnetwork
+
+
+//called for each "tick" of the simulation
+function tick () {
+  // var currentheight = networksvg.height = $('#networkviz').height();
+  // var currentwidth = networksvg.width = $('#networkviz').width();
+  // d3.select("#networkviz").attr("width", currentwidth).attr("height", currentheight); //not updating the actual svg element
+
+  //if distortion checkbox is checked, enable the fisheye
+  if ($('#fisheye').is(':checked')){
+    networksvg.on("mousemove", function() {
+      fisheye.focus(d3.mouse(this));
+
+      node.each(function(d) { d.fisheye = fisheye(d); })
+          .attr("cx", function(d) { return d.fisheye.x; })
+          .attr("cy", function(d) { return d.fisheye.y; })
+          .attr("r", function(d) { return d.fisheye.z * 4.5; });
+
+      link.attr("x1", function(d) { return d.source.fisheye.x; })
+          .attr("y1", function(d) { return d.source.fisheye.y; })
+          .attr("x2", function(d) { return d.target.fisheye.x; })
+          .attr("y2", function(d) { return d.target.fisheye.y; });
+    });
+  }
+  // else
+  // disable the fisheye
+
+  if($('#arrange').val( ) == "department") {
+
+    node
+      .attr("cx", function(d){ 
+        dept = d.Department;//department that the person belongs to
+        deptCircles.forEach(function(d) { 
+          if(d[0] == dept) {
+            xcoord = d[1]; // return the x coordinate
+          }
+        });//get the x coordinate
+        return d.x += (xcoord - d.x) * network_force.alpha();
+      })
+      .attr("cy", function(d){ 
+        dept = d.Department;//department that the person belongs to
+        deptCircles.forEach(function(d) { 
+          if(d[0] == dept) {
+            ycoord = d[2]; // return the y coordinate
+          }
+        });//get the y coordinate        
+        return d.y += (ycoord - d.y) * network_force.alpha();
+      })
+      .style("stroke", "gray")
+      .style("stroke-width", "1px");
+
+    link
+      .attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+    }
+
+  else {
+    //moves each node towards the normal_center
+    node
+      .attr("cx", function(d) { 
+        return d.x += (normal_center.x - d.x) * 0.12 * network_force.alpha();
+        })
+      .attr("cy", function(d) { 
+        return d.y += (normal_center.y - d.y) * 0.12 * network_force.alpha(); 
+        })
+      .style("stroke", "gray")
+      .style("stroke-width", "1px")
+      ;
+
+    link.attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+  }
+
+  node.on("mouseover", function(d) {
+    if (this.style.visibility == "visible") { //only want to display the mouseover if the node is visible!
+      //also only want to change this if the node has not been highlighted from a search (i.e., if it is not red)
+      if (this.style.stroke != "#ff0000"){
+        d3.select(this).style("stroke", "black")
+          .style("stroke-width", "2px");
+      }
+    }
+  })
+  .on("mouseout", function(d) {
+    if (this.style.visibility == "visible") {
+      if (this.style.stroke != "#ff0000"){      
+        d3.select(this).style("stroke-width", "1px").style("stroke", "gray");
+      }
+    }
+  });
+
+}//end tick
+
+
+
+//
+//
+// function getCenter() {
+//   departments_uniq.forEach(function (d) {
+//     deptCircles.push({"name": d, "count": 0, "xcoords": [], "ycoords": [], "deptcoords": []});  
+//   });
+
+//   d3.selectAll("circle.node").each( function () {
+//     that = this;
+//     nodeDept = this.attributes.department.value;
+//     deptCircles.forEach (function(n) {
+//       if (nodeDept == n.name){
+//         n.count += 1;
+//         n.xcoords.push(that.attributes.cx);
+//         n.ycoords.push(that.attributes.yx);
+//       }
+//     });
+//   });
+
+//   //now calculate the deptcoords
+
+// }//end getCenter
+
+// //getDeptCenters(9, circleOutline[0][0].r.animVal.value, circleOutline[0][0].cx.animVal.value, circleOutline[0][0].cy.animVal.value)
+// function getDeptCenters(numpoints, radius, centerx, centery) {
+//     var slice = 2 * Math.PI / numpoints;
+//     for (i = 0; i < numpoints; i++)
+//     {
+//         var angle = slice * i;
+//         var newX = (centerx + radius * Math.cos(angle));
+//         var newY = (centery + radius * Math.sin(angle));
+//         networksvg.append("svg:circle").attr("class", "deptCircle").attr("cx", newX).attr("cy", newY).attr("r", 25);
+//     }
+// }
+
+//==========================================================================================================================
+//                                          constructs matrix
+//==========================================================================================================================
+
+function constructMatrix(){
+  //construct the legend
+  constructMatrixLegend();
+
+  var matrix = [],
+      nodes = science_faculty_data,
+      n = nodes.length;
+
+  // Compute index per node.
+  nodes.forEach(function(node, i) {
+    node.index = i;
+    node.count = 0;
+    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+  });
+
+  // Convert links to matrix; count occurrences.
+  links_science_exclusive_unique.forEach(function(link) {
+    matrix[link.source][link.target].z += link.value;
+    matrix[link.target][link.source].z += link.value;
+    // matrix[link.source][link.source].z += link.value;
+    // matrix[link.target][link.target].z += link.value;
+    nodes[link.source].count += link.value;
+    nodes[link.target].count += link.value;
+  });
+
+  // Precompute the orders.
+  var orders = {
+    name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].Name, nodes[b].Name); }),
+    count: d3.range(n).sort(function(a, b) { return nodes[b].count - nodes[a].count; }),
+    department: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].Department, nodes[b].Department); })
+  };
+
+  // var cellcolor = d3.scale.linear()
+  //       .range(["hsl(62,100%,90%)", "hsl(228,30%,20%)"])
+  //       .interpolate(d3.interpolateLab);
+
+
+  // The default sort order.
+  matrix_x.domain(orders.name);
+
+  matrixsvg.append("rect")
+      .attr("class", "matrixbackground")
+      .attr("width", matrix_width)
+      .attr("height", matrix_height);
+
+  var row = matrixsvg.selectAll(".matrixrow")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "matrixrow")
+      .attr("transform", function(d, i) { return "translate(0," + matrix_x(i) + ")"; })
+      .each(row);
+
+  row.append("line")
+      .attr("x2", matrix_width);
+
+  row.append("text")
+      .attr("x", -6)
+      .attr("y", matrix_x.rangeBand() / 2)
+      .attr("dy", ".32em")
+      .attr("text-anchor", "end")
+      .style("fill", function(d, i) { return color10(nodes[i].Department) })
+      .text(function(d, i) { return nodes[i].Name; });
+
+  var column = matrixsvg.selectAll(".matrixcolumn")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "matrixcolumn")
+      .attr("transform", function(d, i) { return "translate(" + matrix_x(i) + ")rotate(-90)"; });
+
+  column.append("line")
+      .attr("x1", -matrix_width);
+
+  column.append("text")
+      .attr("x", 6)
+      .attr("y", matrix_x.rangeBand() / 2)
+      .attr("dy", ".32em")
+      .attr("text-anchor", "start")
+      .style("fill", function(d, i) { return color10(nodes[i].Department) })
+      .text(function(d, i) { return nodes[i].Name; });
+
+
+  //for the matrix
+  function row(row) {
+    var cell = d3.select(this).selectAll(".matrixcell")
+        .data(row.filter(function(d) { return d.z; }))
+      .enter().append("rect")
+        .attr("class", "matrixcell")
+        .attr("x", function(d) { return matrix_x(d.x); })
+        .attr("width", matrix_x.rangeBand())
+        .attr("height", matrix_x.rangeBand())
+        .style("fill-opacity", function(d) { return matrix_z(d.z); })
+        .style("fill", "red")
+        //.style("fill", function(d) { return nodes[d.x].Department == nodes[d.y].Department ? matrix_c(nodes[d.x].Department) : null; })
+        .on("mouseover", mouseover)
+        .on("mouseout", mouseout);
+
+    cell.append("name1").text(function(d) { return "<b>" + nodes[d.x].Name + " & </b>" + "<br>"; });
+    cell.append("name2").text(function(d) { return "<b>" + nodes[d.y].Name + "</b>" + "<br>" + "<hr>"; });
+    cell.append("value").text(function(d) { return "publications: " + d.z + "<br>"; });
+
+  }
+
+  //for the matrix
+  function mouseover(p) {
+    d3.selectAll(".matrixrow text").classed("active", function(d, i) { return i == p.y; });
+    d3.selectAll(".matrixcolumn text").classed("active", function(d, i) { return i == p.x; });
+  }
+
+  //for the matrix
+  function mouseout() {
+    d3.selectAll("text").classed("active", false);
+  }
+
+  matrix_constructed = true;
+
+
+//for the matrix
+var timeout = setTimeout(function() {
+  order("name");
+  d3.select("#order").property("selectedIndex", 2).node().focus();
+}, 5000);
+
+//for the matrix
+d3.select("#order").on("change", function() {
+  clearTimeout(timeout);
+  order(this.value);
+});
+
+//for the matrix
+function order(value) {
+  matrix_x.domain(orders[value]);
+
+  var t = matrixsvg.transition().duration(2500);
+
+  t.selectAll(".matrixrow")
+      .delay(function(d, i) { return matrix_x(i) * 4; })
+      .attr("transform", function(d, i) { return "translate(0," + matrix_x(i) + ")"; })
+    .selectAll(".matrixcell")
+      .delay(function(d) { return matrix_x(d.x) * 4; })
+      .attr("x", function(d) { return matrix_x(d.x); });
+
+  t.selectAll(".matrixcolumn")
+      .delay(function(d, i) { return matrix_x(i) * 4; })
+      .attr("transform", function(d, i) { return "translate(" + matrix_x(i) + ")rotate(-90)"; });
+}
+
+
+}// end matrix
+
+
+
+
+function move_towards_center(alpha) {
+      return function(d){
+        console.log("d: " + d);
+        console.log("i: " + i);
+        console.log("this: " + this);
+        d.y += (normal_center.y - d.y) * 0.12 * tick.alpha;
+        d.x += (normal_center.x - d.x) * 0.12 * tick.alpha;
+
+      };
+};
+
+/////to stop nodes from automatically moving//////
+// var node_drag = d3.behavior.drag()
+//     .on("dragstart", dragstart)
+//     .on("drag", dragmove)
+//     .on("dragend", dragend);
+
+// function dragstart(d, i) {
+//     force.stop() // stops the force auto positioning before you start dragging
+// }
+
+// function dragmove(d, i) {
+//   console.log("dragmove");
+//     d.px += d3.event.dx;
+//     d.py += d3.event.dy;
+//     d.x += d3.event.dx;
+//     d.y += d3.event.dy; 
+//     tick(); // this is the key to make it work together with updating both px,py,x,y on d !
+// }
+
+// function dragend(d, i) {
+//     d.fixed = true; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
+//     tick();
+//     force.resume();
+// }
+
+function constructNetworkLegend() {
+  var label = networklegend.selectAll(".label")
+    .data(departments_uniq)
+    .enter().append("div")
+    .attr("class", "label")
+    .text(function(d) { return d; })
+    .append("div")
+    .attr("class", "labelcolor")
+    .style("background-color", function(d){ return color10(d); });
+}
+
+function constructMatrixLegend() {
+  var label = matrixlegend.selectAll(".label")
+    .data(departments_uniq)
+    .enter().append("div")
+    .attr("class", "label")
+    .text(function(d) { return d; })
+    .append("div")
+    .attr("class", "labelcolor")
+    .style("background-color", function(d){ return color10(d); });
+}
+
+function redrawNetwork() {
+  trans=d3.event.translate;
+  scale=d3.event.scale;
+
+  networksvg.attr("transform",
+      "translate(" + trans + ")"
+      + " scale(" + scale + ")");
+}
+
+function redrawMatrix() {
+  trans=d3.event.translate;
+  scale=d3.event.scale;
+
+  matrixsvg.attr("transform",
+      "translate(" + trans + ")"
+      + " scale(" + scale + ")");
+}
+
+function pan() {
+  networksvg.attr("x", d3.event.x).attr("y", d3.event.y);
+}
+
+// removes duplicates and returns distinct array
+function eliminateDuplicates(arr) {
+  var i,
+      len=arr.length,
+      out=[],
+      obj={};
+
+  for (i=0;i<len;i++) {
+    obj[arr[i]]=0;
+  }
+  for (i in obj) {
+    out.push(i);
+  }
+  return out;
+}
+
+function highlightSelectedNode (name) {
+  d3.selectAll("circle.node").each( function () {
+    if (this.__data__.Name != name)
+      d3.select(this).style("opacity", 0.07);
+    else {
+      chosenNode = this;
+      d3.selectAll("line.link").each( function () {
+        if ((this["x1"].animVal.value == chosenNode["cx"].animVal.value && this["y1"].animVal.value == chosenNode["cy"].animVal.value) || (this["x2"].animVal.value == chosenNode["cx"].animVal.value && this["y2"].animVal.value == chosenNode["cy"].animVal.value))
+          d3.select(this).style("opacity", 1);
+        else
+          d3.select(this).style("opacity", 0.03);
+      });
+    }
+  });
+
+  //go through each node to see if it is connected to a link that has opacity of 1 (i.e., the node is connected to the highlighted person)
+  //need to wait 1000 for the transition above to complete
+  setTimeout( function () {
+  d3.selectAll("circle.node").each( function () {
+    that=this;
+    d3.selectAll("line.link").each( function () {
+      //if the node is connected to the link AND the link has an opacity of 1
+      if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value)) && (parseFloat(this["style"].opacity) == 1)){
+        d3.select(that).style("opacity", 1);
+      }
+    });
+  });
+  d3.select(chosenNode).style("opacity", 1).style("stroke", "#ff0000").style("stroke-width", 2);
+  }, 1000);
+
+}//end highlightSelectedNode
+
+function countLinks () {
+  d3.selectAll("circle.node").each( function () {
+    that=this;
+    d3.selectAll("line.link").each( function () {
+      //if the node is connected to the link AND the link has an opacity of 1
+      if ((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value)){
+        d3.select(that).attr("copubs", function(){return parseInt($(that).attr("copubs"))+1;})
+      }
+    });
+  });
+  copubscounted = true;//set this to true
+}
+
+function sizeNodesByCopubs () {
+  d3.selectAll("circle.node").each( function () {
+    d3.select(this).transition().duration(1000).attr("r", function() { return 10 + parseInt($(this).attr("copubs"))*4; })
+  });
+  network_force.charge(-200).start();
+}
+
+//takes an array of link objects and returns the same array with all duplicate links removed
+//directionality doesn't matter 
+function getUniqueLinks(arr) {
+  var out = [];
+  temp = arr;
+  //push the first elements to the new array so there is something to compare to...notice the value is 0
+  out.push({"source":arr[0].source, "target":arr[0].target, "value":0, "year":arr[0].year});
+
+  //go through the rest of the array
+  for (i=0; i<arr.length; i++){
+    for (ind=0; ind<out.length; ind++){
+      var match = false;
+      //if the connection exists already, increase its value by 1
+      if ((out[ind].source === arr[i].source && out[ind].target === arr[i].target) || (out[ind].source === arr[i].target && out[ind].target === arr[i].source)) {
+        out[ind].value += 1;
+        match = true;
+        break;
+      }
+    }
+      //if the connection doesn't exist in out (i.e., no match), add it with a value of 1
+    if (match === false) {
+      out.push({"source":arr[i].source, "target":arr[i].target, "value":1, "year":arr[i].year});
+    }
+  }//end arr loop
+  return out;    
+}//end getUniqueLinks
+
+//takes an object with key:value pairs...returns the highest of the values
+function getHighestCount (counts) {
+  var highest = 0;
+  Object.keys(counts).forEach(function (d) {
+    if (counts[d] >= highest)
+      highest = counts[d];
+  });
+  return highest; 
+}
+
+</script>

@@ -30,7 +30,6 @@ var grantYears = [];
 var departmentProposals = {};
 
 
-
 exports.full = function(req, res) {
 	var headers = [];
 
@@ -93,11 +92,11 @@ function process3 (res) {
 					})
 					.on('end', function(count){
 					  db2
-			  			.saveDoc('science_faculty', {data: science}, function(er, ok) {
+			  			.saveDoc('unprocessed_data', {'science_faculty_data': science}, function(er, ok) {
 			    		if (er) throw new Error(JSON.stringify(er));
-			    		util.puts('Saved science_faculty to the couch!');
+			    		util.puts('Saved science_faculty_data to the database.');
+						callback(null, science);		    		
 			  			});
-					callback(null, science);
 					})
 					.on('error', function(error){
 						callback(error.message, 'Science_Faculty.csv')
@@ -122,12 +121,14 @@ function process3 (res) {
 							}
 					})
 					.on('end', function(count){
-					  db2
-			  			.saveDoc('grants', {data: grants}, function(er, ok) {
-			    		if (er) throw new Error(JSON.stringify(er));
-			    		util.puts('Saved grants to the couch!');
+						db2.getDoc('unprocessed_data', function(err, doc){
+							doc.grant_data = grants;
+							db2.saveDoc('unprocessed_data', doc, function(er, ok){
+					    		if (er) throw new Error(JSON.stringify(er));
+					    		util.puts('Saved grants to the database.');
+					    		callback(null, grants);
+							});
 			  			});
-			  		callback(null, grants);
 					})
 					.on('error', function(error){
 						callback(error.message, 'ROLA.csv')
@@ -151,12 +152,14 @@ function process3 (res) {
 							}
 					})
 					.on('end', function(count){
-					  db2
-			  			.saveDoc('supervisors', {data: supervisors}, function(er, ok) {
-			    		if (er) throw new Error(JSON.stringify(er));
-			    		util.puts('Saved supervisors to the couch!');
-			  			});
-			  		callback(null, supervisors);
+						db2.getDoc('unprocessed_data', function(err, doc){
+							doc.supervisor_data = supervisors;
+							db2.saveDoc('unprocessed_data', doc, function(er, ok){
+					    		if (er) throw new Error(JSON.stringify(er));
+					    		util.puts('Saved supervisor_data to the database.');
+					    		callback(null, supervisors);
+							});
+						});
 					})
 					.on('error', function(error){
 						callback(error.message, 'Supervisors.csv')
@@ -180,12 +183,14 @@ function process3 (res) {
 							}
 					})
 					.on('end', function(count){
-					  db2
-			  			.saveDoc('publications', {data: publications}, function(er, ok) {
-			    		if (er) throw new Error(JSON.stringify(er));
-			    		util.puts('Saved pubs to the couch!');
-			  			});
-			  		callback(null, publications);
+						db2.getDoc('unprocessed_data', function(err, doc){
+							doc.publication_data = publications;
+							db2.saveDoc('unprocessed_data', doc, function(er, ok){
+								if (er) throw new Error(JSON.stringify(er));
+			    				util.puts('Saved pubs to the database.');
+			    				callback(null, publications);
+							});
+						});
 					})
 					.on('error', function(error){
 						callback(error.message, 'Pubs.csv')
@@ -212,7 +217,7 @@ function process2 (res, results) {
 	console.log("vvvvv------------------        Processing data...        ------------------vvvvv");
 	console.log("");
 	//separate the results array into its 4 objects
-	science_faculty = results[0];
+	science_faculty_data = results[0];
 	grant_data = results[1];
 	supervisor_data = results[2];
 	publication_data = results[3];
@@ -227,11 +232,11 @@ function process2 (res, results) {
 		 						[
 		 						function(callback){
 								 	//extract some unique properties from the faculty list data
-							 		departmentsUnique = _.uniq(_.pluck(science_faculty, 'Department'));
-									namesUnique = _.uniq(_.pluck(science_faculty, 'Name'));
-									ranksUnique = _.uniq(_.pluck(science_faculty, 'Ranks'));
-									contractsUnique = _.uniq(_.pluck(science_faculty, 'Contract'));
-									yearsUnique = _.uniq(_.pluck(publication_data, 'Ranks'));
+							 		departmentsUnique = _.uniq(_.pluck(science_faculty_data, 'Department'));
+									namesUnique = _.uniq(_.pluck(science_faculty_data, 'Name'));
+									ranksUnique = _.uniq(_.pluck(science_faculty_data, 'Rank'));
+									contractsUnique = _.uniq(_.pluck(science_faculty_data, 'Contract'));
+									yearsUnique = _.uniq(_.pluck(publication_data, 'Rank'));
 									callback(null);
 		 						},
 		 						function(callback){
@@ -250,16 +255,19 @@ function process2 (res, results) {
 
 	 				//callback
 	 				function(err){
+	 					var desc = "This document contains a number of flat lists (arrays) that have been extracted from the data read in from the csv files.";
 		  				db2
-		  					.saveDoc('variables', {departments: departmentsUnique, 
+		  					.saveDoc('processed_data', {
+		  						'lists': {desc: desc, 
+		  							departments: departmentsUnique, 
 			  						science_names: namesUnique,
 			  						science_ranks: ranksUnique,
 			  						science_contracts: contractsUnique,
 			  						publication_years: yearsUnique
-		  							}, 
+		  							}}, 
 		  						function(er, ok) {
 		  						if (er) throw new Error(JSON.stringify(er));
-					    		util.puts('Saved variables to the couch!');
+					    		util.puts('Saved lists to the database.');
 					    		callback(null, null);
 		  					});
 	 				}
@@ -268,40 +276,48 @@ function process2 (res, results) {
 			}, //end first function
 
 			function(callback){
-  				rows: //label
-				  for (row_num in publication_data) {
-				    authors = publication_data[row_num].Authors;
-				    autharr = authors.split("; "); //make sure to include the space
+				async.series(
+					[
+						function(callback){
+						  	for (row_num in publication_data) {
+						    	authors = publication_data[row_num].Authors;
+						    	autharr = authors.split("; "); //make sure to include the space
 
-				    authors: //label
-				    for (author_num in autharr){
-				      var surname = autharr[author_num].substring(0, autharr[author_num].indexOf(' ') + 2); //surname and first initial
+							    for (author_num in autharr){
+							      var surname = autharr[author_num].substring(0, autharr[author_num].indexOf(' ') + 2); //surname and first initial
 
-				      members: //label
-				      for (i in namesUnique){
-				        //extract the surname and the first initial
-				        //e.g., "Lastname,Firstname MiddleInitial" will become "Lastname FirstInitial"
-				        var surname2 = namesUnique[i].substring(0,namesUnique[i].indexOf(',')) + " " + namesUnique[i].substring(namesUnique[i].indexOf(',') + 1, namesUnique[i].indexOf(',') + 2); 
+							      for (i in namesUnique){
+							        //extract the surname and the first initial
+							        //e.g., "Lastname,Firstname MiddleInitial" will become "Lastname FirstInitial"
+							        var surname2 = namesUnique[i].substring(0,namesUnique[i].indexOf(',')) + " " + namesUnique[i].substring(namesUnique[i].indexOf(',') + 1, namesUnique[i].indexOf(',') + 2); 
 
-				        //extract surname only
-				        //var surname2 = science_faculty_members_unique[i].substring(0,science_faculty_members_unique[i].indexOf(','));
-				        
-				        if (surname == surname2){ //we have a match
-				          //add the whole row to a new array that keeps track of the pubs with an author from science faculty
-				          publications_science.push(publication_data[row_num]);
-				        }
-				      } //end members   
-				    } //end authors
-				  } //end rows	
-
-				 db2
-  					.saveDoc('publications_science', {data: publications_science}, 
-  						function(er, ok) {
-  						if (er) throw new Error(JSON.stringify(er));
-			    		util.puts('Saved science publication data to the couch!');
-  					});				
-
-  				callback(null, publications_science);
+							        //extract surname only
+							        //var surname2 = science_faculty_members_unique[i].substring(0,science_faculty_members_unique[i].indexOf(','));
+							        
+							        if (surname == surname2){ //we have a match
+							          //add the whole row to a new array that keeps track of the pubs with an author from science faculty
+							          publications_science.push(publication_data[row_num]);
+							        }
+							      } //end members   
+							    } //end authors
+							    if (row_num == publication_data.length-1)
+							    	callback(null, publications_science)
+						  	}	
+						}
+					],
+					//callback
+						function(err, result){
+							var publications_science = result[0];
+							db2.getDoc('processed_data', function(err, doc){
+								doc.publications_science = publications_science;
+								db2.saveDoc('processed_data', doc, function(er, ok){
+							  		if (er) throw new Error(JSON.stringify(er));
+						    		util.puts('Saved science publication data to the database.');
+						    		callback(null, publications_science);					
+								});
+							});		
+						}
+				);//end async.series	
 			}, //end second function
 
 			function(callback){
@@ -335,9 +351,10 @@ function process2 (res, results) {
 
 							      //base case:one author...don't need to add it
 
-							    }//end inner for  
-							  }//end outer for
-						  	callback(null);
+							    }//end inner for 
+							    if (row_num2 == publications_science.length-1)
+							    	callback(null); 
+							}//end outer for
 						},
 
 						function(callback){
@@ -355,14 +372,14 @@ function process2 (res, results) {
 							        links_science[link].target = parseInt(element);
 							        }
 							    }//end inner for
+							    if (link == links_science.length-1)
+							    	callback(null);
 							  }//end outer for
-							callback(null);
 						}
 		  			],
 
 		  			//callback
 		  			function(err){
-
 		  				async.series(
 		  					[
 			  					function(callback){
@@ -372,6 +389,10 @@ function process2 (res, results) {
 									  		links_science_exclusive = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 									  		links_for_network = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 									  		callback();
+									  		///////
+									  		///////
+									  		//////
+									  		/////////
 			  							},
 			  							function(callback){
 			  								links_science_exclusive_unique = getUniqueLinks(links_science_exclusive);
@@ -379,41 +400,56 @@ function process2 (res, results) {
 									  		callback();	
 			  							}
 			  							],
+			  							//callback
 			  							function(err){
 			  							  callback(null);	
 			  							})
 			  					},
 
 			  					function(callback){
-			  						async.parallel(
+			  						//has to be series rather than parallel to avoid update conflicts
+			  						async.series(
 			  							[
 			  								function(callback){
+			  									//for the first entry in viz_data
 			  									db2
-							  					.saveDoc('publinks_names', {data: links_science}, 
-							  						function(er, ok) {
-							  						if (er) throw new Error(JSON.stringify(er));
-										    		util.puts('Saved links publication data to the couch!');
-										    		callback(null);
-					  							});
+		  										.saveDoc('viz_data',
+		  											{'co_author_by_name': links_science}, function(er, ok){
+			  											if (er) throw new Error(JSON.stringify(er));
+										    			util.puts('Saved links publication data to the database.');
+										    			callback(null);
+			  										});
 			  								},
 			  								function(callback){
-			  									db2
-							  					.saveDoc('links_science_exclusive', {data: links_science_exclusive}, 
-							  						function(er, ok) {
-							  						if (er) throw new Error(JSON.stringify(er));
-										    		util.puts('Saved links publication data to the couch!');
-										    		callback(null);
-					  							});
+			  									db2.getDoc('viz_data', function(err, doc){
+			  										doc.links_science_exclusive = links_science_exclusive;
+			  										db2.saveDoc('viz_data', doc, function(er, ok){
+			  											if (er) throw new Error(JSON.stringify(er));
+										    			util.puts('Saved links publication data to the database.');
+										    			callback(null);
+			  										});
+			  									});
 			  								},
 			  								function(callback){
-			  									db2
-							  					.saveDoc('links_science_exclusive_unique', {data: links_science_exclusive_unique}, 
-							  						function(er, ok) {
-							  						if (er) throw new Error(JSON.stringify(er));
-										    		util.puts('Saved links publication data to the couch!');
-										    		callback(null);
-					  							});
-			  								}			  											  								
+			  									db2.getDoc('viz_data', function(err, doc){
+			  										doc.links_science_exclusive_unique = links_science_exclusive_unique;
+			  										db2.saveDoc('viz_data', doc, function(er, ok){
+			  											if (er) throw new Error(JSON.stringify(er));
+										    			util.puts('Saved links publication data to the database.');
+										    			callback(null);
+			  										});
+			  									});
+			  								},
+			  								function(callback){
+			  									db2.getDoc('viz_data', function(err, doc){
+			  										doc.links_for_network = links_for_network;
+			  										db2.saveDoc('viz_data', doc, function(er, ok){
+			  											if (er) throw new Error(JSON.stringify(er));
+										    			util.puts('Saved links publication data to the database.');
+										    			callback(null);
+			  										});
+			  									});
+			  								}				  											  											  								
 			  							],
 			  							//callback
 			  							function(err){
@@ -502,25 +538,28 @@ function process2 (res, results) {
 
 					//callback
 					function (err, results) {
-						async.parallel(
+						//has to be series rather than parallel to avoid update conflicts
+						async.series(
 							[
 								function(callback){
-					 				db2
-					  					.saveDoc('grants_unique', {data: grantsUnique}, 
-					  						function(er, ok) {
+									db2.getDoc('processed_data', function(err, doc){
+										doc.grants_unique = grantsUnique;
+										db2.saveDoc('processed_data', doc, function(er, ok){
 					  						if (er) throw new Error(JSON.stringify(er));
-								    		util.puts('Saved unique grants data to the couch!');
-								    		callback(null);
-					  					});	
+								    		util.puts('Saved unique grants data to the database.');
+								    		callback(null);										
+										});
+									});
 				  				},
 				  				function(callback){
-									 db2
-					  					.saveDoc('grants_not_unique', {data: grants}, 
-					  						function(er, ok) {
+									db2.getDoc('processed_data', function(err, doc){
+										doc.grants_not_unique = grants;
+										db2.saveDoc('processed_data', doc, function(er, ok){
 					  						if (er) throw new Error(JSON.stringify(er));
-								    		util.puts('Saved grants (not unique) to the couch!');
-								    		callback(null);
-					  					});  
+								    		util.puts('Saved unique grants (not unique) data to the database.');
+								    		callback(null);										
+										});
+									});				  					
 				  				}
 				  			],
 				  			//callback
@@ -570,9 +609,9 @@ function process2 (res, results) {
 								//e.g., 681.01 will not be true in the conditional below
 								if (k % 1 == 0){
 
-									switch(this.Department) {
-
-									}
+									// switch(this.Department) {
+											//what is this doing here?
+									// }
 
 									var accepted = false; //for the second switch statement
 									switch(this.ProposalStatus) {
@@ -656,16 +695,16 @@ function process2 (res, results) {
 					//callback
 					function(err){
 						db2
-		  					.saveDoc('sankey_data', {data: sankeyData}, 
-		  						function(er, ok) {
-		  						if (er) throw new Error(JSON.stringify(er));
-					    		util.puts('Saved sankey data to the couch!');
-					    		callback(null, sankeyData);
-		  						}
-		  					);  
-  					}
+						.getDoc('viz_data', function(err, doc){
+							doc.sankey_data_faculty = sankeyData;
+							db2.saveDoc('viz_data', doc, function(er, ok){
+								if (er) throw new Error(JSON.stringify(er));
+			    				util.puts('Saved sankey faculty data to the database.');
+			    				callback(null);
+							});
+  						});
+					}
   				);//end async.series	  					
-
 			},//end fifth function
 
 			function(callback){
@@ -742,20 +781,17 @@ function process2 (res, results) {
 					sankeyDataDepartments["links"].push({ "source":source, "target":target, "value":v });
 				});
 
-				db2
-  					.saveDoc('sankey_data_departments', {data: sankeyDataDepartments}, 
-  						function(er, ok) {
-  						if (er) throw new Error(JSON.stringify(er));
-			    		util.puts('Saved sankey data departments to the couch!');
-  					});  	  					
-
-
-				callback(null, sankeyDataDepartments);
+				db2.getDoc('viz_data', function(err, doc){
+					doc.sankey_data_departments = sankeyDataDepartments;
+					db2.saveDoc('viz_data', doc, function(er, ok){
+						 if (er) throw new Error(JSON.stringify(er));
+			    		util.puts('Saved sankey data departments to the database.');
+			    		callback(null, sankeyDataDepartments);
+					});
+				});  	  					
 			},//end sixth function
 
 			function(callback){
-
-
 				async.series(
 					[
 					function(callback){
@@ -793,13 +829,14 @@ function process2 (res, results) {
 
 					//callback
 					function(err){
-						db2
-		  					.saveDoc('treemap_data', {'nested_by_sponsor': nested_by_sponsor, 'nested_by_department': nested_by_department }, 
-		  						function(er, ok) {
-		  						if (er) throw new Error(JSON.stringify(er));
-					    		util.puts('Saved tremap data departments to the couch!');
-					    		callback(null, nested_by_department);
-		  					});  	
+						db2.getDoc('viz_data', function(err, doc){
+							doc.treemap_data = {'nested_by_sponsor': nested_by_sponsor, 'nested_by_department': nested_by_department };
+							db2.saveDoc('viz_data', doc, function(er, ok){
+								if (er) throw new Error(JSON.stringify(er));
+					    		util.puts('Saved tremap data departments to the database.');
+					    		callback(null, nested_by_department);	
+							});
+						});	
 					}
 				);//end async.series
 			}//end seventh function
@@ -813,7 +850,7 @@ function process2 (res, results) {
 		 		//send a message to the client
 		 		console.log("");
 		 		console.log("^^^^^------- All data processed and saved to database successfully -------^^^^^");
-		 		res.send("All data sucessfully loaded, processed, and saved to the couch!");
+		 		res.send("All data sucessfully loaded, processed, and saved to the database.");
 		 	}
 		}
 	);//end async.series

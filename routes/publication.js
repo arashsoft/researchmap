@@ -2,14 +2,46 @@ var couchdb = require('felix-couchdb'),
   client = couchdb.createClient(5984, 'localhost'),
   db = client.db('researchmap');
 
+var async = require('async');
+
 
 exports.map = function(req, res){
 	//
-	db.getDoc('publications_science', function(err, publicationdata){
-		if (err) throw new Error(JSON.stringify(er));
-		db.getDoc('links_science_exclusive_unique', function(err, linkdata){
+	async.parallel(
+		[
+			function(callback){
+				db.getDoc('unprocessed_data', function(err, doc){
+					if (err) callback(err);
+					callback(null, doc);
+				});
+			},
+			function(callback){
+				db.getDoc('viz_data', function(err, doc){
+					if (err) callback(err);
+					callback(null, doc);
+				});
+			},
+			function(callback){
+				db.getDoc('processed_data', function(err, doc){
+					if (err) callback(err);
+					callback(null, doc);
+				});
+			}						
+		],
+		//callback
+		function(err, results){
 			if (err) throw new Error(JSON.stringify(er));
-			res.render('publications_map', {title: 'Data for NetworkViz', publicationdata: publicationdata, linkdata: linkdata});
-		});
-	});
+
+			var unprocessed_data = results[0];
+			var viz_data = results[1];
+			var processed_data = results[2];
+
+			res.render('publications_map', 
+				{ 
+				viz_data: JSON.stringify(viz_data),
+				processed_data: JSON.stringify(processed_data),
+				science_faculty_data: JSON.stringify(unprocessed_data.science_faculty_data)
+				});
+		}
+	);
 }
