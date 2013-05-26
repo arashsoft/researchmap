@@ -11,6 +11,8 @@ var grants = require('./routes/grants');
 var faculty = require('./routes/faculty');
 var overview = require('./routes/overview');
 var industry = require('./routes/industry');
+var network = require('./routes/network');
+var matrix = require('./routes/matrix');
 
 //configuration
 app.configure(function(){
@@ -31,6 +33,12 @@ app.get("/grants", grants.main);
 app.get("/faculty", faculty.main);
 app.get("/overview", overview.main);
 app.get("/industry", industry.main);
+
+//if the client requests viz data
+app.get("/network/data", network.data);
+app.get("/matrix/data", matrix.data);
+app.get("/grants/data", grants.data);
+
 app.get("/", function(req, res) {
 	res.render('home');
 });

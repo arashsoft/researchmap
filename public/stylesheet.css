@@ -431,6 +431,10 @@ for matrix
   border: 1px solid #ebebeb;
 }
 
+#vizloader {
+  position: absolute;
+}
+
 #matrixviz {
   display: inline-block;
   clear: both;
