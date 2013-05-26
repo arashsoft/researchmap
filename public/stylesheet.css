@@ -462,16 +462,19 @@ for matrix
 #networkviz {
   margin: auto;
   display: inline-block;
+  width: 100%;
 }
 
 #sankeyviz {
   margin: auto;
   display: inline-block;
+  width: 100%;
 }
 
 #bubbleviz {
   margin: auto;
   display: inline-block;
+  width:100%;
 }
 
 #networkbar {

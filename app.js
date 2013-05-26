@@ -7,15 +7,17 @@ var exphbs = require( 'express3-handlebars' );
 //requirements for the routes
 var publication = require('./routes/publication');
 var processData = require('./routes/processData');
+var grants = require('./routes/grants');
+var faculty = require('./routes/faculty');
+var overview = require('./routes/overview');
+var industry = require('./routes/industry');
 
 //configuration
 app.configure(function(){
 	app.set('port', process.env.PORT || 3000);
 	app.set('views', __dirname + '/views');
-
 	app.engine('handlebars', exphbs({defaultLayout: 'main' }));
     app.set('view engine', 'handlebars');
-
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
 	app.use(app.router);
@@ -23,15 +25,12 @@ app.configure(function(){
 });
 
 //routes
-app.get("/test", function( req, res ) {
-	var obj = {
-		"testProp": "testVal"
-	};
-	var data = obj;
-	res.render( 'test', { testData: JSON.stringify(data) });
-});
 app.get("/publications_map", publication.map);
 app.get("/processData", processData.full);
+app.get("/grants", grants.main);
+app.get("/faculty", faculty.main);
+app.get("/overview", overview.main);
+app.get("/industry", industry.main);
 app.get("/", function(req, res) {
 	res.render('home');
 });
