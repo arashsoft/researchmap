@@ -476,7 +476,12 @@ function process2 (res, results) {
 							grantDepartments = _.uniq(_.pluck(grant_data, 'Department'));
 							proposalStatuses = _.uniq(_.pluck(grant_data, 'ProposalStatus'));
 							awardStatuses = _.uniq(_.pluck(grant_data, 'AwardStatus'));
-							grantSponsors = _.uniq(_.pluck(grant_data, 'Sponsor'));	
+							grantSponsors = _.uniq(_.pluck(grant_data, 'Sponsor'));
+							grantYearRangeBegin = _.pluck(grant_data, 'BeginDate');
+							grantYearRangeEnd = _.pluck(grant_data, 'EndDate');
+							//console.log("********");
+							//console.log(grantYearRangeBegin);
+							//console.log(grantYearRangeEnd);
 
 							//loop through each entry (row) in the dataset
 							async.eachSeries(grant_data, function(){
@@ -543,7 +548,12 @@ function process2 (res, results) {
 							[
 								function(callback){
 									db2.getDoc('processed_data', function(err, doc){
-										doc.grants_unique = grantsUnique;
+										doc.lists.grants_unique = grantsUnique;
+										doc.lists.grant_departments = grantDepartments;
+										doc.lists.proposal_statuses = proposalStatuses;
+										doc.lists.award_statuses = awardStatuses;
+										doc.lists.grant_year_range_begin = grantYearRangeBegin;
+										doc.lists.grant_year_range_end = grantYearRangeEnd;
 										db2.saveDoc('processed_data', doc, function(er, ok){
 					  						if (er) throw new Error(JSON.stringify(er));
 								    		util.puts('Saved unique grants data to the database.');
@@ -568,10 +578,9 @@ function process2 (res, results) {
 				  					console.log(JSON.stringify(err));
 				  				callback(null, grantsUnique);
 				  			}
-				  		)//end async.parallel
+				  		);//end async.series
   					}
-  				)//end async.series	  					
-				
+  				);//end async.series	  						
 			},//end fourth function
 
 			//prepare Sankey data
@@ -599,112 +608,96 @@ function process2 (res, results) {
 				var targetAcc = 0;
 				var targetClosed = 0;
 
-				async.series(
-					[
-						function(callback){
-							//loop through each entry
-							//the function receives the key and the value 
-							$.each(grants, function(k, v){
-								//don't want to count duplicates (e.g., keys 681, 681.01, etc...)
-								//e.g., 681.01 will not be true in the conditional below
-								if (k % 1 == 0){
 
-									// switch(this.Department) {
-											//what is this doing here?
-									// }
-
-									var accepted = false; //for the second switch statement
-									switch(this.ProposalStatus) {
-										case "Accepted":
-											accepted = true;
-											targetAccepted += 1;
-											break;
-										case "Declined":
-											targetDeclined += 1;
-											break;				
-										case "Inst. Approved":
-											targetIApproved += 1;
-											break;
-										case "Pending Approval":
-											targetPA += 1;
-											break;				
-										case "Draft":
-											targetDraft += 1;
-											break;
-										case "Withdrawn":
-											targetWithdrawn += 1;
-											break;
-										default: //for debugging...should throw an error if executed
-											target = 100000;
-											break;
-									}					
+				//loop through each entry
+				//the function receives the key and the value 
+				$.each(grants, function(k, v){
+					//don't want to count duplicates (e.g., keys 681, 681.01, etc...)
+					//e.g., 681.01 will not be true in the conditional below
+					if (k % 1 == 0){
+						var accepted = false; //for the second switch statement
+						switch(this.ProposalStatus) {
+							case "Accepted":
+								accepted = true;
+								targetAccepted += 1;
+								break;
+							case "Declined":
+								targetDeclined += 1;
+								break;				
+							case "Inst. Approved":
+								targetIApproved += 1;
+								break;
+							case "Pending Approval":
+								targetPA += 1;
+								break;				
+							case "Draft":
+								targetDraft += 1;
+								break;
+							case "Withdrawn":
+								targetWithdrawn += 1;
+								break;
+							default: //for debugging...should throw an error if executed
+								target = 100000;
+								break;
+						}					
 
 
-									//if the proposal was accepted, add another link that shows what happened from there
-									if (accepted){
-										switch(this.AwardStatus) {
-											case "Award Pending":
-												targetAP += 1; //update target to reflect the new target
-												break;
-											case "Accepted":
-												targetAcc += 1;
-												break;
-											case "Closed":
-												targetClosed += 1;
-												break;
-											default: //for debugging...should throw an error if executed
-												target = 100001;
-												break;
-										}
-									}
-								}
-							}, callback(null));//end $.each
-						},
-
-						function(callback){
-							//for proposal status
-							//source just indicates the existence of the proposal (all proposals exist)
-							//target indicates the proposal status
-							//value is what has been calculated in the switch statement above
-							sankeyData["links"].push({ "source":0, "target":1, "value":targetAccepted });
-							sankeyData["links"].push({ "source":0, "target":2, "value":targetDeclined });
-							sankeyData["links"].push({ "source":0, "target":3, "value":targetIApproved });
-							sankeyData["links"].push({ "source":0, "target":4, "value":targetPA });
-							sankeyData["links"].push({ "source":0, "target":5, "value":targetDraft });
-							sankeyData["links"].push({ "source":0, "target":6, "value":targetWithdrawn });
-
-							//for those that got accepted
-							//source is accepted (1)
-							//target indicates award status 
-							sankeyData["links"].push({ "source":1, "target":7, "value":targetAP });
-							sankeyData["links"].push({ "source":1, "target":8, "value":targetAcc });
-							sankeyData["links"].push({ "source":1, "target":9, "value":targetClosed });
-
-							//the next 5 are simply placeholders
-							//their value is set in such a way that the links won't show up
-							sankeyData["links"].push({ "source":2, "target":8, "value":0.1 });
-							sankeyData["links"].push({ "source":3, "target":8, "value":0.1 });
-							sankeyData["links"].push({ "source":4, "target":8, "value":0.1 });
-							sankeyData["links"].push({ "source":5, "target":8, "value":0.1 });
-							sankeyData["links"].push({ "source":6, "target":8, "value":0.1 });
-
-							callback(null);
+						//if the proposal was accepted, add another link that shows what happened from there
+						if (accepted){
+							switch(this.AwardStatus) {
+								case "Award Pending":
+									targetAP += 1; //update target to reflect the new target
+									break;
+								case "Accepted":
+									targetAcc += 1;
+									break;
+								case "Closed":
+									targetClosed += 1;
+									break;
+								default: //for debugging...should throw an error if executed
+									target = 100001;
+									break;
+							}
 						}
-					],
-
-					//callback
-					function(err){
-						db2
-						.getDoc('viz_data', function(err, doc){
-							doc.sankey_data_faculty = sankeyData;
-							db2.saveDoc('viz_data', doc, function(er, ok){
-								if (er) throw new Error(JSON.stringify(er));
-			    				util.puts('Saved sankey faculty data to the database.');
-			    				callback(null);
-							});
-  						});
 					}
-  				);//end async.series	  					
+				});
+
+				//for proposal status
+				//source just indicates the existence of the proposal (all proposals exist)
+				//target indicates the proposal status
+				//value is what has been calculated in the switch statement above
+				sankeyData["links"].push({ "source":0, "target":1, "value":targetAccepted });
+				sankeyData["links"].push({ "source":0, "target":2, "value":targetDeclined });
+				sankeyData["links"].push({ "source":0, "target":3, "value":targetIApproved });
+				sankeyData["links"].push({ "source":0, "target":4, "value":targetPA });
+				sankeyData["links"].push({ "source":0, "target":5, "value":targetDraft });
+				sankeyData["links"].push({ "source":0, "target":6, "value":targetWithdrawn });
+
+				//for those that got accepted
+				//source is accepted (1)
+				//target indicates award status 
+				sankeyData["links"].push({ "source":1, "target":7, "value":targetAP });
+				sankeyData["links"].push({ "source":1, "target":8, "value":targetAcc });
+				sankeyData["links"].push({ "source":1, "target":9, "value":targetClosed });
+
+				//the next 5 are simply placeholders
+				//their value is set in such a way that the links won't show up
+				sankeyData["links"].push({ "source":2, "target":8, "value":0.1 });
+				sankeyData["links"].push({ "source":3, "target":8, "value":0.1 });
+				sankeyData["links"].push({ "source":4, "target":8, "value":0.1 });
+				sankeyData["links"].push({ "source":5, "target":8, "value":0.1 });
+				sankeyData["links"].push({ "source":6, "target":8, "value":0.1 });
+
+
+				db2
+				.getDoc('viz_data', function(err, doc){
+					doc.sankey_data_faculty = sankeyData;
+					db2.saveDoc('viz_data', doc, function(er, ok){
+						if (er) throw new Error(JSON.stringify(er));
+	    				util.puts('Saved sankey faculty data to the database.');
+	    				callback(null);
+					});
+				});	  					
 			},//end fifth function
 
 			function(callback){
