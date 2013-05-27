@@ -321,9 +321,39 @@ function process2 (res, results) {
 			}, //end second function
 
 			function(callback){
+				var co_supervision = [];
 	 			async.series(
 	 				[
+		 				//co-supervision 
+		 				function(callback){
+		 					var sorted = _.sortBy(supervisor_data, function(d) { return d.StudentName; } );
+							var currentStudent = "";
+							var previousStudent = "";
+							var currentSupervisor = "";
+							var previousSupervisor = "";
+							var temp = _.each(sorted, function(key, value){
+								currentStudent = key.StudentName;
+								currentSupervisor = key.SupervisorName;
+								if (currentStudent == previousStudent){
+									co_supervision.push([currentSupervisor, previousSupervisor]);
+								}
+								//update for the next loop through
+								previousSupervisor = key.SupervisorName;
+								previousStudent = key.StudentName;
+							});
+							callback(null);
+						},
+
 	 					function(callback){
+
+							//construct the links for the co-supervision data
+							links_co_supervision = [];
+							_.each(co_supervision, function(element){
+								var source = element[0];
+								var target = element[1];
+								links_co_supervision.push({"source":source, "target":target, "value":0});
+							});
+							console.log(links_co_supervision);	 						
 							  //construct the "links" array to be used in the networkviz.
 							  //goes through publications_science that was constructed above
 							for(row_num2 in publications_science){
