@@ -345,17 +345,18 @@ function process2 (res, results) {
 						},
 
 	 					function(callback){
-
 							//construct the links for the co-supervision data
 							links_co_supervision = [];
+							links_co_supervision_converted = [];
 							_.each(co_supervision, function(element){
 								var source = element[0];
 								var target = element[1];
-								links_co_supervision.push({"source":source, "target":target, "value":0});
+								links_co_supervision.push({"source":source, "target":target, "value":1, "type":"cosup"});
+								links_co_supervision_converted.push({"source":source, "target":target, "value":1, "type":"cosup"});
 							});
-							console.log(links_co_supervision);	 						
-							  //construct the "links" array to be used in the networkviz.
-							  //goes through publications_science that was constructed above
+
+							//construct the "links" array to be used in the networkviz.
+							//goes through publications_science that was constructed above
 							for(row_num2 in publications_science){
 							    authors2 = publications_science[row_num2].Authors;
 							    autharr2 = authors2.split("; ");
@@ -373,7 +374,7 @@ function process2 (res, results) {
 							          ////check for duplicates////
 							          //var instances = 0;
 							          //check if already exists...instances += numDuplicates;
-							          links_science.push({"source":source, "target":target, "value":0, "year":pubyear});
+							          links_science.push({"source":source, "target":target, "value":0, "year":pubyear, "type":"pub"});
 
 							          counter += 1;
 							        } while ((target != autharr2[autharr2.length-1].substring(0, autharr2[author_num2].indexOf(' ') + 2)) && ((counter + author_num2) < autharr2.length)); //while target is not the last element and we don't go out of bounds
@@ -388,6 +389,16 @@ function process2 (res, results) {
 						},
 
 						function(callback){
+							var links = _.toArray(links_co_supervision);
+							_.each(links, function(element1, index1){
+								_.each(science_faculty_data, function(element2, index2){
+									if(element1.source == element2.Name)
+										links_co_supervision_converted[index1].source = parseInt(index2);
+									if(element1.target == element2.Name)
+										links_co_supervision_converted[index1].target = parseInt(index2);
+								});
+							});
+
 							  //need to convert the links_science array so that the source and target refer to elements in the science array rather than to names...this is how d3 needs it
 							  for (link in links_science){
 							    //go through the faculty list
@@ -418,18 +429,26 @@ function process2 (res, results) {
 					  						//remove all links that are not between authors within science at western--i.e., remove all outside/non-faculty links--and store in links_science_exclusive
 									  		links_science_exclusive = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 									  		links_for_network = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
-									  		callback();
-									  		///////
-									  		///////
-									  		//////
-									  		/////////
+									  		links_co_supervision_converted = _.filter(links_co_supervision_converted, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
+									  		db2.saveDoc('links_co_supervision_converted', {data:links_co_supervision_converted}, function(er, ok){
+			  									if (er) throw new Error(JSON.stringify(er));
+			  									util.puts('Saved links_co_supervision_converted to the database.');
+			  									db2.saveDoc('links_for_network', {data: links_for_network}, function(er, ok){
+			  										if (er) throw new Error(JSON.stringify(er));
+			  										util.puts('Saved links_for_network to the database.');	
+			  										callback(null);		  										
+			  									});
+			  								});
 			  							},
+
+			  							//combine duplicate links
 			  							function(callback){
 			  								links_science_exclusive_unique = getUniqueLinks(links_science_exclusive);
 									  		links_for_network = getUniqueLinks(links_science_exclusive);
-									  		callback();	
+									  		callback(null);	
 			  							}
 			  							],
+
 			  							//callback
 			  							function(err){
 			  							  callback(null);	
