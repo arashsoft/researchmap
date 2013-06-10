@@ -923,14 +923,94 @@ function constructNetwork() {
   var xpos = $('#vizcontainer').width()/2 - $('#vizloader').width()/2;
   var ypos = $('#vizcontainer').height()/2 - $('#vizloader').height()/2;
   $('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
-  //request the data necessary to consctruct the network from the server/database
-  $.get('/network/data', function(result) {
-    var links_for_network = JSON.parse(result.links_for_network);
-    var science_faculty_data = JSON.parse(result.science_faculty_data);
-    var departments_uniq = JSON.parse(result.departments_uniq);
-    var pub_years_uniq = JSON.parse(result.pub_years_uniq);
 
-    $('#vizloader').hide();
+  getNetworkData(buildNetwork);
+}//end constructNetwork
+
+//gets the data for the network (either from the sessionStorage or from the db on the server) and then builds the network by passing the buildNetwork function as a callback to getNetworkData
+//@param: callback: a callback function--in this case buildNetwork--that builds the network visualization
+//@return: none
+function getNetworkData (callback){
+
+  var links_for_network, science_faculty_data, departments_uniq, pub_years_uniq;
+
+  async.parallel(
+    [
+      function(callback){
+        if(store.session.has("links_for_network")){
+          console.log("links_for_network is already in sessionStorage...no need to fetch again");
+          links_for_network = store.session("links_for_network");
+          callback(null);
+        }
+        else {
+          console.log("fetching links_for_network...");
+          $.get('/network/links_for_network', function(result) {
+            links_for_network = JSON.parse(result.links_for_network);
+            store.session("links_for_network", links_for_network);
+            callback(null);
+          });
+        }
+      },
+
+      function(callback){
+        if(store.session.has("science_faculty_data")){
+          console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
+          science_faculty_data = store.session("science_faculty_data");
+          callback(null);          
+        }
+        else {
+          console.log("fetching science_faculty_data...");
+          $.get('/network/science_faculty_data', function(result){
+            science_faculty_data = JSON.parse(result.science_faculty_data);
+            store.session("science_faculty_data", science_faculty_data);
+            callback(null);            
+          });
+        } 
+      },
+
+      function(callback){
+        if(store.session.has("departments_uniq")){
+          console.log("departments_uniq is already in sessionStorage...no need to fetch again");
+          departments_uniq = store.session("departments_uniq");
+          callback(null);          
+        }
+        else {
+          console.log("fetching departments_uniq...");
+          $.get('network/departments_uniq', function(result){
+            departments_uniq = JSON.parse(result.departments_uniq);
+            store.session("departments_uniq", departments_uniq);
+            callback(null);            
+          });
+        }
+      },
+
+      function(callback){
+        if(store.session.has("pub_years_uniq")){
+          console.log("pub_years_uniq is already in sessionStorage...no need to fetch again");
+          pub_years_uniq = store.session("pub_years_uniq");
+          callback(null);          
+        }
+        else {
+          console.log("fetching pub_years_uniq...");
+          $.get('network/pub_years_uniq', function(result){
+            pub_years_uniq = JSON.parse(result.pub_years_uniq);
+            store.session("pub_years_uniq", pub_years_uniq);
+            callback(null);            
+          });
+        }         
+      }
+    ],
+
+      function(err, results){
+        callback(links_for_network, science_faculty_data, departments_uniq, pub_years_uniq);
+      }
+    );
+}//end getNetworkData
+
+
+function buildNetwork(links_for_network, science_faculty_data, departments_uniq, pub_years_uniq){
+
+  $('#vizloader').hide();
 
   //construct the legend
   constructNetworkLegend(departments_uniq);
@@ -1002,8 +1082,7 @@ function constructNetwork() {
 
   // /*Registers the specified listener to receive events of the specified type from the force layout. Currently, only "tick" events are supported, which are dispatched for each tick of the simulation. Listen to tick events to update the displayed positions of nodes and links.*/
   network_force.on("tick", tick)
-  });
-}//end constructnetwork
+}//end buildNetwork
 
 
 //called for each "tick" of the simulation
@@ -1137,173 +1216,238 @@ function tick () {
 //     }
 // }
 
+
+
+
 //==========================================================================================================================
 //                                          constructs matrix
 //==========================================================================================================================
 
 function constructMatrix(){
-
   var xpos = $('#vizcontainer').width()/2 - $('#vizloader').width()/2;
   var ypos = $('#vizcontainer').height()/2 - $('#vizloader').height()/2;
   $('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
-  //request the data necessary to consctruct the network from the server/database
-  $.get('/matrix/data', function(result) {
-    var links_for_matrix = JSON.parse(result.links_for_matrix);
-    var science_faculty_data = JSON.parse(result.science_faculty_data);
-    var departments_uniq = JSON.parse(result.departments_uniq);
 
-    $('#vizloader').hide();  
-  
-    //construct the legend
-    constructMatrixLegend(departments_uniq);
-
-    var matrix = [],
-        nodes = science_faculty_data,
-        n = nodes.length;
-
-    // Compute index per node.
-    nodes.forEach(function(node, i) {
-      node.index = i;
-      node.count = 0;
-      matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
-    });
-
-    // Convert links to matrix; count occurrences.
-    links_for_matrix.forEach(function(link) {
-      matrix[link.source][link.target].z += link.value;
-      matrix[link.target][link.source].z += link.value;
-      // matrix[link.source][link.source].z += link.value;
-      // matrix[link.target][link.target].z += link.value;
-      nodes[link.source].count += link.value;
-      nodes[link.target].count += link.value;
-    });
-
-    // Precompute the orders.
-    var orders = {
-      name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].Name, nodes[b].Name); }),
-      count: d3.range(n).sort(function(a, b) { return nodes[b].count - nodes[a].count; }),
-      department: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].Department, nodes[b].Department); })
-    };
-
-    // var cellcolor = d3.scale.linear()
-    //       .range(["hsl(62,100%,90%)", "hsl(228,30%,20%)"])
-    //       .interpolate(d3.interpolateLab);
-
-
-    // The default sort order.
-    matrix_x.domain(orders.name);
-
-    matrixsvg.append("rect")
-        .attr("class", "matrixbackground")
-        .attr("width", matrix_width)
-        .attr("height", matrix_height);
-
-    var row = matrixsvg.selectAll(".matrixrow")
-        .data(matrix)
-      .enter().append("g")
-        .attr("class", "matrixrow")
-        .attr("transform", function(d, i) { return "translate(0," + matrix_x(i) + ")"; })
-        .each(row);
-
-    row.append("line")
-        .attr("x2", matrix_width);
-
-    row.append("text")
-        .attr("x", -6)
-        .attr("y", matrix_x.rangeBand() / 2)
-        .attr("dy", ".32em")
-        .attr("text-anchor", "end")
-        .style("fill", function(d, i) { return color10(nodes[i].Department) })
-        .text(function(d, i) { return nodes[i].Name; });
-
-    var column = matrixsvg.selectAll(".matrixcolumn")
-        .data(matrix)
-      .enter().append("g")
-        .attr("class", "matrixcolumn")
-        .attr("transform", function(d, i) { return "translate(" + matrix_x(i) + ")rotate(-90)"; });
-
-    column.append("line")
-        .attr("x1", -matrix_width);
-
-    column.append("text")
-        .attr("x", 6)
-        .attr("y", matrix_x.rangeBand() / 2)
-        .attr("dy", ".32em")
-        .attr("text-anchor", "start")
-        .style("fill", function(d, i) { return color10(nodes[i].Department) })
-        .text(function(d, i) { return nodes[i].Name; });
-
-
-    //for the matrix
-    function row(row) {
-      var cell = d3.select(this).selectAll(".matrixcell")
-          .data(row.filter(function(d) { return d.z; }))
-        .enter().append("rect")
-          .attr("class", "matrixcell")
-          .attr("x", function(d) { return matrix_x(d.x); })
-          .attr("width", matrix_x.rangeBand())
-          .attr("height", matrix_x.rangeBand())
-          .style("fill-opacity", function(d) { return matrix_z(d.z); })
-          .style("fill", "red")
-          //.style("fill", function(d) { return nodes[d.x].Department == nodes[d.y].Department ? matrix_c(nodes[d.x].Department) : null; })
-          .on("mouseover", mouseover)
-          .on("mouseout", mouseout);
-
-      cell.append("name1").text(function(d) { return "<b>" + nodes[d.x].Name + " & </b>" + "<br>"; });
-      cell.append("name2").text(function(d) { return "<b>" + nodes[d.y].Name + "</b>" + "<br>" + "<hr>"; });
-      cell.append("value").text(function(d) { return "publications: " + d.z + "<br>"; });
-
-    }
-
-    //for the matrix
-    function mouseover(p) {
-      d3.selectAll(".matrixrow text").classed("active", function(d, i) { return i == p.y; });
-      d3.selectAll(".matrixcolumn text").classed("active", function(d, i) { return i == p.x; });
-    }
-
-    //for the matrix
-    function mouseout() {
-      d3.selectAll("text").classed("active", false);
-    }
-
-    matrix_constructed = true;
-
-
-    //for the matrix
-    var timeout = setTimeout(function() {
-      order("name");
-      d3.select("#order").property("selectedIndex", 2).node().focus();
-    }, 5000);
-
-    //for the matrix
-    d3.select("#order").on("change", function() {
-      clearTimeout(timeout);
-      order(this.value);
-    });
-
-    //for the matrix
-    function order(value) {
-      matrix_x.domain(orders[value]);
-
-      var t = matrixsvg.transition().duration(2500);
-
-      t.selectAll(".matrixrow")
-          .delay(function(d, i) { return matrix_x(i) * 4; })
-          .attr("transform", function(d, i) { return "translate(0," + matrix_x(i) + ")"; })
-        .selectAll(".matrixcell")
-          .delay(function(d) { return matrix_x(d.x) * 4; })
-          .attr("x", function(d) { return matrix_x(d.x); });
-
-      t.selectAll(".matrixcolumn")
-          .delay(function(d, i) { return matrix_x(i) * 4; })
-          .attr("transform", function(d, i) { return "translate(" + matrix_x(i) + ")rotate(-90)"; });
-    }
-
-  }); //end get
-
+  getMatrixData(buildMatrix);
 }// end matrix
 
+//gets the data for the matrix (either from the sessionStorage or from the db on the server) and then builds the matrix by passing the buildMatrix function as a callback to getMatrixData
+//@param: callback: a callback function--in this case buildMatrix--that builds the matrix visualization
+//@return: none
+function getMatrixData (callbackMatrix){
 
+  var links_for_matrix, science_faculty_data, departments_uniq;
+
+  async.parallel(
+    [
+      function(callback){
+        if(store.session.has("links_for_matrix")){
+          console.log("links_for_matrix is already in sessionStorage...no need to fetch again");
+          links_for_matrix = store.session("links_for_matrix");
+          callback(null);
+        }
+        else {
+          console.log("fetching links_for_matrix...");
+          $.get('/matrix/links_for_matrix', function(result) {
+            links_for_matrix = JSON.parse(result.links_for_matrix);
+            store.session("links_for_matrix", links_for_matrix);
+            callback(null);
+          });
+        }
+      },
+
+      function(callback){
+        if(store.session.has("science_faculty_data")){
+          console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
+          science_faculty_data = store.session("science_faculty_data");
+          callback(null);          
+        }
+        else {
+          console.log("fetching science_faculty_data...");
+          $.get('/matrix/science_faculty_data', function(result){
+            science_faculty_data = JSON.parse(result.science_faculty_data);
+            store.session("science_faculty_data", science_faculty_data);
+            callback(null);          
+          });
+        }
+      },
+
+      function(callback){
+        if(store.session.has("departments_uniq")){
+          console.log("departments_uniq is already in sessionStorage...no need to fetch again");
+          departments_uniq = store.session("departments_uniq");
+          callback(null);          
+        }
+        else {
+          console.log("fetching departments_uniq...");
+          $.get('matrix/departments_uniq', function(result){
+            departments_uniq = JSON.parse(result.departments_uniq);
+            store.session("departments_uniq", departments_uniq);
+            callback(null);          
+          });
+        }
+      }
+    ],
+
+    function (err, results){
+      if (err)
+        console.log("ERROR on " + results + ": " + JSON.stringify(err));
+      callbackMatrix(links_for_matrix, science_faculty_data, departments_uniq);
+    }
+  );
+}//end getMatrixData
+
+
+
+function buildMatrix(links_for_matrix, science_faculty_data, departments_uniq){
+
+  $('#vizloader').hide();  
+
+  //construct the legend
+  constructMatrixLegend(departments_uniq);
+
+  var matrix = [],
+      nodes = science_faculty_data,
+      n = nodes.length;
+
+  // Compute index per node.
+  nodes.forEach(function(node, i) {
+    node.index = i;
+    node.count = 0;
+    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+  });
+
+  // Convert links to matrix; count occurrences.
+  links_for_matrix.forEach(function(link) {
+    matrix[link.source][link.target].z += link.value;
+    matrix[link.target][link.source].z += link.value;
+    // matrix[link.source][link.source].z += link.value;
+    // matrix[link.target][link.target].z += link.value;
+    nodes[link.source].count += link.value;
+    nodes[link.target].count += link.value;
+  });
+
+  // Precompute the orders.
+  var orders = {
+    name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].Name, nodes[b].Name); }),
+    count: d3.range(n).sort(function(a, b) { return nodes[b].count - nodes[a].count; }),
+    department: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].Department, nodes[b].Department); })
+  };
+
+  // var cellcolor = d3.scale.linear()
+  //       .range(["hsl(62,100%,90%)", "hsl(228,30%,20%)"])
+  //       .interpolate(d3.interpolateLab);
+
+
+  // The default sort order.
+  matrix_x.domain(orders.name);
+
+  matrixsvg.append("rect")
+      .attr("class", "matrixbackground")
+      .attr("width", matrix_width)
+      .attr("height", matrix_height);
+
+  var row = matrixsvg.selectAll(".matrixrow")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "matrixrow")
+      .attr("transform", function(d, i) { return "translate(0," + matrix_x(i) + ")"; })
+      .each(row);
+
+  row.append("line")
+      .attr("x2", matrix_width);
+
+  row.append("text")
+      .attr("x", -6)
+      .attr("y", matrix_x.rangeBand() / 2)
+      .attr("dy", ".32em")
+      .attr("text-anchor", "end")
+      .style("fill", function(d, i) { return color10(nodes[i].Department) })
+      .text(function(d, i) { return nodes[i].Name; });
+
+  var column = matrixsvg.selectAll(".matrixcolumn")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "matrixcolumn")
+      .attr("transform", function(d, i) { return "translate(" + matrix_x(i) + ")rotate(-90)"; });
+
+  column.append("line")
+      .attr("x1", -matrix_width);
+
+  column.append("text")
+      .attr("x", 6)
+      .attr("y", matrix_x.rangeBand() / 2)
+      .attr("dy", ".32em")
+      .attr("text-anchor", "start")
+      .style("fill", function(d, i) { return color10(nodes[i].Department) })
+      .text(function(d, i) { return nodes[i].Name; });
+
+
+  //for the matrix
+  function row(row) {
+    var cell = d3.select(this).selectAll(".matrixcell")
+        .data(row.filter(function(d) { return d.z; }))
+      .enter().append("rect")
+        .attr("class", "matrixcell")
+        .attr("x", function(d) { return matrix_x(d.x); })
+        .attr("width", matrix_x.rangeBand())
+        .attr("height", matrix_x.rangeBand())
+        .style("fill-opacity", function(d) { return matrix_z(d.z); })
+        .style("fill", "red")
+        //.style("fill", function(d) { return nodes[d.x].Department == nodes[d.y].Department ? matrix_c(nodes[d.x].Department) : null; })
+        .on("mouseover", mouseover)
+        .on("mouseout", mouseout);
+
+    cell.append("name1").text(function(d) { return "<b>" + nodes[d.x].Name + " & </b>" + "<br>"; });
+    cell.append("name2").text(function(d) { return "<b>" + nodes[d.y].Name + "</b>" + "<br>" + "<hr>"; });
+    cell.append("value").text(function(d) { return "publications: " + d.z + "<br>"; });
+
+  }
+
+  //for the matrix
+  function mouseover(p) {
+    d3.selectAll(".matrixrow text").classed("active", function(d, i) { return i == p.y; });
+    d3.selectAll(".matrixcolumn text").classed("active", function(d, i) { return i == p.x; });
+  }
+
+  //for the matrix
+  function mouseout() {
+    d3.selectAll("text").classed("active", false);
+  }
+
+  matrix_constructed = true;
+
+
+  //for the matrix
+  var timeout = setTimeout(function() {
+    order("name");
+    d3.select("#order").property("selectedIndex", 2).node().focus();
+  }, 5000);
+
+  //for the matrix
+  d3.select("#order").on("change", function() {
+    clearTimeout(timeout);
+    order(this.value);
+  });
+
+  //for the matrix
+  function order(value) {
+    matrix_x.domain(orders[value]);
+
+    var t = matrixsvg.transition().duration(2500);
+
+    t.selectAll(".matrixrow")
+        .delay(function(d, i) { return matrix_x(i) * 4; })
+        .attr("transform", function(d, i) { return "translate(0," + matrix_x(i) + ")"; })
+      .selectAll(".matrixcell")
+        .delay(function(d) { return matrix_x(d.x) * 4; })
+        .attr("x", function(d) { return matrix_x(d.x); });
+
+    t.selectAll(".matrixcolumn")
+        .delay(function(d, i) { return matrix_x(i) * 4; })
+        .attr("transform", function(d, i) { return "translate(" + matrix_x(i) + ")rotate(-90)"; });
+  }
+}//end buildMatrix
 
 
 function move_towards_center(alpha) {
