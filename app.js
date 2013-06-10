@@ -3,6 +3,7 @@ var http = require('http');
 var app = express();
 //var hbs = require('hbs'),
 var exphbs = require( 'express3-handlebars' );
+var store = require('store2');
 
 //requirements for the routes
 var publication = require('./routes/publication');
