@@ -597,7 +597,8 @@ function process2 (res, results) {
 							[
 								function(callback){
 									db2.getDoc('processed_data', function(err, doc){
-										doc.lists.grants_unique = grantsUnique;
+										//doc.lists.grants_unique = grantsUnique;
+										doc.lists.grant_sponsors = grantSponsors;
 										doc.lists.grant_departments = grantDepartments;
 										doc.lists.proposal_statuses = proposalStatuses;
 										doc.lists.award_statuses = awardStatuses;

@@ -35,9 +35,9 @@ app.get("/overview", overview.main);
 app.get("/industry", industry.main);
 
 //if the client requests viz data
-app.get("/network/:data", network.data);
-app.get("/matrix/:data", matrix.data);
-app.get("/grants/data", grants.data);
+app.get("/network/:x", network.data);
+app.get("/matrix/:x", matrix.data);
+app.get("/grants/:x", grants.data);
 
 
 app.get("/", function(req, res) {

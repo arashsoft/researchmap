@@ -618,28 +618,99 @@ function constructSankey(fragmentationLevel) {
   var xpos = $('#vizcontainer').width()/2 - $('#vizloader').width()/2;
   var ypos = $('#vizcontainer').height()/2 - $('#vizloader').height()/2;
   $('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
-  //request the data necessary to consctruct the network from the server/database
-  $.get('/grants/data', function(result) {
-   sankey_data_departments = JSON.parse(result.sankey_data_departments);
-   sankey_data_faculty = JSON.parse(result.sankey_data_faculty);
-   grant_departments = JSON.parse(result.grant_departments);
-   //grant_years = JSON.parse(result.grant_years);
-   proposal_statuses = JSON.parse(result.proposal_statuses);
-   award_statuses = JSON.parse(result.award_statuses);
-   grant_year_range_begin = JSON.parse(result.grant_year_range_begin);
-   grant_year_range_end = JSON.parse(result.grant_year_range_end);
 
-   grant_year_begin_min = _.min(_.filter(_.uniq(_.map(grant_year_range_begin, function(d){ if (d != "") return parseInt(d); })), function(d) { return d != undefined }));
+  getSankeyData(fragmentationLevel, buildSankey);
+}//end constructSankey
+
+//gets the data for the sankey (either from the sessionStorage or from the db on the server) and then builds the sankey by passing the buildSankey function as a callback to getSankeyData
+//@param: fragmentationLevel: indicates how the data should be fragmented 
+//@param: callback: a callback function--in this case buildSankey--that builds the treemap visualization
+//@return: none
+function getSankeyData(fragmentationLevel, callback){
+
+  var sankey_data_departments, sankey_data_faculty, grant_departments, proposal_statuses, award_statuses, grant_year_range_begin, grant_year_range_end, grant_sponsors;
+
+  if (fragmentationLevel == "departments"){
+    if(store.session.has("sankey_data_departments")){
+      console.log("sankey_data_departments is already in sessionStorage...no need to fetch again!");
+      fragmentationLevel = store.session("sankey_data_departments");
+      grant_departments = store.session("grant_departments");
+      proposal_statuses = store.session("proposal_statuses");
+      award_statuses = store.session("award_statuses");
+      //grants_unique = store.session("grants_unique");
+      grant_sponsors = store.session("grant_sponsors");
+      grant_year_range_begin = store.session("grant_year_range_begin");
+      grant_year_range_end = store.session("grant_year_range_end");      
+      callback(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);      
+    }
+    else{
+      console.log("fetching sankey_data_departments...");
+      $.get('/grants/sankey_data_departments', function(result) {
+        fragmentationLevel = JSON.parse(result.sankey_data_departments);
+        grant_departments = JSON.parse(result.grant_departments);
+        proposal_statuses = JSON.parse(result.proposal_statuses);
+        award_statuses = JSON.parse(result.award_statuses);
+        //grants_unique = JSON.parse(result.grants_unique);
+        grant_sponsors = JSON.parse(result.grant_sponsors);
+        grant_year_range_begin = JSON.parse(result.grant_year_range_begin);
+        grant_year_range_end = JSON.parse(result.grant_year_range_end);        
+        store.session("sankey_data_departments", fragmentationLevel);
+        store.session("grant_departments", grant_departments);
+        store.session("proposal_statuses", proposal_statuses);
+        store.session("award_statuses", award_statuses);
+        //store.session("grants_unique", grants_unique);
+        store.session("grant_sponsors", grant_sponsors);
+        store.session("grant_year_range_begin", grant_year_range_begin);
+        store.session("grant_year_range_end", grant_year_range_end);        
+        callback(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);        
+      });
+    }      
+  }
+  else if (fragmentationLevel == "faculty"){
+    if(store.session.has("sankey_data_faculty")){
+      console.log("sankey_data_faculty is already in sessionStorage...no need to fetch again!");
+      fragmentationLevel = store.session("sankey_data_faculty");
+      grant_departments = store.session("grant_departments");
+      proposal_statuses = store.session("proposal_statuses");
+      award_statuses = store.session("award_statuses");
+      //grants_unique = store.session("grants_unique");
+      grant_sponsors = store.session("grant_sponsors");      
+      grant_year_range_begin = store.session("grant_year_range_begin");
+      grant_year_range_end = store.session("grant_year_range_end");
+      callback(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);      
+    }
+    else{
+      console.log("fetching sankey_data_faculty...");
+      $.get('/grants/sankey_data_faculty', function(result) {
+        fragmentationLevel = JSON.parse(result.sankey_data_faculty);
+        grant_departments = JSON.parse(result.grant_departments);
+        proposal_statuses = JSON.parse(result.proposal_statuses);
+        award_statuses = JSON.parse(result.award_statuses);
+        //grants_unique = JSON.parse(result.grants_unique);
+        grant_sponsors = JSON.parse(result.grant_sponsors);
+        grant_year_range_begin = JSON.parse(result.grant_year_range_begin);
+        grant_year_range_end = JSON.parse(result.grant_year_range_end);        
+        store.session("sankey_data_faculty", fragmentationLevel);
+        store.session("grant_departments", grant_departments);
+        store.session("proposal_statuses", proposal_statuses);
+        store.session("award_statuses", award_statuses);
+        //store.session("grants_unique", grants_unique);
+        store.session("grant_sponsors", grant_sponsors);        
+        store.session("grant_year_range_begin", grant_year_range_begin);
+        store.session("grant_year_range_end", grant_year_range_end);
+        callback(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);        
+      });
+    }    
+  }
+}
+
+
+function buildSankey(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin){
+
+  grant_year_begin_min = _.min(_.filter(_.uniq(_.map(grant_year_range_begin, function(d){ if (d != "") return parseInt(d); })), function(d) { return d != undefined }));
    grant_year_begin_max = _.max(_.filter(_.uniq(_.map(grant_year_range_begin, function(d){ if (d != "") return parseInt(d); })), function(d) { return d != undefined }));
    grant_year_end_min = _.min(_.filter(_.uniq(_.map(grant_year_range_end, function(d){ if (d != "") return parseInt(d); })), function(d) { return d != undefined }));
    grant_year_end_max = _.max(_.filter(_.uniq(_.map(grant_year_range_end, function(d){ if (d != "") return parseInt(d); })), function(d) { return d != undefined }))
-
-    if (fragmentationLevel == "departments"){
-      fragmentationLevel = sankey_data_departments;
-    }
-    else if (fragmentationLevel == "faculty"){
-      fragmentationLevel = sankey_data_faculty;
-    }
 
     $('#vizloader').hide();
 
@@ -754,7 +825,6 @@ function constructSankey(fragmentationLevel) {
     }
 
     sankey_constructed = true;
-  });//end get
 }//end constructSankey
 
 function constructBubble () {
@@ -792,186 +862,234 @@ function constructTreemap (nestedData) {
   var xpos = $('#vizcontainer').width()/2 - $('#vizloader').width()/2;
   var ypos = $('#vizcontainer').height()/2 - $('#vizloader').height()/2;
   $('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
-  //request the data necessary to consctruct the network from the server/database
-  $.get('/grants/data', function(result) {
-    var nested_by_department = JSON.parse(result.nested_by_department);
-    var nested_by_sponsor = JSON.parse(result.nested_by_sponsor);
 
-    if (nestedData == "department"){
-      nestedData = nested_by_department;
+  getTreemapData(nestedData, buildTreemap);
+}//end constructTreemap
+
+//gets the data for the treemap (either from the sessionStorage or from the db on the server) and then builds the treemap by passing the buildTreemap function as a callback to getTreemapData
+//@param: nestedData: indicates how the data should be nested (e.g., by department, by sponsor)
+//@param: callback: a callback function--in this case buildTreemap--that builds the treemap visualization
+//@return: none
+function getTreemapData (nestedData, callback) {
+  var nested_by_sponsor, nested_by_department, grants_unique, grant_sponsors;
+
+  if (nestedData == "department"){
+    if(store.session.has("nested_by_department")){
+      console.log("nested_by_department is already in sessionStorage...no need to fetch again!");
+      nestedData = store.session("nested_by_department");
+      //grants_unique = store.session("grants_unique");
+      grant_sponsors = store.session("grant_sponsors");
+      callback(nestedData, grant_sponsors);      
     }
-    else if (nestedData == "sponsor"){
-      nestedData = nested_by_sponsor;
+    else{
+      console.log("fetching nested_by_department...");
+      $.get('/grants/nested_by_department', function(result) {
+        nested_by_department = JSON.parse(result.nested_by_department);
+        //grants_unique = JSON.parse(result.grants_unique);
+        grant_sponsors = JSON.parse(result.grant_sponsors);
+        
+        try {
+          store.session("nested_by_department", nested_by_department);
+          store.session("grant_sponsors", grant_sponsors);
+        }
+        catch (e) {
+          console.log("Error trying to save data to sessionStorage: " + e);
+        }
+        callback(nested_by_department, grant_sponsors);        
+      });
     }
+  }
+  else if (nestedData == "sponsor"){
+    if(store.session.has("nested_by_sponsor")){
+      console.log("nested_by_sponsor is already in sessionStorage...no need to fetch again!");
+      nestedData = store.session("nested_by_sponsor");
+      //grants_unique = store.session("grants_unique");
+      grant_sponsors = store.session("grant_sponsors");      
+      callback(nestedData, grant_sponsors);      
+    }
+    else{
+      console.log("fetching nested_by_sponsor...");
+      $.get('/grants/nested_by_sponsor', function(result) {
+        nested_by_sponsor = JSON.parse(result.nested_by_sponsor);
+        store.session("nested_by_sponsor", nested_by_sponsor);
+        //grants_unique = JSON.parse(result.grants_unique);
+        grant_sponsors = JSON.parse(result.grant_sponsors);
+        store.session("grant_sponsors", grant_sponsors);
+        callback(nested_by_sponsor, grant_sponsors);
+      });
+    }  
+  }
+}
 
-    $('#vizloader').hide();
+function buildTreemap(nestedData, grant_sponsors) {
 
-    //construct the legend
-    //constructTreemapLegend();
+  $('#vizloader').hide();
 
-    node = root = nestedData;
+  //construct the legend
+  //constructTreemapLegend();
 
-    var nodes = treemap.nodes(root);
-        //.filter(function(d) { return !d.children; }); //no children
+  node = root = nestedData;
 
-    var children = nodes.filter(function(d) {
-        return !d.children;
-    });
-    var parents = nodes.filter(function(d) {
-        return d.children;
-    });
+  var nodes = treemap.nodes(root);
+      //.filter(function(d) { return !d.children; }); //no children
+
+  var children = nodes.filter(function(d) {
+      return !d.children;
+  });
+  var parents = nodes.filter(function(d) {
+      return d.children;
+  });
 
 
-    // create parent cells
-    var parentCells = treemapsvg.selectAll("g.cell.parent")
-            .data(parents, function(d) {
-                return "p-" + d.id;
-            });
-    var parentEnterTransition = parentCells.enter()
-            .append("g")
-            .attr("class", "cell parent")
-            .on("click", function(d) {
-                zoom(d);
-            });
-    parentEnterTransition.append("rect")
-            .attr("width", function(d) {
-                return Math.max(0.01, d.dx - 1);
-            })
-            .attr("height", headerHeight)
-            .style("fill", headerColor);
-    parentEnterTransition.append('text')
-            .attr("class", "celllabel")
-            .attr("transform", "translate(3, 13)")
-            .attr("width", function(d) {
-                return Math.max(0.01, d.dx - 1);
-            })
-            .attr("height", headerHeight)
-            .text(function(d) {
+  // create parent cells
+  var parentCells = treemapsvg.selectAll("g.cell.parent")
+          .data(parents, function(d) {
+              return "p-" + d.id;
+          });
+  var parentEnterTransition = parentCells.enter()
+          .append("g")
+          .attr("class", "cell parent")
+          .on("click", function(d) {
+              zoom(d);
+          });
+  parentEnterTransition.append("rect")
+          .attr("width", function(d) {
+              return Math.max(0.01, d.dx - 1);
+          })
+          .attr("height", headerHeight)
+          .style("fill", headerColor);
+  parentEnterTransition.append('text')
+          .attr("class", "celllabel")
+          .attr("transform", "translate(3, 13)")
+          .attr("width", function(d) {
+              return Math.max(0.01, d.dx - 1);
+          })
+          .attr("height", headerHeight)
+          .text(function(d) {
+              return d.name;
+          });
+
+  // update transition
+  var parentUpdateTransition = parentCells.transition().duration(transitionDuration);
+  parentUpdateTransition.select(".cell")
+          .attr("transform", function(d) {
+              return "translate(" + d.dx + "," + d.y + ")";
+          });
+  parentUpdateTransition.select("rect")
+          .attr("width", function(d) {
+              return Math.max(0.01, d.dx - 1);
+          })
+          .attr("height", headerHeight)
+          .style("fill", headerColor);
+  parentUpdateTransition.select(".celllabel")
+          .attr("transform", "translate(3, 13)")
+          .attr("width", function(d) {
+              return Math.max(0.01, d.dx - 1);
+          })
+          .attr("height", headerHeight)
+          .text(function(d) {
+              return d.name;
+          });
+
+  // remove transition
+  parentCells.exit()
+          .remove();
+
+  // create children cells
+  var childrenCells = treemapsvg.selectAll("g.cell.child")
+          .data(children, function(d) {
+              return "c-" + d.id;
+          });
+  // enter transition
+  var childEnterTransition = childrenCells.enter()
+          .append("g")
+          .attr("class", "cell child")                                     
+          .on("click", function(d) {
+              zoom(node === d.parent ? root : d.parent);
+          });
+  childEnterTransition.append("rect")
+          .classed("background", true)
+          .style("fill", function(d) {
+            if(_.contains(top20, d.Sponsor))
+              return colorTreemap(d.Sponsor);
+            else
+              return "#f9f9f9";
+          });
+  childEnterTransition.append('text')
+          .attr("class", "celllabel")
+          .attr('x', function(d) {
+              return d.dx / 2;
+          })
+          .attr('y', function(d) {
+              return d.dy / 2;
+          })
+          .attr("dy", ".35em")
+          .attr("text-anchor", "middle")
+          .style("display", "none")
+          .text(function(d) {
+              if (d.children != undefined)//if it is not a leaf node
                 return d.name;
-            });
+              else  //if it is a leaf node
+                return ;//d.Sponsor;
+          });/*
+          .style("opacity", function(d) {
+              d.w = this.getComputedTextLength();
+              return d.dx > d.w ? 1 : 0;
+          });*/
 
-    // update transition
-    var parentUpdateTransition = parentCells.transition().duration(transitionDuration);
-    parentUpdateTransition.select(".cell")
-            .attr("transform", function(d) {
-                return "translate(" + d.dx + "," + d.y + ")";
-            });
-    parentUpdateTransition.select("rect")
-            .attr("width", function(d) {
-                return Math.max(0.01, d.dx - 1);
-            })
-            .attr("height", headerHeight)
-            .style("fill", headerColor);
-    parentUpdateTransition.select(".celllabel")
-            .attr("transform", "translate(3, 13)")
-            .attr("width", function(d) {
-                return Math.max(0.01, d.dx - 1);
-            })
-            .attr("height", headerHeight)
-            .text(function(d) {
-                return d.name;
-            });
+  // update transition
+  var childUpdateTransition = childrenCells.transition().duration(transitionDuration);
+  childUpdateTransition.select(".cell")
+          .attr("transform", function(d) {
+              return "translate(" + d.x  + "," + d.y + ")";
+          });
+  childUpdateTransition.select("rect")
+          .attr("width", function(d) {
+              return Math.max(0.01, d.dx - 1);
+          })
+          .attr("height", function(d) {
+              return (d.dy - 1);
+          })
+          .style("fill", function(d) {
+              if (d.children != undefined)//if it is not a leaf node
+                return color(d.parent.name);
+              else  //if it is a leaf node
+                if(_.contains(top20, d.Sponsor))
+                  return colorTreemap(d.Sponsor);
+                else
+                  return "#f9f9f9";
+          });
+  childUpdateTransition.select(".celllabel")
+          .attr('x', function(d) {
+              return d.dx / 2;
+          })
+          .attr('y', function(d) {
+              return d.dy / 2;
+          })
+          .attr("dy", ".35em")
+          .attr("text-anchor", "middle")
+          .style("display", "none")
+          .text(function(d) {
+              if (d.children != undefined)//if it is not a leaf node
+                return color(d.parent.name);
+              else  //if it is a leaf node
+                return ; //color(d.Sponsor);
+          });/*
+          .style("opacity", function(d) {
+              d.w = this.getComputedTextLength();
+              return d.dx > d.w ? 1 : 0;
+          });*/
 
-    // remove transition
-    parentCells.exit()
-            .remove();
+        // exit transition
+        childrenCells.exit()
+                .remove();
 
-    // create children cells
-    var childrenCells = treemapsvg.selectAll("g.cell.child")
-            .data(children, function(d) {
-                return "c-" + d.id;
-            });
-    // enter transition
-    var childEnterTransition = childrenCells.enter()
-            .append("g")
-            .attr("class", "cell child")                                     
-            .on("click", function(d) {
-                zoom(node === d.parent ? root : d.parent);
-            });
-    childEnterTransition.append("rect")
-            .classed("background", true)
-            .style("fill", function(d) {
-              if(_.contains(top20, d.Sponsor))
-                return colorTreemap(d.Sponsor);
-              else
-                return "#f9f9f9";
-            });
-    childEnterTransition.append('text')
-            .attr("class", "celllabel")
-            .attr('x', function(d) {
-                return d.dx / 2;
-            })
-            .attr('y', function(d) {
-                return d.dy / 2;
-            })
-            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .style("display", "none")
-            .text(function(d) {
-                if (d.children != undefined)//if it is not a leaf node
-                  return d.name;
-                else  //if it is a leaf node
-                  return ;//d.Sponsor;
-            });/*
-            .style("opacity", function(d) {
-                d.w = this.getComputedTextLength();
-                return d.dx > d.w ? 1 : 0;
-            });*/
+        zoom(node);
 
-    // update transition
-    var childUpdateTransition = childrenCells.transition().duration(transitionDuration);
-    childUpdateTransition.select(".cell")
-            .attr("transform", function(d) {
-                return "translate(" + d.x  + "," + d.y + ")";
-            });
-    childUpdateTransition.select("rect")
-            .attr("width", function(d) {
-                return Math.max(0.01, d.dx - 1);
-            })
-            .attr("height", function(d) {
-                return (d.dy - 1);
-            })
-            .style("fill", function(d) {
-                if (d.children != undefined)//if it is not a leaf node
-                  return color(d.parent.name);
-                else  //if it is a leaf node
-                  if(_.contains(top20, d.Sponsor))
-                    return colorTreemap(d.Sponsor);
-                  else
-                    return "#f9f9f9";
-            });
-    childUpdateTransition.select(".celllabel")
-            .attr('x', function(d) {
-                return d.dx / 2;
-            })
-            .attr('y', function(d) {
-                return d.dy / 2;
-            })
-            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .style("display", "none")
-            .text(function(d) {
-                if (d.children != undefined)//if it is not a leaf node
-                  return color(d.parent.name);
-                else  //if it is a leaf node
-                  return ; //color(d.Sponsor);
-            });/*
-            .style("opacity", function(d) {
-                d.w = this.getComputedTextLength();
-                return d.dx > d.w ? 1 : 0;
-            });*/
+  //top20 = topSponsors(20, grant_sponsors);
+        
+  treemap_constructed = true;
 
-          // exit transition
-          childrenCells.exit()
-                  .remove();
-
-          zoom(node);
-
-    top20 = topSponsors(20);
-          
-    treemap_constructed = true;
-
-  });//end get
 }//end constructtreemap
 
 function tick () {
@@ -1126,7 +1244,7 @@ function zoom(d) {
 }
 
 
-function topSponsors (topNum) {
+function topSponsors (topNum, grantSponsors, grants) {
   var temp = _.extend({}, grantSponsors);
   temp = _.invert(temp);
 
