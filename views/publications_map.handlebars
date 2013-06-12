@@ -204,11 +204,28 @@
         </div>   
         <h3>scope</h3><img src="img/info.png"></img><hr>
          <div class="action">
-    <!--       <h4>Year: </h4><br><div id="slider"></div>-->   
-          <p>By Year: </p>
-          <input id="yearSlider" type="range" min ="2008" max="2013" step ="1"  value="2013" /><br>
-          <p>include nodes</p>
-          <input type="checkbox" id="scopeNodes"></input><br>
+<!--             <p>
+              <label for="yearSlider">By Year</label>
+              <input type="text" id="yearSlider" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>      
+            <div id="scopeSlider">
+            </div>   -->              
+          <ul class="actionlist">
+<!--             <li>
+              <input id="yearSlider" type="range" min ="2008" max="2013" step ="1"  value="2013" />
+              <label for="yearSlider">By Year</label>
+            </li> -->     
+            <li>
+              <input type="text" id="scopebegin" style="border: 0; color: #f6931f; font-weight: bold; float:left; position: relative;top: -25px;"/>
+              <input type="text" id="scopeend" style="border: 0; color: #f6931f; font-weight: bold; float:right; position: relative;top: -25px;"/>                           
+              <div id="scopeSlider">
+              </div>   
+            </li>
+            <li>
+              <input type="checkbox" id="scopeNodes"></input> 
+              <label for="scopeNodes">include nodes</label>
+            </li>
+          </ul>
         </div>
         
 <!--         <h3>gather</h3><img src="img/info.png"></img><hr>
@@ -337,6 +354,13 @@ $(function() {
 
 $(document).ready(function() {
 
+  //for icheckbox
+  $('input').iCheck({
+    checkboxClass: 'icheckbox_square-blue',
+    radioClass: 'iradio_square-blue',
+    //increaseArea: '10%' // optional
+  });
+
   //for the sliding divs in the action panel
   //gets every div that is a child of networkactions and hides it
   $('#networkactions:eq(0)> div').hide();
@@ -402,6 +426,13 @@ $( "#networkyearrange" ).slider({
 });
 $( "#networkyear" ).val( $( "#networkyearrange" ).slider( "values", 0 ) +
   " - " + $( "#networkyearrange" ).slider( "values", 1 ) );
+
+
+$("#scopeSlider").slider({
+
+});
+
+
 
 $("#filterdepartments").chosen().change( function () {
   var removed = _.difference(filterdepartmentsvisible, $("#filterdepartments").val()); //if a value was removed, this will not be empty
@@ -586,7 +617,9 @@ var deptCircle;
 var deptCircles = []; //contains information about the circles used for departments
 
 
-var color10 = d3.scale.ordinal().range(["#00ffff", "#ff9900", "#0100b3", "#9c9284", "#ffff4e", "#ff0000", "#333333", "#ff00ff", "#41924B", "#cc0000"]);
+//var color10 = d3.scale.ordinal().range(["#00ffff", "#ff9900", "#0100b3", "#9c9284", "#ffff4e", "#ff0000", "#333333", "#ff00ff", "#41924B", "#cc0000"]);
+
+var color10 = d3.scale.category10();
 
 var science_faculty_members = [];
 var science_faculty_members_unique = [];
@@ -848,7 +881,7 @@ $('#filterlinks').change(function () {
 
 //listens to the slider for scoping by year
 //
-$('#yearSlider').change(function () {
+$('#scopeSlider').change(function () {
   yearSelected = this.value;
 
   d3.selectAll("line.link").each( function () {

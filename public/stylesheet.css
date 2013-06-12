@@ -175,7 +175,7 @@ blockquote, q {
 }
 
 .vizarea{
-  width: 95%;
+  width: 98%;
   margin: auto;
   position: relative;
 }
@@ -392,7 +392,7 @@ h1 {
 button {
     /*padding: 1.15em 1.75em;*/
     height: 4em;
-    background: #3399FF;
+    background: rgb(36,137,197);
     border: 0;
     color: white;
     text-transform: uppercase;
@@ -426,7 +426,7 @@ for matrix
   margin: auto;
   float: left;
   margin-bottom: 30px;
-  width: 70%;
+  width: 72%;
   min-height: 800px;
   border: 1px solid #ebebeb;
 }
@@ -708,25 +708,25 @@ for matrix
 
 #actionpanel h2 {
   font-family: 'Helvetica Neue';
-  color: gray;
+  color: black;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-weight: lighter;
+  font-weight: 200;
   margin-bottom: 15px;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 /*h3 is for the action names
 */#actionpanel h3 {
   font-family: 'Helvetica Neue';
-  color: #336699;
+  color: black;
   letter-spacing: 0.1em;
   text-align: left;
   font-weight: 300;
   display: inline-block;
   margin-top: 20px;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 #actionpanel h3:hover {
@@ -743,16 +743,31 @@ for matrix
 }
 
 
-
 /*these are the actions that are in the actionpanel
 */div.action {
   background-color: white;
   padding: 20px;
   border: 1px solid #eeeeee;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  width: 90%;
+/*  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;*/
+/*  width: 90%;
+*/}
+
+.actionlist li {
+  font-size: 13px;
+  font-weight: 400;
+  padding: 20px 0px;
 }
+
+.actionlist label {
+  position: relative;
+  top: -18px;
+  padding-left: 35px;
+  color: rgb(185,185,185);
+  letter-spacing: 0.1em;
+  font-size: 15px;
+}
+
 
 /*========================================================================  
   sankey diagram
@@ -1372,17 +1387,17 @@ body .ui-tooltip {
   position: relative;
   text-align: left;
   border:  1px solid silver;
-  border-radius: 3px;
-}
+/*  border-radius: 2px;
+*/}
 .ui-slider .ui-slider-handle {
   position: absolute;
   z-index: 2;
-  width: 1.3em;
-  height: 1.3em;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
-  background: silver;
-  border:  1px solid silver;
-  border-radius: 3px;
+  background: rgb(36,137,197);
+/*  border:  1px solid silver;*/  
+  border-radius: 2px;
 }
 .ui-slider .ui-slider-range {
   position: absolute;
@@ -1400,10 +1415,10 @@ body .ui-tooltip {
 }
 
 .ui-slider-horizontal {
-  height: 0.9em;
+  height: 0.5em;
 }
 .ui-slider-horizontal .ui-slider-handle {
-  top: -.3em;
+  top: -.6em;
   margin-left: -.6em;
 }
 .ui-slider-horizontal .ui-slider-range {
@@ -1537,8 +1552,8 @@ body .ui-tooltip {
   padding: 3px 5px;
 }
 .ui-widget-content {
-  border: 1px solid #aaaaaa/*{borderColorContent}*/;
-  background: #ffffff/*{bgColorContent}*/ url(images/ui-bg_flat_75_ffffff_40x100.png)/*{bgImgUrlContent}*/ 50%/*{bgContentXPos}*/ 50%/*{bgContentYPos}*/ repeat-x/*{bgContentRepeat}*/;
+  border: 2px solid rgb(230,230,230)/*{borderColorContent}*/;
+  background: rgb(243,243,243)/*{bgColorContent}*/ url(images/ui-bg_flat_75_ffffff_40x100.png)/*{bgImgUrlContent}*/ 50%/*{bgContentXPos}*/ 50%/*{bgContentYPos}*/ repeat-x/*{bgContentRepeat}*/;
   color: #222222/*{fcContent}*/;
   font-size: 11px;
 }
@@ -1546,8 +1561,8 @@ body .ui-tooltip {
   color: #222222/*{fcContent}*/;
 }
 .ui-widget-header {
-  border: 1px solid #aaaaaa/*{borderColorHeader}*/;
-  background: #cccccc/*{bgColorHeader}*/ url(images/ui-bg_highlight-soft_75_cccccc_1x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/;
+  border: 2px solid rgb(230,230,230)/*{borderColorHeader}*/;
+  background: rgb(243,243,243)/*{bgColorHeader}*/ url(images/ui-bg_highlight-soft_75_cccccc_1x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/;
   color: #222222/*{fcHeader}*/;
   font-weight: bold;
 }

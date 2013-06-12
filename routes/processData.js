@@ -169,7 +169,7 @@ function process3 (res) {
 			//for the publication data
 			function(callback){
 				csv()
-					.from.stream(fs.createReadStream('./data/Pubs.csv'), {escape: '\\'})
+					.from.stream(fs.createReadStream('./data/Pubs.csv'))
 					.on('record', function(row,index){
 						var temp = {};
 						  if (index == 0){
@@ -193,7 +193,7 @@ function process3 (res) {
 						});
 					})
 					.on('error', function(error){
-						callback(error.message, 'Pubs.csv')
+						callback(error.message, ' <br><br> <h2>Error reading Pubs.csv</h2>')
 					 });
 			}
 			],
@@ -202,7 +202,7 @@ function process3 (res) {
 		 function (err, results){
 		 	if (err){
 		 		console.log("ERROR on " + results + ": " + JSON.stringify(err));
-		 		res.send("ERROR on " + results + ": " + JSON.stringify(err));}
+		 		res.send("ERROR on " + results + "Error message: " + JSON.stringify(err) + "<br>Please check the formatting of the data.");}
 		 	else {
 		 		console.log("");			 			 			 		
 		 		console.log("^^^^^------- All CSV data read and saved to database successfully -------^^^^^");
@@ -361,6 +361,12 @@ function process2 (res, results) {
 							    authors2 = publications_science[row_num2].Authors;
 							    autharr2 = authors2.split("; ");
 							    pubyear = parseInt(publications_science[row_num2].Year);
+							    var type = publications_science[row_num2].Type;
+							    var title = publications_science[row_num2].Title;
+							    var outlet = publications_science[row_num2].SourceTitle;
+							    var citations = publications_science[row_num2].CitationCount;
+							    var url = publications_science[row_num2].URL;
+							    var datafrom = publications_science[row_num2].DataFrom;
 
 							    for (author_num2 in autharr2){
 							      var source = autharr2[author_num2].substring(0, autharr2[author_num2].indexOf(' ') + 2);
@@ -374,7 +380,7 @@ function process2 (res, results) {
 							          ////check for duplicates////
 							          //var instances = 0;
 							          //check if already exists...instances += numDuplicates;
-							          links_science.push({"source":source, "target":target, "value":0, "year":pubyear, "type":"pub"});
+							          links_science.push({"source":source, "target":target, "value":0, "year":pubyear, "type":type, "title":title, "outlet":outlet, "citations":citations, "URL":url, "from":datafrom});
 
 							          counter += 1;
 							        } while ((target != autharr2[autharr2.length-1].substring(0, autharr2[author_num2].indexOf(' ') + 2)) && ((counter + author_num2) < autharr2.length)); //while target is not the last element and we don't go out of bounds
