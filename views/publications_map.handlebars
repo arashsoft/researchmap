@@ -137,41 +137,54 @@
 
     <div id="actionpanel">
       <h2>Action Panel</h2>
-        <p>Select actions that you would like to perform on the visualization. Click on an action to expand its options.</p>
+        <!-- <p>Select actions that you would like to perform on the visualization. Click on an action to expand its options.</p> -->
       
       <div id="networkactions">
 
         <h3>automated tasks</h3><img src="img/info.png"></img><hr>
         <div class="action">
-          <select id="tasks" data-placeholder="Choose an automated task..." class="chzn-select" style="width:150px;" tabindex="1"> 
+          <select id="tasks" data-placeholder="Choose an automated task..." class="chzn-select" style="width:50%;" tabindex="1"> 
             <option value=""></option>
-            <option value="ii_clusters">Identify and isolate clusters</option>
+            <option value="ii_clusters">identify and isolate clusters</option>
             <option value="department">task2</option>
           </select>
         </div>
 
         <h3>arrange</h3><img src="img/info.png"></img><hr>
         <div class="action">
-          <select id="arrange" data-placeholder="Arrange network according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
+          <select id="arrange" data-placeholder="Arrange network according to..." class="chzn-select" style="width:50%;" tabindex="2"> 
             <option value=""></option>
-            <option value="random">Random</option>
-            <option value="department">Department</option>
+            <option value="random">random</option>
+            <option value="department">department</option>
           </select>
         </div>
         
         <h3>filter</h3><img src="img/info.png"></img><hr>
         <div class="action">
-            <p>Departments:</p><select id="filterdepartments" data-placeholder="Click to add departments" style="width:350px;" multiple class="chzn-select" tabindex="8">
+            <p>departments:</p><select id="filterdepartments" data-placeholder="Click to add departments" style="width:100%;" multiple class="chzn-select" tabindex="8">
               <option value=""></option>
           </select>
-            <p>
-              <label for="networkyear">Year range:</label>
-              <input type="text" id="networkyear" style="border: 0; color: #f6931f; font-weight: bold;" />
-            </p>
+
+          <ul class="actionlist">
+            <p>links</p>
+            <li>
+              <input type="checkbox" checked id="filterCo_pubs"></input> 
+              <label for="filterCo_pubs">co-publications</label>
+            </li>
+            <li>
+              <input type="checkbox" checked id="filterCo_sups"></input> 
+              <label for="filterCo_sups">co-supervisions</label>
+            </li>            
+          </ul>
+          <ul class="actionlist">
+            <p>years</p>
+            <label for="networkyear">range:</label>
+            <input type="text" id="networkyear" style="border: 0; color: #f6931f; font-weight: bold;" />
           <div id="networkyearrange">
           </div>
-            <p>Show: </p>
-            <select id="filterlinks" class="chzn-select" style="width:150px;" tabindex="2"> 
+        </ul>
+            <p>show: </p>
+            <select id="filterlinks" class="chzn-select" style="width:50%;" tabindex="2"> 
                 <option value="all" selected>All Faculty Members</option>
                 <option value="withlinks">Only co-publications</option>
           </select>
@@ -179,10 +192,10 @@
 
         <h3>granularity</h3><img src="img/info.png"></img><hr>
         <div class="action">
-          <select id="granularity" data-placeholder="View at level of ..." class="chzn-select" style="width:150px;" tabindex="2"> 
+          <select id="granularity" data-placeholder="View at level of ..." class="chzn-select" style="width:50%;" tabindex="2"> 
             <option value=""></option>
-            <option value="individuals">Individuals</option>
-            <option value="departments">Departments</option>
+            <option value="individuals">individuals</option>
+            <option value="departments">departments</option>
           </select><br>
         </div>    
         <h3>other</h3><img src="img/info.png"></img><hr>
@@ -236,8 +249,8 @@
         <div class="action">
           <select id="sizeNodes" data-placeholder="Size nodes by ..." class="chzn-select" style="width:150px;" tabindex="2"> 
             <option value=""></option>
-            <option value="copubs">Co-Publications</option>
-            <option value="pubs">Publications</option>
+            <option value="copubs">co-Publications</option>
+            <option value="pubs">publications</option>
           </select><br>
           <!-- <br>  
           <input type="checkbox" id="fisheye" value="distortion"><h4>Fisheye Distortion</h4></input><br> -->
@@ -432,6 +445,25 @@ $("#scopeSlider").slider({
 
 });
 
+//checkboxes
+$('input#filterCo_sups').on('ifChecked', function(){
+  d3.selectAll("line.link").each( function () {
+    if (this.__data__.type == "cosup") {
+      d3.select(this).style("visibility", "visible");        
+      d3.select(this).transition().duration(1000).style("opacity", 1);
+    }
+  }); 
+});
+
+$('input#filterCo_sups').on('ifUnchecked', function(){
+  d3.selectAll("line.link").each( function () {
+    if (this.__data__.type == "cosup") {
+      d3.select(this).transition().duration(1000).style("opacity", 0);
+      d3.select(this).transition().delay(1000).style("visibility", "hidden");
+    }
+  });
+});
+
 
 
 $("#filterdepartments").chosen().change( function () {
@@ -520,9 +552,9 @@ var autharr_surnames = [];
 var pubdata_filtered;
 var count1 = 0;
 var count2 = 0;
-var pubs_science = [];
-var links_science = []; //containing links where at least one node (author) is a member of the faculty of science
-var links_science_exclusive = []; //containing links where every node (author) is a member of the faculty of science
+//var pubs_science = [];
+//var links_science = []; //containing links where at least one node (author) is a member of the faculty of science
+//var links_science_exclusive = []; //containing links where every node (author) is a member of the faculty of science
 //var links_science_exclusive_unique = []; //containing links where every node (author) is a member of the faculty of science where duplicates are removed
 //var links_for_network = []; //this is a copy of links_science_exclusive_unique. A copy is needed because without one links_science_exclusive_unique will be modified while constructing the network
 var network_constructed = false;
@@ -879,6 +911,9 @@ $('#filterlinks').change(function () {
   setTimeout(function(){network_force.start()}, 1000);
 });
 
+
+
+
 //listens to the slider for scoping by year
 //
 $('#scopeSlider').change(function () {
@@ -965,7 +1000,7 @@ function constructNetwork() {
 //@return: none
 function getNetworkData (callback){
 
-  var links_for_network, science_faculty_data, departments_uniq, pub_years_uniq;
+  var links_for_network, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup;
 
   async.parallel(
     [
@@ -980,6 +1015,22 @@ function getNetworkData (callback){
           $.get('/network/links_for_network', function(result) {
             links_for_network = JSON.parse(result.links_for_network);
             store.session("links_for_network", links_for_network);
+            callback(null);
+          });
+        }
+      },
+
+      function(callback){
+        if(store.session.has("links_science_exclusive")){
+          console.log("links_science_exclusive is already in sessionStorage...no need to fetch again");
+          links_science_exclusive = store.session("links_science_exclusive");
+          callback(null);
+        }
+        else {
+          console.log("fetching links_science_exclusive...");
+          $.get('network/links_science_exclusive', function(result) {
+            links_science_exclusive = JSON.parse(result.links_science_exclusive);
+            store.session("links_science_exclusive", links_science_exclusive);
             callback(null);
           });
         }
@@ -1030,18 +1081,34 @@ function getNetworkData (callback){
             store.session("pub_years_uniq", pub_years_uniq);
             callback(null);            
           });
+        }
+      },
+
+      function(callback){
+        if(store.session.has("links_co_sup")){
+          console.log("links_co_sup is already in sessionStorage...no need to fetch again");
+          links_co_sup = store.session("links_co_sup");
+          callback(null);
+        }
+        else {
+          console.log("fetching links_co_sup");
+          $.get('network/links_co_sup', function(result){
+            links_co_sup = JSON.parse(result.links_co_sup);
+            store.session("links_co_sup", links_co_sup);
+            callback(null);
+          });
         }         
       }
     ],
 
       function(err, results){
-        callback(links_for_network, science_faculty_data, departments_uniq, pub_years_uniq);
+        callback(links_for_network, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup);
       }
     );
 }//end getNetworkData
 
 
-function buildNetwork(links_for_network, science_faculty_data, departments_uniq, pub_years_uniq){
+function buildNetwork(links_for_network, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup){
 
   $('#vizloader').hide();
 
@@ -1057,10 +1124,13 @@ function buildNetwork(links_for_network, science_faculty_data, departments_uniq,
     // .attr("value", function(d){ return d; })
     .text(function(d){ return d; });
 
+  links_combined = links_science_exclusive.concat(links_co_sup);
+
   ////////////////populate the networkviz based on the data we just got above/////////////
   network_force
     .nodes(science_faculty_data)
-    .links(links_for_network);
+    //.links(links_for_network);
+    .links(links_combined); 
 
   network_force
     .gravity(dgravity)
@@ -1071,13 +1141,19 @@ function buildNetwork(links_for_network, science_faculty_data, departments_uniq,
 
       //transition is to match the transition of the nodes
   link = networksvg.selectAll("line.link")
-      .data(links_for_network)
+      //.data(links_for_network)
+      .data(links_combined) 
     .enter().append("svg:line")
       .attr("class", "link")
-      .attr("year", function (d) { return d.year; })
       .style("visibility", "visible")
-      .style("stroke", "gray")
-      .style("stroke-width", function (d) { return d.value/4; });
+      .style("stroke", function (d) {
+        if (d.type == "cosup")
+          return "blue";
+        else
+          return "green";
+           })
+      //.style("stroke-width", function (d) { return d.value/4; });
+      .style("stroke-width", "1px");
 
   deptCircle = networksvg.selectAll("circle.dept")
     .data(deptCircles)

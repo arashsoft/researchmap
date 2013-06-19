@@ -434,6 +434,11 @@ function process2 (res, results) {
 			  							function(callback){
 					  						//remove all links that are not between authors within science at western--i.e., remove all outside/non-faculty links--and store in links_science_exclusive
 									  		links_science_exclusive = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
+
+									  		//remove duplicates
+									  		//provide an iterator function that specifies the criteria for comparison
+									  		links_science_exclusive = _.uniq(links_science_exclusive, false, function(x){ return (x.source + x.target + x.year + x.type + x.title + x.outlet); });
+
 									  		links_for_network = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 									  		links_co_supervision_converted = _.filter(links_co_supervision_converted, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 									  		db2.saveDoc('links_co_supervision_converted', {data:links_co_supervision_converted}, function(er, ok){
@@ -441,13 +446,20 @@ function process2 (res, results) {
 			  									util.puts('Saved links_co_supervision_converted to the database.');
 			  									db2.saveDoc('links_for_network', {data: links_for_network}, function(er, ok){
 			  										if (er) throw new Error(JSON.stringify(er));
-			  										util.puts('Saved links_for_network to the database.');	
-			  										callback(null);		  										
+			  										util.puts('Saved links_for_network to the database.');
+			  										////////////////////////
+			  										// TESTING: SAVING LINKS_SCIENCE TO USE AS LINKS FOR THE NETWORK
+			  										/////////////
+			  										db2.saveDoc('links_science_exclusive', {data: links_science_exclusive}, function (er, ok){
+			  											if (er) throw new Error(JSON.stringify(er));
+			  											util.puts('Saved links_science_exclusive to the database.');	
+			  											callback(null);
+			  										});		  										
 			  									});
 			  								});
 			  							},
 
-			  							//combine duplicate links
+			  							//combine duplicate links (meaning between 2 of the same authors and not necessarily the same publications???)
 			  							function(callback){
 			  								links_science_exclusive_unique = getUniqueLinks(links_science_exclusive);
 									  		links_for_network = getUniqueLinks(links_science_exclusive);
@@ -471,7 +483,7 @@ function process2 (res, results) {
 		  										.saveDoc('viz_data',
 		  											{'co_author_by_name': links_science}, function(er, ok){
 			  											if (er) throw new Error(JSON.stringify(er));
-										    			util.puts('Saved links publication data to the database.');
+										    			util.puts('Saved co_author_by_name to the database.');
 										    			callback(null);
 			  										});
 			  								},
@@ -480,7 +492,7 @@ function process2 (res, results) {
 			  										doc.links_science_exclusive = links_science_exclusive;
 			  										db2.saveDoc('viz_data', doc, function(er, ok){
 			  											if (er) throw new Error(JSON.stringify(er));
-										    			util.puts('Saved links publication data to the database.');
+										    			util.puts('Saved links_science_exclusive to the database.');
 										    			callback(null);
 			  										});
 			  									});
@@ -490,7 +502,7 @@ function process2 (res, results) {
 			  										doc.links_science_exclusive_unique = links_science_exclusive_unique;
 			  										db2.saveDoc('viz_data', doc, function(er, ok){
 			  											if (er) throw new Error(JSON.stringify(er));
-										    			util.puts('Saved links publication data to the database.');
+										    			util.puts('Saved links_science_exclusive_unique to the database.');
 										    			callback(null);
 			  										});
 			  									});
@@ -500,7 +512,7 @@ function process2 (res, results) {
 			  										doc.links_for_network = links_for_network;
 			  										db2.saveDoc('viz_data', doc, function(er, ok){
 			  											if (er) throw new Error(JSON.stringify(er));
-										    			util.puts('Saved links publication data to the database.');
+										    			util.puts('Saved links_for_network to the database.');
 										    			callback(null);
 			  										});
 			  									});
