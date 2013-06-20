@@ -141,7 +141,7 @@
       
       <div id="networkactions">
 
-        <h3>automated tasks</h3><img src="img/info.png"></img><hr>
+        <h3>automated tasks</h3><hr>
         <div class="action">
           <select id="tasks" data-placeholder="Choose an automated task..." class="chzn-select" style="width:50%;" tabindex="1"> 
             <option value=""></option>
@@ -150,7 +150,7 @@
           </select>
         </div>
 
-        <h3>arrange</h3><img src="img/info.png"></img><hr>
+        <h3>arrange</h3><hr>
         <div class="action">
           <select id="arrange" data-placeholder="Arrange network according to..." class="chzn-select" style="width:50%;" tabindex="2"> 
             <option value=""></option>
@@ -159,14 +159,14 @@
           </select>
         </div>
         
-        <h3>filter</h3><img src="img/info.png"></img><hr>
+        <h3>filter</h3><hr>
         <div class="action">
-            <p>departments:</p><select id="filterdepartments" data-placeholder="Click to add departments" style="width:100%;" multiple class="chzn-select" tabindex="8">
+            <p>departments</p><select id="filterdepartments" data-placeholder="Click to add departments" style="width:100%;" multiple class="chzn-select" tabindex="8">
               <option value=""></option>
           </select>
 
-          <ul class="actionlist">
-            <p>links</p>
+          <p>links</p>
+          <ul class="actionlist"> 
             <li>
               <input type="checkbox" checked id="filterCo_pubs"></input> 
               <label for="filterCo_pubs">co-publications</label>
@@ -174,23 +174,37 @@
             <li>
               <input type="checkbox" checked id="filterCo_sups"></input> 
               <label for="filterCo_sups">co-supervisions</label>
-            </li>            
+            </li>     
+            <li>
+              <input type="checkbox" checked id="filterGrants"></input> 
+              <label for="filterGrants">co-grants</label>
+            </li>                    
           </ul>
-          <ul class="actionlist">
-            <p>years</p>
-            <label for="networkyear">range:</label>
-            <input type="text" id="networkyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+
+          <p>years</p>
+          <label for="networkyear">range:</label>
+          <input type="text" id="networkyear" style="border: 0; color: #f6931f; font-weight: bold;" />
           <div id="networkyearrange">
           </div>
-        </ul>
-            <p>show: </p>
-            <select id="filterlinks" class="chzn-select" style="width:50%;" tabindex="2"> 
+          <p>nodes</p>
+          <ul class="actionlist"> 
+            <li>
+              <input type="radio" name="iCheck" id="filterNodesAll" checked>
+              <label for="filterCo_sups">all</label>
+            </li>
+            <li>
+              <input type="radio" name="iCheck" id="filterNodesLinks">
+              <label for="filterCo_sups">with links only</label>
+            </li>
+          </ul>
+
+<!--           <select id="filterlinks" class="chzn-select" style="width:50%;" tabindex="2"> 
                 <option value="all" selected>All Faculty Members</option>
                 <option value="withlinks">Only co-publications</option>
-          </select>
+          </select> -->
         </div>
 
-        <h3>granularity</h3><img src="img/info.png"></img><hr>
+        <h3>granularity</h3><hr>
         <div class="action">
           <select id="granularity" data-placeholder="View at level of ..." class="chzn-select" style="width:50%;" tabindex="2"> 
             <option value=""></option>
@@ -198,7 +212,7 @@
             <option value="departments">departments</option>
           </select><br>
         </div>    
-        <h3>other</h3><img src="img/info.png"></img><hr>
+        <h3>presentation</h3><hr>
         <div class="action">
               
           <form>
@@ -215,7 +229,7 @@
           </form>
         
         </div>   
-        <h3>scope</h3><img src="img/info.png"></img><hr>
+        <h3>scope</h3><hr>
          <div class="action">
 <!--             <p>
               <label for="yearSlider">By Year</label>
@@ -245,7 +259,7 @@
         <div class="action">
         </div> -->
 
-        <h3>transform</h3><img src="img/info.png"></img><hr>
+        <h3>transform</h3><hr>
         <div class="action">
           <select id="sizeNodes" data-placeholder="Size nodes by ..." class="chzn-select" style="width:150px;" tabindex="2"> 
             <option value=""></option>
@@ -256,7 +270,7 @@
           <input type="checkbox" id="fisheye" value="distortion"><h4>Fisheye Distortion</h4></input><br> -->
         </div>
         
-        <h3>translate</h3><img src="img/info.png"></img><hr>
+        <h3>translate</h3><hr>
         <div class="action">  
           <select id="translate" data-placeholder="Translate to..." class="chzn-select" style="width:150px;" tabindex="4">
             <option value=""></option>
@@ -273,7 +287,7 @@
       </div>
 
       <div id="matrixactions">
-        <h3>arrange</h3><img src="img/info.png"></img><hr>
+        <h3>arrange</h3><hr>
         <div class="action">
          <!--  <select id="order" data-placeholder="Arrange matrix according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
             <option value=""></option>
@@ -287,7 +301,7 @@
             <option value="department">by Department</option>
           </select>  <br>    
         </div> 
-        <h3>translate</h3><img src="img/info.png"></img><hr>
+        <h3>translate</h3><hr>
         <div class="action">
           <select id="translatematrix" data-placeholder="Translate to..." class="chzn-select" style="width:150px;" tabindex="4">
             <option value=""></option>
@@ -445,23 +459,247 @@ $("#scopeSlider").slider({
 
 });
 
-//checkboxes
-$('input#filterCo_sups').on('ifChecked', function(){
-  d3.selectAll("line.link").each( function () {
-    if (this.__data__.type == "cosup") {
-      d3.select(this).style("visibility", "visible");        
-      d3.select(this).transition().duration(1000).style("opacity", 1);
+//////////////////
+
+//checkboxes and radios
+
+//////////////////
+$('input#filterCo_pubs').on('ifChecked', function() {
+
+  async.series (
+    [  
+      function(callback){
+        d3.selectAll("line.link").each( function () {
+          if (this.__data__.type != "cosup" && this.__data__.type != "grant") {
+            d3.select(this).style("visibility", "visible");        
+            d3.select(this).transition().duration(1000).style("opacity", 1);
+          }
+        });
+        //wait 2000 because of the duration and delay above
+        //otherwise the next function in the series will execute too early
+        setTimeout(function(){callback(null)}, 2000);
+      },  
+
+      function(callback){
+        //if the user has already specified that only  nodes with links should be displayed
+        if ($('input#filterNodesLinks').is(':checked')){
+          d3.selectAll("circle.node").each( function () {
+          that = this;//because of the nested loop
+            var match = false;
+            d3.selectAll("line.link").each( function() {
+                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+                 match = true;
+               }
+            }); 
+            if (match == false){
+              //make the node invisible
+              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+              d3.select(this).transition().delay(300).style("visibility", "hidden");
+            }
+            else {
+              //if the current node is currently hidden
+              if (this.style.visibility == "hidden"){
+                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+                d3.select(this).style("visibility", "visible").style("opacity", 0);
+                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+              }
+            }
+          });
+        }
+      }
+    ],
+
+    //callback
+    function(err){
+      network_force.start();
     }
-  }); 
+  );
+});
+$('input#filterCo_pubs').on('ifUnchecked', function() {
+
+async.series (
+    [
+      function(callback){
+        d3.selectAll("line.link").each( function () {
+          if (this.__data__.type != "cosup" && this.__data__.type != "grant") {
+            d3.select(this).transition().duration(1000).style("opacity", 0);
+            d3.select(this).transition().delay(1000).style("visibility", "hidden");
+          }
+        });
+        //wait 2000 because of the duration and delay above 
+        //otherwise the next function in the series will execute too early
+        setTimeout(function(){callback(null)}, 2000);
+      },
+
+      function(callback){
+        //if the user has already specified that only  nodes with links should be displayed
+        if ($('input#filterNodesLinks').is(':checked')){
+          d3.selectAll("circle.node").each( function () {
+          that = this;//because of the nested loop
+            var match = false;
+            d3.selectAll("line.link").each( function() {
+                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+                 match = true;
+               }
+            }); 
+            if (match == false){
+              //make the node invisible
+              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+              d3.select(this).transition().delay(300).style("visibility", "hidden");
+              
+            }
+            else {
+              //make the node visible
+              d3.select(this).style("visibility", "visible").style("opacity", 1);
+              // d3.select(this).transition().duration(2000).style("opacity", 1);
+            }
+          });
+        }
+      }
+    ],
+
+    //callback
+    function(err){
+      network_force.start();
+    }
+  );
 });
 
-$('input#filterCo_sups').on('ifUnchecked', function(){
-  d3.selectAll("line.link").each( function () {
-    if (this.__data__.type == "cosup") {
-      d3.select(this).transition().duration(1000).style("opacity", 0);
-      d3.select(this).transition().delay(1000).style("visibility", "hidden");
+
+$('input#filterCo_sups').on('ifChecked', function(){
+
+  async.series (
+    [  
+      function(callback){
+        d3.selectAll("line.link").each( function () {
+          if (this.__data__.type == "cosup") {
+            d3.select(this).style("visibility", "visible");        
+            d3.select(this).transition().duration(1000).style("opacity", 1);
+          }
+        });
+        //wait 2000 because of the duration and delay above
+        //otherwise the next function in the series will execute too early
+        setTimeout(function(){callback(null)}, 2000);
+      },  
+
+      function(callback){
+        //if the user has already specified that only  nodes with links should be displayed
+        if ($('input#filterNodesLinks').is(':checked')){
+          d3.selectAll("circle.node").each( function () {
+          that = this;//because of the nested loop
+            var match = false;
+            d3.selectAll("line.link").each( function() {
+                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+                 match = true;
+               }
+            }); 
+            if (match == false){
+              //make the node invisible
+              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+              d3.select(this).transition().delay(300).style("visibility", "hidden");
+            }
+            else {
+              //if the current node is currently hidden
+              if (this.style.visibility == "hidden"){
+                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+                d3.select(this).style("visibility", "visible").style("opacity", 0);
+                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+              }
+            }
+          });
+        }
+      }
+    ],
+
+    //callback
+    function(err){
+      network_force.start();
     }
-  });
+  );       
+});
+$('input#filterCo_sups').on('ifUnchecked', function(){
+
+  async.series (
+    [
+      function(callback){
+        d3.selectAll("line.link").each( function () {
+          if (this.__data__.type == "cosup") {
+            d3.select(this).transition().duration(1000).style("opacity", 0);
+            d3.select(this).transition().delay(1000).style("visibility", "hidden");
+          }
+        });
+        //wait 2000 because of the duration and delay above 
+        //otherwise the next function in the series will execute too early
+        setTimeout(function(){callback(null)}, 2000);
+      },
+
+      function(callback){
+        //if the user has already specified that only  nodes with links should be displayed
+        if ($('input#filterNodesLinks').is(':checked')){
+          d3.selectAll("circle.node").each( function () {
+          that = this;//because of the nested loop
+            var match = false;
+            d3.selectAll("line.link").each( function() {
+                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+                 match = true;
+               }
+            }); 
+            if (match == false){
+              //make the node invisible
+              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+              d3.select(this).transition().delay(300).style("visibility", "hidden");
+              
+            }
+            else {
+              //make the node visible
+              d3.select(this).style("visibility", "visible").style("opacity", 1);
+              // d3.select(this).transition().duration(2000).style("opacity", 1);
+            }
+          });
+        }
+      }
+    ],
+
+    //callback
+    function(err){
+      network_force.start();
+    }
+  ); 
+});
+
+$('input#filterNodesAll').on('ifChecked', function(){
+    d3.selectAll("circle.node").each( function () {
+      //if the current node is currently hidden
+      if (this.style.visibility == "hidden"){
+        //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+        d3.select(this).style("visibility", "visible").style("opacity", 0);
+        d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+      }
+   });
+  network_force.start();      
+});
+$('input#filterNodesLinks').on('ifChecked', function(){
+    d3.selectAll("circle.node").each( function () {
+    that = this;//because of the nested loop
+      var match = false;
+      d3.selectAll("line.link").each( function() {
+          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
+           match = true;
+         }
+      }); 
+      if (match == false){
+        d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0);
+        d3.select(this).transition().delay(1000).style("visibility", "hidden");
+        
+      }
+      else {
+        d3.select(this).style("visibility", "visible").style("opacity", 1);
+        // d3.select(this).transition().duration(2000).style("opacity", 1);
+      }
+    });
+    // network_force.gravity(0.02);
+
+  network_force.start();  
 });
 
 
@@ -680,16 +918,28 @@ var science_faculty_members_unique = [];
 
 $(document).ready(function() {
 
-  //populate the autocomplete search box with the science members
-      $( "#tags" ).autocomplete({
-      source: science_faculty_members_unique,
-      delay: 500,
-      minLength: 2,
-      select: function (event, ui) {
-        var name = ui.item.value;
-        highlightSelectedNode(name);
-      }
+  //to populate the search bar
+  if(store.session.has("science_names")){
+    console.log("science_names is already in sessionStorage...no need to fetch again");
+  }
+  else {
+    console.log("fetching science_names...");
+    $.get('/network/science_names', function(result) {
+      var science_names = JSON.parse(result.science_names);
+      store.session("science_names", science_names);
     });
+  }
+
+  //populate the autocomplete search box with the science members
+  $( "#tags" ).autocomplete({
+    source: store.session("science_names"),
+    delay: 500,
+    minLength: 2,
+    select: function (event, ui) {
+      var name = ui.item.value;
+      highlightSelectedNode(name);
+    }
+  });
 
   //listen to the zoom buttons 
   $('#networkzoomin').click(function() {
@@ -777,7 +1027,13 @@ $('#networkreset').click(function() {
       .attr("y2", function(d) { return d.target.y; });
   }
 
-})
+  //reset the radio buttons and checkboxes
+  $('input#filterNodesAll').iCheck('check');
+  $('input#filterGrants').iCheck('check');
+  $('input#filterCo_sups').iCheck('check');
+  $('input#filterCo_pubs').iCheck('check');
+
+});
 
 $('#arrange').change(function() {
   if(this.value == "random"){
@@ -873,43 +1129,43 @@ $('#translatematrix').change(function () {
 //listens to the filterlinks selector
 //if the user selects "All", all nodes are changed to visible
 //otherwise, nodes with no links to them are changed to hidden
-$('#filterlinks').change(function () {
-  if (this.value == "all"){
-    // 
-    d3.selectAll("circle.node").each( function () {
-      //if the current node is currently hidden
-      if (this.style.visibility == "hidden"){
-        //set it to visible, but with an opacity of 0 so that it can be gradually faded in
-        d3.select(this).style("visibility", "visible").style("opacity", 0);
-        d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
-      }
-   });
-  }
+// $('#filterlinks').change(function () {
+//   if (this.value == "all"){
+//     // 
+//     d3.selectAll("circle.node").each( function () {
+//       //if the current node is currently hidden
+//       if (this.style.visibility == "hidden"){
+//         //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+//         d3.select(this).style("visibility", "visible").style("opacity", 0);
+//         d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+//       }
+//    });
+//   }
 
-  else {
-    d3.selectAll("circle.node").each( function () {
-    that = this;//because of the nested loop
-      var match = false;
-      d3.selectAll("line.link").each( function() {
-          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
-           match = true;
-         }
-      }); 
-      if (match == false){
-        d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0);
-        d3.select(this).transition().delay(1000).style("visibility", "hidden");
+//   else {
+//     d3.selectAll("circle.node").each( function () {
+//     that = this;//because of the nested loop
+//       var match = false;
+//       d3.selectAll("line.link").each( function() {
+//           if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
+//            match = true;
+//          }
+//       }); 
+//       if (match == false){
+//         d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0);
+//         d3.select(this).transition().delay(1000).style("visibility", "hidden");
         
-      }
-      else {
-        d3.select(this).style("visibility", "visible").style("opacity", 1);
-        // d3.select(this).transition().duration(2000).style("opacity", 1);
-      }
-    });
-    // network_force.gravity(0.02);
-  }
+//       }
+//       else {
+//         d3.select(this).style("visibility", "visible").style("opacity", 1);
+//         // d3.select(this).transition().duration(2000).style("opacity", 1);
+//       }
+//     });
+//     // network_force.gravity(0.02);
+//   }
 
-  setTimeout(function(){network_force.start()}, 1000);
-});
+//   setTimeout(function(){network_force.start()}, 1000);
+// });
 
 
 
@@ -1124,7 +1380,7 @@ function buildNetwork(links_for_network, links_science_exclusive, science_facult
     // .attr("value", function(d){ return d; })
     .text(function(d){ return d; });
 
-  links_combined = links_science_exclusive.concat(links_co_sup);
+  var links_combined = links_science_exclusive.concat(links_co_sup);
 
   ////////////////populate the networkviz based on the data we just got above/////////////
   network_force
@@ -1146,11 +1402,12 @@ function buildNetwork(links_for_network, links_science_exclusive, science_facult
     .enter().append("svg:line")
       .attr("class", "link")
       .style("visibility", "visible")
-      .style("stroke", function (d) {
+      .style("stroke", "black")
+      .style("stroke-dasharray", function (d) {
         if (d.type == "cosup")
-          return "blue";
+          return "6, 4";
         else
-          return "green";
+          return "10, 0";
            })
       //.style("stroke-width", function (d) { return d.value/4; });
       .style("stroke-width", "1px");
@@ -1345,7 +1602,7 @@ function constructMatrix(){
 //@return: none
 function getMatrixData (callbackMatrix){
 
-  var links_for_matrix, science_faculty_data, departments_uniq;
+  var links_for_matrix, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup;
 
   async.parallel(
     [
@@ -1366,6 +1623,22 @@ function getMatrixData (callbackMatrix){
       },
 
       function(callback){
+        if(store.session.has("links_science_exclusive")){
+          console.log("links_science_exclusive is already in sessionStorage...no need to fetch again");
+          links_science_exclusive = store.session("links_science_exclusive");
+          callback(null);
+        }
+        else {
+          console.log("fetching links_science_exclusive...");
+          $.get('network/links_science_exclusive', function(result) {
+            links_science_exclusive = JSON.parse(result.links_science_exclusive);
+            store.session("links_science_exclusive", links_science_exclusive);
+            callback(null);
+          });
+        }
+      },
+
+      function(callback){
         if(store.session.has("science_faculty_data")){
           console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
           science_faculty_data = store.session("science_faculty_data");
@@ -1373,12 +1646,12 @@ function getMatrixData (callbackMatrix){
         }
         else {
           console.log("fetching science_faculty_data...");
-          $.get('/matrix/science_faculty_data', function(result){
+          $.get('/network/science_faculty_data', function(result){
             science_faculty_data = JSON.parse(result.science_faculty_data);
             store.session("science_faculty_data", science_faculty_data);
-            callback(null);          
+            callback(null);            
           });
-        }
+        } 
       },
 
       function(callback){
@@ -1389,26 +1662,58 @@ function getMatrixData (callbackMatrix){
         }
         else {
           console.log("fetching departments_uniq...");
-          $.get('matrix/departments_uniq', function(result){
+          $.get('network/departments_uniq', function(result){
             departments_uniq = JSON.parse(result.departments_uniq);
             store.session("departments_uniq", departments_uniq);
-            callback(null);          
+            callback(null);            
           });
         }
+      },
+
+      function(callback){
+        if(store.session.has("pub_years_uniq")){
+          console.log("pub_years_uniq is already in sessionStorage...no need to fetch again");
+          pub_years_uniq = store.session("pub_years_uniq");
+          callback(null);          
+        }
+        else {
+          console.log("fetching pub_years_uniq...");
+          $.get('network/pub_years_uniq', function(result){
+            pub_years_uniq = JSON.parse(result.pub_years_uniq);
+            store.session("pub_years_uniq", pub_years_uniq);
+            callback(null);            
+          });
+        }
+      },
+
+      function(callback){
+        if(store.session.has("links_co_sup")){
+          console.log("links_co_sup is already in sessionStorage...no need to fetch again");
+          links_co_sup = store.session("links_co_sup");
+          callback(null);
+        }
+        else {
+          console.log("fetching links_co_sup");
+          $.get('network/links_co_sup', function(result){
+            links_co_sup = JSON.parse(result.links_co_sup);
+            store.session("links_co_sup", links_co_sup);
+            callback(null);
+          });
+        }         
       }
     ],
 
-    function (err, results){
-      if (err)
-        console.log("ERROR on " + results + ": " + JSON.stringify(err));
-      callbackMatrix(links_for_matrix, science_faculty_data, departments_uniq);
+    function(err, results){
+      callbackMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup);
     }
   );
 }//end getMatrixData
 
 
 
-function buildMatrix(links_for_matrix, science_faculty_data, departments_uniq){
+function buildMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup){
+
+  var links_combined = links_science_exclusive.concat(links_co_sup);
 
   $('#vizloader').hide();  
 

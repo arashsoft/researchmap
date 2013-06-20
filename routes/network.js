@@ -41,6 +41,13 @@ exports.data = function(req, res){
 		});
 	}
 
+	else if (request == "science_names"){
+		db.getDoc('processed_data', function(err, doc){
+			if (err) console.log(err);
+			res.send({science_names: JSON.stringify(doc.lists.science_names)});
+		});
+	}	
+
 	else if (request == "links_co_sup"){
 		db.getDoc('links_co_supervision_converted', function(err, doc){
 			if (err) console.log(err);
