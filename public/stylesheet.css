@@ -679,6 +679,13 @@ for matrix
   margin-top: 30px;
 }
 
+.action label {
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 1.2em;
+  font-weight: 200;
+  color: rgb(185,185,185);
+}
+
 #actionpanel p:first-child {
 /*  margin-top: 0;
 */}
@@ -1421,7 +1428,7 @@ body .ui-tooltip {
 .ui-slider-horizontal {
   height: 0.5em;
 /*  to offset the handles protrusion
-*/  margin: 8px 10px; 
+*/  margin: 8px 6px; 
 }
 .ui-slider-horizontal .ui-slider-handle {
   top: -.6em;
@@ -1690,7 +1697,8 @@ div#VRchoice p {
 }
 
 div#VRchoice img {
-  width: 35%;
+  /*width: 35%;*/
+  height: 200px;
   padding: 20px;
   margin: 30px;
   display: inline;
@@ -1703,7 +1711,7 @@ div#VRchoice img:hover {
   border-radius: 10px;
 }
 
-div#dataLoader p {
+/*div#dataLoader p {
   line-height: 1.5;
   color: #ff9900;
   font-family: "Helvetica Neue", Arial;
@@ -1717,7 +1725,7 @@ div#dataLoader p {
 div#dataLoader img {
   margin: 50px auto;
   display: block;
-}
+}*/
 
 
 

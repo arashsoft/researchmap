@@ -69,14 +69,6 @@
     </div>
   </div>
 
-  <!-- progress bar for data loading and processing-->
-  <div style='display:none'>
-    <div id="dataLoader">    
-      <p class="textcenter">Please wait. Data is being loaded and processed.</p>
-      <img src="img/ajax-loader.gif"></img>  
-    </div>
-  </div>
-
   <!--                                   end of hidden content for lightbox                                  -->
   <!--#######################################################################################################-->
 
@@ -230,25 +222,12 @@
         
         </div>   
         <h3>scope</h3><hr>
-         <div class="action">
-<!--             <p>
-              <label for="yearSlider">By Year</label>
-              <input type="text" id="yearSlider" style="border: 0; color: #f6931f; font-weight: bold;" />
-            </p>      
-            <div id="scopeSlider">
-            </div>   -->              
-          <ul class="actionlist">
-<!--             <li>
-              <input id="yearSlider" type="range" min ="2008" max="2013" step ="1"  value="2013" />
-              <label for="yearSlider">By Year</label>
-            </li> -->     
-            <li>
-              <input type="text" id="scopebegin" style="border: 0; color: #f6931f; font-weight: bold; float:left; position: relative;top: -25px;"/>
-              <input type="text" id="scopeend" style="border: 0; color: #f6931f; font-weight: bold; float:right; position: relative;top: -25px;"/>                           
-              <div id="scopeSlider">
-              </div>   
-            </li>
-            <li>
+        <div class="action"> 
+          <label for="scopeYear">show growth up to: </label>
+          <input type="text" id="scopeYear" style="border: 0; color: #f6931f; font-weight: bold; top: -10px;"/>                          
+          <div id="scopeSlider" style="position: relative; top:10px"></div>           
+          <ul class="actionlist">    
+            <li style="margin-top: 30px">
               <input type="checkbox" id="scopeNodes"></input> 
               <label for="scopeNodes">include nodes</label>
             </li>
@@ -394,7 +373,7 @@ $(document).ready(function() {
 
   //bind a click handler to each action (i.e., each h3)
   $('#networkactions:eq(0)> h3').click(function() { 
-    $(this).next().next().next().slideToggle('fast');
+    $(this).next().next().slideToggle('fast');
    });
 
   //for the sliding divs in the action panel
@@ -403,7 +382,7 @@ $(document).ready(function() {
 
   //bind a click handler to each action (i.e., each h3)
   $('#matrixactions:eq(0)> h3').click(function() { 
-    $(this).next().next().next().slideToggle('fast');
+    $(this).next().next().slideToggle('fast');
    });
 
 
@@ -456,7 +435,67 @@ $( "#networkyear" ).val( $( "#networkyearrange" ).slider( "values", 0 ) +
 
 
 $("#scopeSlider").slider({
+  min: 2008,
+  max: 2013,
+  value: 2013,
+  slide: function( event, ui ) {
+  yearSelected = ui.value;
+  $( "#scopeYear" ).val( ui.value );
 
+  d3.selectAll("line.link").each( function () {
+    if (yearSelected < this.__data__.year ) {
+      d3.select(this).style("opacity", 0);
+      d3.select(this).style("visibility", "hidden");
+    }
+    else {
+      //only want to set opacity to 0 and then fade it in if it is not currently visible
+      if (this.style.visibility == "hidden"){
+        if ($('input#filterCo_sups').is(':checked')){
+          d3.select(this).style("visibility", "visible").style("opacity", 0);
+          d3.select(this).style("opacity", 1);
+        }
+        //if the user doesn't want to see co-supervision links
+        else {
+          if(this.__data__.type != "cosup"){
+            d3.select(this).style("visibility", "visible").style("opacity", 0);
+            d3.select(this).style("opacity", 1);
+          }
+        }
+      }
+    }
+  });
+
+  //if the user wants to include the nodes in the scoping
+  if($('#scopeNodes').is(':checked')) {
+    d3.selectAll("circle.node").each( function () {
+    that = this;//because of the nested loop
+      var match = false;
+      //compare each line (link) to the current node. if their coordinates match (i.e., the link is a connection to the node) and the link is currently visible (i.e., it has not been hidden during the scoping)
+      //then set the match boolean to true
+      //don't forget to delay 500ms 
+      d3.selectAll("line.link").each( function() {
+          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a link to the current node set the boolean flag to true
+           match = true;
+         }
+      });
+
+      if (match == false){
+        //only want to set opacity to 0 and then fade it in if it is not currently visible
+        if (this.style.visibility == "visible"){        
+          d3.select(this).style("opacity", 0);
+          d3.select(this).style("visibility", "hidden");
+        } 
+
+      }
+      else {
+        d3.select(this).style("visibility", "visible").style("opacity", 1);
+        // d3.select(this).transition().duration(2000).style("opacity", 1);
+      }
+    });
+  }
+  else
+    d3.selectAll("circle.node").style("visibility", function () { return "visible"; }); 
+  }
 });
 
 //////////////////
@@ -702,6 +741,34 @@ $('input#filterNodesLinks').on('ifChecked', function(){
   network_force.start();  
 });
 
+// $('input#scopeNodes').on('ifChecked', function() {
+//   d3.selectAll("circle.node").each( function () {
+//   that = this;//because of the nested loop
+//     var match = false;
+//     //compare each line (link) to the current node. if their coordinates match (i.e., the link is a connection to the node) and the link is currently visible (i.e., it has not been hidden during the scoping)
+//     //then set the match boolean to true
+//     //don't forget to delay 500ms 
+//     d3.selectAll("line.link").each( function() {
+//         if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a link to the current node set the boolean flag to true
+//          match = true;
+//        }
+//     });
+
+//     if (match == false){
+//       //only want to set opacity to 0 and then fade it in if it is not currently visible
+//       if (this.style.visibility == "visible"){        
+//         d3.select(this).style("opacity", 0);
+//         d3.select(this).style("visibility", "hidden");
+//       } 
+
+//     }
+//     else {
+//       d3.select(this).style("visibility", "visible").style("opacity", 1);
+//       // d3.select(this).transition().duration(2000).style("opacity", 1);
+//     }
+//   });
+// });
+
 
 
 $("#filterdepartments").chosen().change( function () {
@@ -735,7 +802,7 @@ $("#filterdepartments").chosen().change( function () {
   //when that finishes, VRchoice is loaded in the lightbox (new lightbox)
   //$('#htmltest').colorbox({iframe:true, open:true, width: "80%", height:"80%"});
   // $('#dataLoader').colorbox({inline:true, width:"30%", href:"#dataLoader", opacity:0.98, scrolling:false, open:true, overlayClose: false, fadeOut: 300, onClosed:function(){ 
-    $('#VRchoice').colorbox({inline:true, width:"70%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300 })//; } }); 
+    $('#VRchoice').colorbox({inline:true, width:"40%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300 })//; } }); 
 
 
 var filterPopulated = false;
@@ -1173,57 +1240,57 @@ $('#translatematrix').change(function () {
 //listens to the slider for scoping by year
 //
 $('#scopeSlider').change(function () {
-  yearSelected = this.value;
+  // yearSelected = this.value;
 
-  d3.selectAll("line.link").each( function () {
-    if (yearSelected < this.attributes.year.value ) {
-      d3.select(this).style("opacity", 0);
-      d3.select(this).style("visibility", "hidden");
-    }
-    else {
-      //only want to set opacity to 0 and then fade it in if it is not currently visible
-      if (this.style.visibility == "hidden"){
-        d3.select(this).style("visibility", "visible").style("opacity", 0);
-        d3.select(this).style("opacity", 1);
-      }
-    }
-  });
+  // d3.selectAll("line.link").each( function () {
+  //   if (yearSelected < this.attributes.year.value ) {
+  //     d3.select(this).style("opacity", 0);
+  //     d3.select(this).style("visibility", "hidden");
+  //   }
+  //   else {
+  //     //only want to set opacity to 0 and then fade it in if it is not currently visible
+  //     if (this.style.visibility == "hidden"){
+  //       d3.select(this).style("visibility", "visible").style("opacity", 0);
+  //       d3.select(this).style("opacity", 1);
+  //     }
+  //   }
+  // });
 
-  //if the user wants to include the nodes in the scoping
-  if($('#scopeNodes').is(':checked')) {
-    d3.selectAll("circle.node").each( function () {
-    that = this;//because of the nested loop
-      var match = false;
-      //compare each line (link) to the current node. if their coordinates match (i.e., the link is a connection to the node) and the link is currently visible (i.e., it has not been hidden during the scoping)
-      //then set the match boolean to true
-      //don't forget to delay 500ms 
-      d3.selectAll("line.link").each( function() {
-          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a link to the current node set the boolean flag to true
-           match = true;
-         }
-      });
+  // //if the user wants to include the nodes in the scoping
+  // if($('#scopeNodes').is(':checked')) {
+  //   d3.selectAll("circle.node").each( function () {
+  //   that = this;//because of the nested loop
+  //     var match = false;
+  //     //compare each line (link) to the current node. if their coordinates match (i.e., the link is a connection to the node) and the link is currently visible (i.e., it has not been hidden during the scoping)
+  //     //then set the match boolean to true
+  //     //don't forget to delay 500ms 
+  //     d3.selectAll("line.link").each( function() {
+  //         if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a link to the current node set the boolean flag to true
+  //          match = true;
+  //        }
+  //     });
 
-      if (match == false){
-        //only want to set opacity to 0 and then fade it in if it is not currently visible
-        if (this.style.visibility == "visible"){        
-          d3.select(this).style("opacity", 0);
-          d3.select(this).style("visibility", "hidden");
-        } 
+  //     if (match == false){
+  //       //only want to set opacity to 0 and then fade it in if it is not currently visible
+  //       if (this.style.visibility == "visible"){        
+  //         d3.select(this).style("opacity", 0);
+  //         d3.select(this).style("visibility", "hidden");
+  //       } 
 
-      }
-      else {
-        d3.select(this).style("visibility", "visible").style("opacity", 1);
-        // d3.select(this).transition().duration(2000).style("opacity", 1);
-      }
-    })
-  }
-  else
-    d3.selectAll("circle.node").style("visibility", function () { return "visible"; });    
+  //     }
+  //     else {
+  //       d3.select(this).style("visibility", "visible").style("opacity", 1);
+  //       // d3.select(this).transition().duration(2000).style("opacity", 1);
+  //     }
+  //   });
+  // }
+  // else
+  //   d3.selectAll("circle.node").style("visibility", function () { return "visible"; });    
 });
 
-// $('#filteryear').change(function () {
+$('#filteryear').change(function () {
 
-// });
+});
 
 
 //==========================================================================================================================
