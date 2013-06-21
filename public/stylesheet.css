@@ -435,6 +435,18 @@ for matrix
   position: absolute;
 }
 
+#animateYearPlaceholder {
+  position: absolute;
+  height: 150px;
+  width: 300px;
+  right: 32%;
+  top: 13%;
+  font-family: 'Oswald', sans-serif;
+  font-size: 10em;
+  font-weight: bold;
+  color: rgb(200,200,200);
+}
+
 #matrixviz {
   display: inline-block;
   clear: both;
