@@ -47,12 +47,12 @@
   <div class="row group">
     <div id="overview">
       <h2 class="textcenter">Co-Publication Explorer</h2>
-      <div class="options">
+<!--       <div class="options">
         Faculty:
         <select data-placeholder="Choose a Faculty..." class="chzn-select" style="width:150px;" tabindex="1"> 
           <option value="science">Science</option>
         </select>
-      </div>
+      </div> -->
     </div>
   </div>
 
@@ -146,7 +146,7 @@
 
         <h3>animate</h3><hr>
         <div class="action">
-          <p style="margin-top:10px">settings</p>
+          <p style="margin-top:10px">automatic</p>
           <label for="animateyear">year range:</label>
           <input type="text" id="animateyear" style="border: 0; color: #f6931f; font-weight: bold;" />
           <div id="animateyearrange">
@@ -157,7 +157,11 @@
               <label for="animateTime">go!</label>
             </li>
           </ul>     -->
-          <button id="animateTime" style="margin-top: 40px; position:relative; left:42%">start</button>       
+          <button id="animateTime" style="margin-top: 30px; position:relative; left:42%">start</button>      
+          <p>manual</p> 
+          <label for="animateSliderYear">year: </label>
+          <input type="text" id="animateSliderYear" style="border: 0; color: #f6931f; font-weight: bold; top: -10px;"/>                          
+          <div id="animateSlider" style="position: relative; top:10px"></div>           
         </div>
 
         <h3>arrange</h3><hr>
@@ -488,6 +492,40 @@ $( "#animateyear" ).val( $( "#animateyearrange" ).slider( "values", 0 ) +
   " - " + $( "#animateyearrange" ).slider( "values", 1 ) );
 
 
+$("#animateSlider").slider({
+  min: 2008,
+  max: 2013,
+  value: 2013,
+  slide: function( event, ui ) {
+  yearSelected = ui.value;
+  $( "#animateSliderYear" ).val( ui.value );
+
+  d3.selectAll("line.link").each( function () {
+    if (yearSelected < this.__data__.year ) {
+      d3.select(this).style("opacity", 0);
+      d3.select(this).style("visibility", "hidden");
+    }
+    else {
+      //only want to set opacity to 0 and then fade it in if it is not currently visible
+      if (this.style.visibility == "hidden"){
+        if ($('input#filterCo_sups').is(':checked')){
+          d3.select(this).style("visibility", "visible").style("opacity", 0);
+          d3.select(this).style("opacity", 1);
+        }
+        //if the user doesn't want to see co-supervision links
+        else {
+          if(this.__data__.type != "cosup"){
+            d3.select(this).style("visibility", "visible").style("opacity", 0);
+            d3.select(this).style("opacity", 1);
+          }
+        }
+      }
+    }
+  });
+}
+});
+
+
 $("#scopeSlider").slider({
   min: 2008,
   max: 2013,
@@ -563,7 +601,7 @@ $('#animateTime').click(function() {
     async.series(
       [
         function(callback){
-          $('#animateYearPlaceholder').delay(1000).text(i);
+          $('#animateYearPlaceholder').delay(3000).text(i);
           var t = d3.selectAll("line.link").each(function(){
             if (this.__data__.year != i){
                 d3.select(this).transition().duration(2500).style("opacity", 0);
@@ -607,16 +645,15 @@ $('#animateTime').click(function() {
       //callback
       function(err){
         if(i == animateend && err == 2){
-          filterNodesWithoutLinks();
+          setTimeout(function(){filterNodesWithoutLinks()}, 3000);
           clearInterval(int1);
         }
         else 
-          i+=1;      
+          i+=1;  
         }
     );
- 
-
   }, 3000);
+
 });
 
 
@@ -947,7 +984,7 @@ $("#filterdepartments").chosen().change( function () {
   //when that finishes, VRchoice is loaded in the lightbox (new lightbox)
   //$('#htmltest').colorbox({iframe:true, open:true, width: "80%", height:"80%"});
   // $('#dataLoader').colorbox({inline:true, width:"30%", href:"#dataLoader", opacity:0.98, scrolling:false, open:true, overlayClose: false, fadeOut: 300, onClosed:function(){ 
-    $('#VRchoice').colorbox({inline:true, width:"40%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300 })//; } }); 
+    $('#VRchoice').colorbox({inline:true, width:"60%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300 })//; } }); 
 
 
 var filterPopulated = false;
@@ -1619,7 +1656,7 @@ function buildNetwork(links_for_network, links_science_exclusive, science_facult
       .style("stroke", "black")
       .style("stroke-dasharray", function (d) {
         if (d.type == "cosup")
-          return "6, 4";
+          return "4, 2";
         else
           return "10, 0";
            })

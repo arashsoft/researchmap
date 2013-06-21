@@ -17,12 +17,12 @@
   <div class="row group">
     <div id="overview">
       <h2 class="textcenter">Grant Explorer</h2>
-      <div class="options">
+<!--       <div class="options">
         Faculty:
         <select data-placeholder="Choose a Faculty..." class="chzn-select" style="width:150px;" tabindex="1"> 
           <option value="science">Science</option>
         </select>
-      </div>
+      </div> -->
     </div>
   </div>
 
@@ -35,14 +35,6 @@
       <p class="textcenter">Choose a starting visualization</p>
       <img src="img/sankey.png" class="left" id="sankeychoice"></img>
       <img src="img/treemap.png" class="right" id="treemapchoice"></img>
-    </div>
-  </div>
-
-  <!-- progress bar for data loading and processing-->
-  <div style='display:none'>
-    <div id="dataLoader">    
-      <p class="textcenter">Please wait. Data is being loaded and processed.</p>
-      <img src="img/ajax-loader.gif"></img>  
     </div>
   </div>
 
@@ -87,37 +79,35 @@
     </div>
     <div id="actionpanel">
       <h2>Interaction Panel</h2>
-        <p>Listed below are the actions that are available for the displayed visualization.</p>
-      
+<!--         <p>Listed below are the actions that are available for the displayed visualization.</p>
+ -->      
       <div id="sankeyactions">
         <h3>filter</h3><img src="img/info.png"></img><hr>
         <div class="action">
-          <p>Sources:</p><select id="filtersources" data-placeholder="Click to add sources" style="width:350px;" multiple class="chzn-select" tabindex="8">
+          <p>sources</p>
+          <select id="filtersources" data-placeholder="Click to add sources" style="width:100%;" multiple class="chzn-select" tabindex="8">
               <option value=""></option>
           </select>
-          <p>Targets:</p><select id="filtertargets" data-placeholder="Click to add targets" style="width:350px;" multiple class="chzn-select" tabindex="8">
+          <p>targets</p>
+          <select id="filtertargets" data-placeholder="Click to add targets" style="width:100%;" multiple class="chzn-select" tabindex="8">
               <option value=""></option>
           </select>                   
-          <p>
-            <label for="sankeyyearbegin">Grant Begin Date:</label>
+          <p>years</p>
+            <label for="sankeyyearbegin">start date</label>
             <input type="text" id="sankeyyearbegin" style="border: 0; color: #f6931f; font-weight: bold;" />
-          </p>
+
           <div id="sankeyyearbeginrange">
           </div>
-          <p>
-            <label for="sankeyyearend">Grant End Date:</label>
+            <label for="sankeyyearend">end date</label>
             <input type="text" id="sankeyyearend" style="border: 0; color: #f6931f; font-weight: bold;" />
-          </p>          
           <div id="sankeyyearendrange">
           </div>          
         </div>
 
         <h3>fragmentation level</h3><img src="img/info.png"></img><hr>
         <div class="action">
-          <p>
-            <label for="sankeyfrag">Fragmentation Level:</label>
-            <input type="text" id="sankeyfrag" value="Faculty"/>
-          </p>
+            <label for="sankeyfrag">fragmentation level</label>
+            <input type="text" id="sankeyfrag" value="Faculty" style="border: 0; color: #f6931f; font-weight: bold;"/>
           <div id="sankeyfragslider">
           </div>
         </div>
@@ -292,7 +282,7 @@ var bubblesvgbackground = bubblesvg.append("svg:rect").attr("width", width).attr
 
 
 //load the lightbox option for VRchoice
-$('#VRchoice').colorbox({inline:true, width:"70%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300 }); 
+$('#VRchoice').colorbox({inline:true, width:"80%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300 }); 
 
 
 $(document).ready(function() {
