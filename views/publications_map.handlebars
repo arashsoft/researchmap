@@ -142,6 +142,21 @@
           </select>
         </div>
 
+        <h3>animate</h3><hr>
+        <div class="action">
+          <p style="margin-top:10px">settings</p>
+          <label for="animateyear">year range:</label>
+          <input type="text" id="animateyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="animateyearrange">
+          </div>
+          <ul class="actionlist" style="margin-top:50px"> 
+            <li style="position:relative; left:30px;">
+              <input type="checkbox" name="iCheck" id="animateTime">
+              <label for="animateTime">go!</label>
+            </li>
+          </ul>           
+        </div>
+
         <h3>arrange</h3><hr>
         <div class="action">
           <select id="arrange" data-placeholder="Arrange network according to..." class="chzn-select" style="width:50%;" tabindex="2"> 
@@ -153,9 +168,17 @@
         
         <h3>filter</h3><hr>
         <div class="action">
-            <p>departments</p><select id="filterdepartments" data-placeholder="Click to add departments" style="width:100%;" multiple class="chzn-select" tabindex="8">
-              <option value=""></option>
-          </select>
+          <p>nodes</p>
+          <ul class="actionlist"> 
+            <li>
+              <input type="radio" name="iCheck" id="filterNodesAll" checked>
+              <label for="filterCo_sups">all</label>
+            </li>
+            <li>
+              <input type="radio" name="iCheck" id="filterNodesLinks">
+              <label for="filterCo_sups">with links only</label>
+            </li>
+          </ul>          
 
           <p>links</p>
           <ul class="actionlist"> 
@@ -178,22 +201,12 @@
           <input type="text" id="networkyear" style="border: 0; color: #f6931f; font-weight: bold;" />
           <div id="networkyearrange">
           </div>
-          <p>nodes</p>
-          <ul class="actionlist"> 
-            <li>
-              <input type="radio" name="iCheck" id="filterNodesAll" checked>
-              <label for="filterCo_sups">all</label>
-            </li>
-            <li>
-              <input type="radio" name="iCheck" id="filterNodesLinks">
-              <label for="filterCo_sups">with links only</label>
-            </li>
-          </ul>
 
-<!--           <select id="filterlinks" class="chzn-select" style="width:50%;" tabindex="2"> 
-                <option value="all" selected>All Faculty Members</option>
-                <option value="withlinks">Only co-publications</option>
-          </select> -->
+          <p>departments</p>
+          <select id="filterdepartments" data-placeholder="Click to add departments" style="width:100%;" multiple class="chzn-select" tabindex="8">
+              <option value=""></option>
+          </select>          
+
         </div>
 
         <h3>granularity</h3><hr>
@@ -301,6 +314,8 @@ var links_for_network;
 var science_faculty_data;
 var departments_uniq;
 var pub_years_uniq;
+var animatebegin = 2008; //TODO: set to min year by default
+var animateend = 2013; //TODO: set to max year by default
 
 
 
@@ -415,23 +430,59 @@ $( "#networkyearrange" ).slider({
     $( "#networkyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
 
   d3.selectAll("line.link").each( function () {
-    if (ui.values[0] < this.attributes.year.value || this.attributes.year.value > ui.values[1] ) {
-      d3.select(this).style("opacity", 0);
-      d3.select(this).style("visibility", "hidden");
+    if (ui.values[0] <= this.__data__.year && this.__data__.year <= ui.values[1] ) {
+        d3.select(this).style("visibility", "visible").style("opacity", 1);
     }
     else {
-      //only want to set opacity to 0 and then fade it in if it is not currently visible
-      if (this.style.visibility == "hidden"){
-        d3.select(this).style("visibility", "visible").style("opacity", 0);
-        d3.select(this).style("opacity", 1);
-      }
+        d3.select(this).style("opacity", 0).style("visibility", "hidden");        
     }
   });
+
+  //if the user has specified that nodes w/o links should be hidden
+  if ($('input#filterNodesLinks').is(':checked')){
+    d3.selectAll("circle.node").each( function () {
+    that = this;//because of the nested loop
+      var match = false;
+      d3.selectAll("line.link").each( function() {
+          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+           match = true;
+         }
+      }); 
+      if (match == false){
+        //make the node invisible
+        d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+        d3.select(this).transition().delay(300).style("visibility", "hidden");
+      }
+      else {
+        //if the current node is currently hidden
+        if (this.style.visibility == "hidden"){
+          //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+          d3.select(this).style("visibility", "visible").style("opacity", 0);
+          d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+        }
+      }
+    });
+  }
+
 
   }
 });
 $( "#networkyear" ).val( $( "#networkyearrange" ).slider( "values", 0 ) +
   " - " + $( "#networkyearrange" ).slider( "values", 1 ) );
+
+$( "#animateyearrange" ).slider({
+  range: true,
+  min: 2008,
+  max: 2013,
+  values: [ 2008, 2013 ],
+  slide: function( event, ui ) {
+    $( "#animateyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+    animatebegin = ui.values[0];
+    animateend = ui.values[1];
+  }
+});
+$( "#animateyear" ).val( $( "#animateyearrange" ).slider( "values", 0 ) +
+  " - " + $( "#animateyearrange" ).slider( "values", 1 ) );
 
 
 $("#scopeSlider").slider({
@@ -503,6 +554,12 @@ $("#scopeSlider").slider({
 //checkboxes and radios
 
 //////////////////
+
+$('input#animateTime').on('ifChecked', function() {
+  //animate the network year-to-year according to specified begin and end years
+  alert("yp");
+});
+
 $('input#filterCo_pubs').on('ifChecked', function() {
 
   async.series (
@@ -1550,7 +1607,7 @@ function tick () {
         dept = d.Department;//department that the person belongs to
         deptCircles.forEach(function(d) { 
           if(d[0] == dept) {
-            xcoord = d[1]; // return the x coordinate
+            var xcoord = d[1]; // return the x coordinate
           }
         });//get the x coordinate
         return d.x += (xcoord - d.x) * network_force.alpha();
@@ -1559,7 +1616,7 @@ function tick () {
         dept = d.Department;//department that the person belongs to
         deptCircles.forEach(function(d) { 
           if(d[0] == dept) {
-            ycoord = d[2]; // return the y coordinate
+            var ycoord = d[2]; // return the y coordinate
           }
         });//get the y coordinate        
         return d.y += (ycoord - d.y) * network_force.alpha();
@@ -1616,26 +1673,38 @@ function tick () {
 
 //
 //
-// function getCenter() {
-//   departments_uniq.forEach(function (d) {
-//     deptCircles.push({"name": d, "count": 0, "xcoords": [], "ycoords": [], "deptcoords": []});  
-//   });
+function getCenter() {
+    //to populate the search bar
+  if(store.session.has("departments_uniq")){
+    console.log("departments_uniq is already in sessionStorage...no need to fetch again");
+  }
+  else {
+    console.log("fetching departments_uniq...");
+    $.get('/network/departments_uniq', function(result) {
+      var departments_uniq = JSON.parse(result.departments_uniq);
+      store.session("departments_uniq", departments_uniq);
+    });
+  }
 
-//   d3.selectAll("circle.node").each( function () {
-//     that = this;
-//     nodeDept = this.attributes.department.value;
-//     deptCircles.forEach (function(n) {
-//       if (nodeDept == n.name){
-//         n.count += 1;
-//         n.xcoords.push(that.attributes.cx);
-//         n.ycoords.push(that.attributes.yx);
-//       }
-//     });
-//   });
+  store.session("departments_uniq").forEach(function (d) {
+    deptCircles.push({"name": d, "count": 0, "xcoords": [], "ycoords": [], "deptcoords": []});  
+  });
 
-//   //now calculate the deptcoords
+  d3.selectAll("circle.node").each( function () {
+    that = this;
+    nodeDept = this.__data__.department;
+    deptCircles.forEach (function(n) {
+      if (nodeDept == n.name){
+        n.count += 1;
+        n.xcoords.push(that.attributes.cx);
+        n.ycoords.push(that.attributes.yx);
+      }
+    });
+  });
 
-// }//end getCenter
+  //now calculate the deptcoords
+
+}//end getCenter
 
 // //getDeptCenters(9, circleOutline[0][0].r.animVal.value, circleOutline[0][0].cx.animVal.value, circleOutline[0][0].cy.animVal.value)
 // function getDeptCenters(numpoints, radius, centerx, centery) {
