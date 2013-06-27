@@ -166,7 +166,7 @@
 
         <h3>arrange</h3><hr>
         <div class="action">
-          <select id="arrange" data-placeholder="Arrange network according to..." class="chzn-select" style="width:50%;" tabindex="2"> 
+          <select id="arrange" data-placeholder="Arrange network according to..." class="chzn-select" style="width:90%;" tabindex="2"> 
             <option value=""></option>
             <option value="random">random</option>
             <option value="department">department</option>
@@ -597,20 +597,23 @@ $("#scopeSlider").slider({
 
 //////////////////
 $('#animateTime').click(function() {
-  var i = animatebegin;
+  var currentYear = animatebegin;
   var int1 = setInterval(function(){
     async.series(
       [
         function(callback){
-          $('#animateYearPlaceholder').delay(3000).text(i);
+          $('#animateYearPlaceholder').delay(3000).text(currentYear);
           var t = d3.selectAll("line.link").each(function(){
-            if (this.__data__.year != i){
+
+            //if the link is currently visible and its year does not match currentYear
+            if (this.style.visibility == "visible" && this.__data__.year != currentYear){
+                d3.select(this).style("stroke", "#e6e6e6");
                 d3.select(this).transition().duration(2500).style("opacity", 0);
                 d3.select(this).transition().delay(2500).style("visibility", "hidden");
             }
             else {
                 d3.select(this).style("visibility", "visible");        
-                d3.select(this).transition().duration(2500).style("opacity", 1);
+                d3.select(this).transition().duration(2500).style("opacity", 1).style("stroke", "black");
             }
           });
           callback(null);
@@ -627,6 +630,7 @@ $('#animateTime').click(function() {
             }); 
             if (match == false){
               //make the node invisible
+              d3.select(this).style("stroke", "#e6e6e6");
               d3.select(this).transition().duration(700).style("opacity", 0).attr("r", 0);
               d3.select(this).transition().delay(700).style("visibility", "hidden");
             }
@@ -645,12 +649,12 @@ $('#animateTime').click(function() {
 
       //callback
       function(err){
-        if(i == animateend && err == 2){
+        if(currentYear == animateend && err == 2){
           setTimeout(function(){filterNodesWithoutLinks()}, 3000);
           clearInterval(int1);
         }
         else 
-          i+=1;  
+          currentYear+=1;  
         }
     );
   }, 3000);
