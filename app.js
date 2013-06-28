@@ -14,6 +14,8 @@ var industry = require('./routes/industry');
 var network = require('./routes/network');
 var matrix = require('./routes/matrix');
 
+var moduleTest = require( './routes/moduleTest' );
+
 //configuration
 app.configure(function(){
 	app.set('port', process.env.PORT || 3000);
@@ -33,6 +35,9 @@ app.get("/grants", grants.main);
 app.get("/faculty", faculty.main);
 app.get("/overview", overview.main);
 app.get("/industry", industry.main);
+
+// MODULE TEST
+app.get( '/moduleTest', moduleTest.index );
 
 //if the client requests viz data
 app.get("/network/:x", network.data);

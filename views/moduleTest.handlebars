@@ -1,0 +1,15 @@
+<style>
+	.test-title {
+		color: black;
+	}
+	.test-paragraph {
+		color: red;
+	}
+</style>
+
+{{#scripts}}
+ 	<script type="text/javascript" src="js/modules/{{.}}.js"></script>
+{{/scripts}}
+
+<h1 class="test-title">{{title}}</h1>
+<p class="test-paragraph">{{{text}}}</p>
