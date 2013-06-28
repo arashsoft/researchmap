@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>ResearchMap</title>
+  <title>ResearchMap | Western University</title>
   <link rel="stylesheet" href="css/stylesheet.css">
   <link rel="stylesheet" href="css/iThing.css"/>
   <link rel="stylesheet" href="css/square/blue.css" >
@@ -47,6 +47,28 @@
       </ul> 
     </div>
     </div>  
+  </div>
+
+  <div class="navbar group">
+  <ul class="dropdown row group">
+    <li>{{#if navoverview}}<a href="overview" class='active'>Overview</a>{{else}}<a href="overview">Overview</a>{{/if}}
+    </li>
+    <li>{{#if navpub}}<a href="publications_map"  class='active'>Publications</a>{{else}} <a href="publications_map">Publications</a>{{/if}}
+    </li>
+    <li>{{#if navfaculty}}<a href="faculty" class='active'>Faculty</a>{{else}}<a href="faculty">Faculty</a>{{/if}}
+    </li>
+    <li>{{#if navgrants}}<a href="grants" class='active'>Grants</a>{{else}}<a href="grants">Grants</a>{{/if}}
+    </li>
+    <li>{{#if navindustry}}<a href="industry" class='active'>Industry</a>{{else}}<a href="industry">Industry</a>{{/if}}
+    </li>
+    <img src="img/settings.png"></img>
+  </ul>
+</div>
+
+  <div class="row group">
+    <div id="overview">
+      <h2 class="textcenter">{{maintitle}}</h2>
+    </div>
   </div>
 
 
@@ -94,3 +116,7 @@
  
 </body>
 </html>
+
+{{#scripts}}
+<script type="text/javascript"> $(".chzn-select").chosen(); $(".chzn-select-deselect").chosen({allow_single_deselect:true}); </script>
+{{/scripts}}

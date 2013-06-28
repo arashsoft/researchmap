@@ -1,11 +1,10 @@
 var express = require('express');
 var http = require('http');
 var app = express();
-//var hbs = require('hbs'),
 var exphbs = require( 'express3-handlebars' );
 
 //requirements for the routes
-var publication = require('./routes/publication');
+var publications_map = require('./routes/publications_map');
 var processData = require('./routes/processData');
 var grants = require('./routes/grants');
 var faculty = require('./routes/faculty');
@@ -13,8 +12,6 @@ var overview = require('./routes/overview');
 var industry = require('./routes/industry');
 var network = require('./routes/network');
 var matrix = require('./routes/matrix');
-
-var moduleTest = require( './routes/moduleTest' );
 
 //configuration
 app.configure(function(){
@@ -28,31 +25,26 @@ app.configure(function(){
 	app.use(express.static(__dirname + "/public"));
 });
 
-//routes
-app.get("/publications_map", publication.map);
+//routes for pages
+app.get("/publications_map", publications_map.page);
+app.get("/grants", grants.page);
+app.get("/faculty", faculty.page);
+app.get("/overview", overview.page);
+app.get("/industry", industry.page);
+
+//routes for processing data
 app.get("/processData", processData.full);
-app.get("/grants", grants.main);
-app.get("/faculty", faculty.main);
-app.get("/overview", overview.main);
-app.get("/industry", industry.main);
 
-// MODULE TEST
-app.get( '/moduleTest', moduleTest.index );
-
-//if the client requests viz data
+//routes for viz data
 app.get("/network/:x", network.data);
 app.get("/matrix/:x", matrix.data);
 app.get("/grants/:x", grants.data);
 
-
-app.get("/", function(req, res) {
-	res.render('home');
-});
+//route for default home
+app.get("/", overview.page);
 
 //server
 app.listen( 3000, function(){
 	console.log( 'server running...' );
 });
-// http.createServer(app).listen(app.get('port'), function(){
-//   console.log('Express server listening on port ' + app.get('port'));
-// });
+

@@ -59,7 +59,7 @@ exports.full = function(req, res) {
 		 				res.send("ERROR on " + results + ": " + JSON.stringify(err));
 		 			else {
 		 				//pass the response object to the function;
-		 				process3(res);
+		 				readData(res);
 		  			}
 		  		}
 		  	);//end async.series
@@ -68,7 +68,7 @@ exports.full = function(req, res) {
 }
 
 
-function process3 (res) {
+function readData (res) {
 	console.log("");
 	console.log("vvvvv---------------     Reading data from CSV files...    ---------------vvvvv");
 	console.log("");

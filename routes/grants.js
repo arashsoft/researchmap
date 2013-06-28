@@ -3,8 +3,15 @@ var couchdb = require('felix-couchdb'),
   db = client.db('researchmap');
 var async = require('async');
 
-exports.main = function(req, res){
-	res.render('grants');
+exports.page = function(req, res){
+	var data = {
+		maintitle: 'grants explorer',
+		navgrants: true,
+		scripts: [
+			'grants'
+		]
+	}
+	res.render('grants', data);
 }
 
 exports.data = function(req, res){
