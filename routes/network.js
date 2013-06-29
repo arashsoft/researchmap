@@ -20,12 +20,26 @@ exports.data = function(req, res){
 		});
 	}
 
-	else if (request == "departments_uniq"){
+	else if (request == "all_faculty_data"){
+		db.getDoc('unprocessed_data', function(err, doc){
+			if (err) console.log(err);
+			res.send({all_faculty_data: JSON.stringify(doc.all_faculty_data)});
+		});
+	}	
+
+	else if (request == "science_departments"){
 		db.getDoc('processed_data', function(err, doc){
 			if (err) console.log(err);
-			res.send({departments_uniq: JSON.stringify(doc.lists.departments)});
+			res.send({science_departments: JSON.stringify(doc.lists.science_departments)});
 		});
 	}
+
+	else if (request == "all_departments"){
+		db.getDoc('processed_data', function(err, doc){
+			if (err) console.log(err);
+			res.send({all_departments: JSON.stringify(doc.lists.all_departments)});
+		});
+	}	
 
 	else if (request == "links_science_exclusive"){
 		db.getDoc('links_science_exclusive', function(err, doc){
@@ -33,6 +47,13 @@ exports.data = function(req, res){
 			res.send({links_science_exclusive: JSON.stringify(doc.data)});
 		});
 	}
+
+	else if (request == "links_western_exclusive"){
+		db.getDoc('links_western_exclusive', function(err, doc){
+			if (err) console.log(err);
+			res.send({links_western_exclusive: JSON.stringify(doc.data)});
+		});
+	}	
 
 	else if (request == "pub_years_uniq"){
 		db.getDoc('processed_data', function(err, doc){

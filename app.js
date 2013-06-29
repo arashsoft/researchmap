@@ -5,7 +5,7 @@ var exphbs = require( 'express3-handlebars' );
 
 //requirements for the routes
 var publications_map = require('./routes/publications_map');
-var processData = require('./routes/processData');
+var processData = require('./processData');
 var grants = require('./routes/grants');
 var faculty = require('./routes/faculty');
 var overview = require('./routes/overview');

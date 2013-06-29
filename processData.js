@@ -1,3 +1,16 @@
+//TODO: look through file for 'TODO' statements and fix them!
+
+/*
+processData.js: This module deals with data processing on the server
+
+It has 3 main stages:
+(1) (re)create the database (exports.full)
+(2) read data from multiple csv files and save it to the db (function readData)
+(3) process the data and resave to the db (funciton processData)
+
+copyright Paul Parsons 2013
+*/
+
 var csv = require('csv');
 var fs = require('fs');
 var util = require('util');
@@ -7,17 +20,19 @@ var async = require('async');
 var d3 = require('d3');
 var couchdb = require('felix-couchdb'),
   client = couchdb.createClient(5984, 'localhost'),
-  db = client.db('test'),
-  db2 = client.db('researchmap');
+  db = client.db('researchmap');
 
 //vars for the processing
 var science = [];
+var allfaculty =[];
 var grants = [];
 var supervisors = [];
 var publications = [];
 //var grant_data = [];
 var publications_science = [];
+var publications_western = [];
 var links_science = [];
+var links_western = [];
 //var grants = {};
 var sankeyData = {"nodes":[], "links": []};
 var sankeyDataDepartments = {"nodes":[], "links": []};
@@ -30,26 +45,33 @@ var grantYears = [];
 var departmentProposals = {};
 
 
+/*
+This function checks if the database exists
+If the db does not exist, it gets created
+If the db does exist, it gets removed and then recreated
+*/
 exports.full = function(req, res) {
 	var headers = [];
 
 	//check if the database exists yet
 	//if no, create it
 	//if yes, delete the database and then create it -- this is for development purposes only!
-	db2.exists(function(err,exists){
+	db.exists(function(err,exists){
 		  if (!exists) {
-		    db2.create();
+		    db.create();
 		    console.log('Database created.');
 		  } 
 		  else {
 		  	async.series(
 		  		[
 		  		function(callback){
-		  			db2.remove();
+		  			db.remove();
+		  			console.log('Database removed');
 		  			callback(null, 'Database removed');
 		  		},
 		  		function(callback){
-		  			db2.create();
+		  			db.create();
+		  			console.log('Database recreated');
 		    		callback(null, 'Database recreated.');
 		  		}
 		  		],
@@ -67,15 +89,27 @@ exports.full = function(req, res) {
 	});//end of initial db operations
 }
 
+/*
+This function reads data from a number of csv files that reside in the /data directory on the server:
+- Science_Faculty.csv: a list of all the faculty members in science
+- All_Faculty.csv: all faculty members at Western
+- Rola.csv: grant data from ROLA
+- Supervisors.csv: faculty members and the graduate students that they supervise
+- Pubs.csv: publications (authors, titles, outlets, affiliations, etc.)
 
+@params: res: response object
+
+callback checks for errors. If there are no errors, the results of the data reading are passed to the function processData
+*/
 function readData (res) {
 	console.log("");
-	console.log("vvvvv---------------     Reading data from CSV files...    ---------------vvvvv");
+	console.log("Reading data from CSV files...");
 	console.log("");
 	async.series(
 		[
-			//for the faculty data
+			//for science faculty data
 			function(callback){
+				console.log("reading in science faculty data...")				
 				csv()
 					.from.stream(fs.createReadStream('./data/Science_Faculty.csv'))
 					.on('record', function(row,index){
@@ -91,7 +125,7 @@ function readData (res) {
 							}
 					})
 					.on('end', function(count){
-					  db2
+					  db
 			  			.saveDoc('unprocessed_data', {'science_faculty_data': science}, function(er, ok) {
 			    		if (er) throw new Error(JSON.stringify(er));
 			    		util.puts('Saved science_faculty_data to the database.');
@@ -103,9 +137,41 @@ function readData (res) {
 					 });
 			},
 
+			//for all faculty data
+			function(callback){
+				console.log("reading in all faculty data...")				
+				csv()
+					.from.stream(fs.createReadStream('./data/All_Faculty.csv'))
+					.on('record', function(row,index){
+						var temp = {};
+						  if (index == 0){
+						  	headers = row;
+						  }
+						  else{
+							  for (i=0; i<row.length; i++){
+							  	temp[headers[i]] = row[i];
+							  }
+								allfaculty.push(temp);
+							}
+					})
+					.on('end', function(count){
+						db.getDoc('unprocessed_data', function(err,doc){
+							doc.all_faculty_data = allfaculty;
+					  		db.saveDoc('unprocessed_data', doc, function(er, ok) {
+			    				if (er) throw new Error(JSON.stringify(er));
+			    				util.puts('Saved all_faculty_data to the database.');
+								callback(null, allfaculty);		    		
+			  				});
+						});
+					})
+					.on('error', function(error){
+						callback(error.message, 'All_Faculty.csv')
+					 });
+			},			
+
 			//for the ROLA data
 			function(callback){
-				console.log("getting ready to read in grant data...")
+				console.log("reading in grant data...")
 				csv()
 					.from.stream(fs.createReadStream('./data/ROLA.csv'))
 					.on('record', function(row,index){
@@ -121,9 +187,9 @@ function readData (res) {
 							}
 					})
 					.on('end', function(count){
-						db2.getDoc('unprocessed_data', function(err, doc){
+						db.getDoc('unprocessed_data', function(err, doc){
 							doc.grant_data = grants;
-							db2.saveDoc('unprocessed_data', doc, function(er, ok){
+							db.saveDoc('unprocessed_data', doc, function(er, ok){
 					    		if (er) throw new Error(JSON.stringify(er));
 					    		util.puts('Saved grants to the database.');
 					    		callback(null, grants);
@@ -137,6 +203,7 @@ function readData (res) {
 
 			//for the supervisor data
 			function(callback){
+				console.log("reading in supervisor data...")				
 				csv()
 					.from.stream(fs.createReadStream('./data/Supervisors.csv'))
 					.on('record', function(row,index){
@@ -152,9 +219,9 @@ function readData (res) {
 							}
 					})
 					.on('end', function(count){
-						db2.getDoc('unprocessed_data', function(err, doc){
+						db.getDoc('unprocessed_data', function(err, doc){
 							doc.supervisor_data = supervisors;
-							db2.saveDoc('unprocessed_data', doc, function(er, ok){
+							db.saveDoc('unprocessed_data', doc, function(er, ok){
 					    		if (er) throw new Error(JSON.stringify(er));
 					    		util.puts('Saved supervisor_data to the database.');
 					    		callback(null, supervisors);
@@ -168,6 +235,7 @@ function readData (res) {
 
 			//for the publication data
 			function(callback){
+				console.log("reading in publication data...")				
 				csv()
 					.from.stream(fs.createReadStream('./data/Pubs.csv'))
 					.on('record', function(row,index){
@@ -183,9 +251,9 @@ function readData (res) {
 							}
 					})
 					.on('end', function(count){
-						db2.getDoc('unprocessed_data', function(err, doc){
+						db.getDoc('unprocessed_data', function(err, doc){
 							doc.publication_data = publications;
-							db2.saveDoc('unprocessed_data', doc, function(er, ok){
+							db.saveDoc('unprocessed_data', doc, function(er, ok){
 								if (er) throw new Error(JSON.stringify(er));
 			    				util.puts('Saved pubs to the database.');
 			    				callback(null, publications);
@@ -198,29 +266,35 @@ function readData (res) {
 			}
 			],
 
-		//callback from async.parallel
+		//callback from async.series
 		 function (err, results){
 		 	if (err){
 		 		console.log("ERROR on " + results + ": " + JSON.stringify(err));
 		 		res.send("ERROR on " + results + "Error message: " + JSON.stringify(err) + "<br>Please check the formatting of the data.");}
 		 	else {
 		 		console.log("");			 			 			 		
-		 		console.log("^^^^^------- All CSV data read and saved to database successfully -------^^^^^");
-		 		process2(res, results);
+		 		console.log("All CSV data read and saved to database successfully");
+		 		processData(res, results);
 		 	}
-		 });//end async.parallel	
+		 });//end async.series	
 }
 
+/*
+This funciton processes the data the was read in readData
 
-function process2 (res, results) {
+@params: res: response object
+		 results: an array of 5 items that are results of the data reading
+*/
+function processData (res, results) {
 	console.log("");
-	console.log("vvvvv------------------        Processing data...        ------------------vvvvv");
+	console.log("beginning data processing stage...");
 	console.log("");
-	//separate the results array into its 4 objects
-	science_faculty_data = results[0];
-	grant_data = results[1];
-	supervisor_data = results[2];
-	publication_data = results[3];
+	//separate the results array into its 5 objects
+	var science_faculty_data = results[0];
+	var all_faculty_data = results[1];
+	var grant_data = results[2];
+	var supervisor_data = results[3];
+	var publication_data = results[4];
 
 	async.series(
 	 	[
@@ -232,16 +306,19 @@ function process2 (res, results) {
 		 						[
 		 						function(callback){
 								 	//extract some unique properties from the faculty list data
-							 		departmentsUnique = _.uniq(_.pluck(science_faculty_data, 'Department'));
-									namesUnique = _.uniq(_.pluck(science_faculty_data, 'Name'));
-									ranksUnique = _.uniq(_.pluck(science_faculty_data, 'Rank'));
-									contractsUnique = _.uniq(_.pluck(science_faculty_data, 'Contract'));
-									yearsUnique = _.uniq(_.pluck(publication_data, 'Rank'));
+							 		scienceDepartmentsUnique = _.uniq(_.pluck(science_faculty_data, 'Department'));
+							 		allDepartmentsUnique = _.uniq(_.pluck(all_faculty_data, 'Department'));
+									scienceNamesUnique = _.uniq(_.pluck(science_faculty_data, 'Name'));
+									allNamesUnique = _.uniq(_.pluck(all_faculty_data, 'Name'));
+									scienceRanksUnique = _.uniq(_.pluck(science_faculty_data, 'Rank'));
+									scienceContractsUnique = _.uniq(_.pluck(science_faculty_data, 'Contract'));
+									pubYearsUnique = _.uniq(_.pluck(publication_data, 'Year'));
 									callback(null);
 		 						},
 		 						function(callback){
 									//get rid of some unwanted entries
-					  				yearsUnique = _.reject(yearsUnique, function(year){ return year == "" || year == "Year"; });
+					  				pubYearsUnique = _.reject(pubYearsUnique, function(year){ return year == "" || year == "Year"; });
+					  				//TODO: remove all other bizarre entries (i.e., not integers)
 					  				callback(null);
 		 						}
 		 						],
@@ -256,19 +333,21 @@ function process2 (res, results) {
 	 				//callback
 	 				function(err){
 	 					var desc = "This document contains a number of flat lists (arrays) that have been extracted from the data read in from the csv files.";
-		  				db2
+		  				db
 		  					.saveDoc('processed_data', {
 		  						'lists': {desc: desc, 
-		  							departments: departmentsUnique, 
-			  						science_names: namesUnique,
-			  						science_ranks: ranksUnique,
-			  						science_contracts: contractsUnique,
-			  						publication_years: yearsUnique
+		  							science_departments: scienceDepartmentsUnique,
+		  							all_departments: allDepartmentsUnique, 
+			  						science_names: scienceNamesUnique,
+			  						all_names: allNamesUnique,
+			  						science_ranks: scienceRanksUnique,
+			  						science_contracts: scienceContractsUnique,
+			  						publication_years: pubYearsUnique
 		  							}}, 
 		  						function(er, ok) {
-		  						if (er) throw new Error(JSON.stringify(er));
-					    		util.puts('Saved lists to the database.');
-					    		callback(null, null);
+		  							if (er) throw new Error(JSON.stringify(er));
+					    			util.puts('Saved lists to the database.');
+					    			callback(null, null);
 		  					});
 	 				}
 	 			);
@@ -276,9 +355,11 @@ function process2 (res, results) {
 			}, //end first function
 
 			function(callback){
-				async.series(
+				console.log("in second function");
+				async.parallel(
 					[
 						function(callback){
+							console.log("processing publications_science...");
 						  	for (row_num in publication_data) {
 						    	authors = publication_data[row_num].Authors;
 						    	autharr = authors.split("; "); //make sure to include the space
@@ -286,10 +367,10 @@ function process2 (res, results) {
 							    for (author_num in autharr){
 							      var surname = autharr[author_num].substring(0, autharr[author_num].indexOf(' ') + 2); //surname and first initial
 
-							      for (i in namesUnique){
+							      for (i in scienceNamesUnique){
 							        //extract the surname and the first initial
 							        //e.g., "Lastname,Firstname MiddleInitial" will become "Lastname FirstInitial"
-							        var surname2 = namesUnique[i].substring(0,namesUnique[i].indexOf(',')) + " " + namesUnique[i].substring(namesUnique[i].indexOf(',') + 1, namesUnique[i].indexOf(',') + 2); 
+							        var surname2 = scienceNamesUnique[i].substring(0,scienceNamesUnique[i].indexOf(',')) + " " + scienceNamesUnique[i].substring(scienceNamesUnique[i].indexOf(',') + 1, scienceNamesUnique[i].indexOf(',') + 2); 
 
 							        //extract surname only
 							        //var surname2 = science_faculty_members_unique[i].substring(0,science_faculty_members_unique[i].indexOf(','));
@@ -299,28 +380,59 @@ function process2 (res, results) {
 							          publications_science.push(publication_data[row_num]);
 							        }
 							      } //end members   
+
 							    } //end authors
 							    if (row_num == publication_data.length-1)
-							    	callback(null, publications_science)
+							    	callback(null, publications_science);
+						  	}	
+						},
+
+						//do it again for all faculty at western
+						function(callback){
+							console.log("processing publications_western...");
+						  	for (row_num in publication_data) {
+						    	authors = publication_data[row_num].Authors;
+						    	autharr = authors.split("; "); //make sure to include the space
+
+							    for (author_num in autharr){
+							      var surname = autharr[author_num].substring(0, autharr[author_num].indexOf(' ') + 2); //surname and first initial
+
+							      for (i in allNamesUnique){
+							        //extract the surname and the first initial
+							        //e.g., "Lastname,Firstname MiddleInitial" will become "Lastname FirstInitial"
+							        var surname2 = allNamesUnique[i].substring(0,allNamesUnique[i].indexOf(',')) + " " + allNamesUnique[i].substring(allNamesUnique[i].indexOf(',') + 1, allNamesUnique[i].indexOf(',') + 2); 
+							        
+							        if (surname == surname2){ //we have a match
+							          //add the whole row to a new array that keeps track of the pubs with an author from western
+							          publications_western.push(publication_data[row_num]);
+							        }
+							      } //end members 
+							    } //end authors
+							    if (row_num == publication_data.length-1)
+							    	callback(null, publications_western);
 						  	}	
 						}
 					],
+
 					//callback
-						function(err, result){
-							var publications_science = result[0];
-							db2.getDoc('processed_data', function(err, doc){
-								doc.publications_science = publications_science;
-								db2.saveDoc('processed_data', doc, function(er, ok){
-							  		if (er) throw new Error(JSON.stringify(er));
-						    		util.puts('Saved science publication data to the database.');
-						    		callback(null, publications_science);					
-								});
-							});		
-						}
-				);//end async.series	
+					function(err, result){
+						var publications_science = result[0];
+						var publications_western = result[1];
+						db.getDoc('processed_data', function(err, doc){
+							doc.publications_science = publications_science;
+							doc.publications_western = publications_western;
+							db.saveDoc('processed_data', doc, function(er, ok){
+						  		if (er) throw new Error(JSON.stringify(er));
+					    		util.puts('Saved science and western publication data to the database.');
+					    		callback(null);					
+							});
+						});		
+					}
+				);//end async.parallel	
 			}, //end second function
 
 			function(callback){
+				console.log("processing co-supervision data...");
 				var co_supervision = [];
 	 			async.series(
 	 				[
@@ -344,7 +456,12 @@ function process2 (res, results) {
 							callback(null);
 						},
 
+						/*
+						contructs the "links" that are used in the network visualization (i.e., links between nodes)
+						links are for both co-supervisions and co-publications
+						*/
 	 					function(callback){
+	 						console.log("constructing the links for co-supervision...");
 							//construct the links for the co-supervision data
 							links_co_supervision = [];
 							links_co_supervision_converted = [];
@@ -355,6 +472,7 @@ function process2 (res, results) {
 								links_co_supervision_converted.push({"source":source, "target":target, "value":1, "type":"cosup"});
 							});
 
+							console.log("constructing the links for co-publications for science...");
 							//construct the "links" array to be used in the networkviz.
 							//goes through publications_science that was constructed above
 							for(row_num2 in publications_science){
@@ -395,6 +513,48 @@ function process2 (res, results) {
 						},
 
 						function(callback){
+							console.log("constructing the links for co-publications for all of western...");
+							//construct the "links" array to be used in the networkviz.
+							//whereas the above for loop goes through publications_science, this goes through publications_western
+							//there is probably a much more efficient way to do this...just no time right now
+							for(row_num2 in publications_western){
+							    authors2 = publications_western[row_num2].Authors;
+							    autharr2 = authors2.split("; ");
+							    pubyear = parseInt(publications_western[row_num2].Year);
+							    var type = publications_western[row_num2].Type;
+							    var title = publications_western[row_num2].Title;
+							    var outlet = publications_western[row_num2].SourceTitle;
+							    var citations = publications_western[row_num2].CitationCount;
+							    var url = publications_western[row_num2].URL;
+							    var datafrom = publications_western[row_num2].DataFrom;
+
+							    for (author_num2 in autharr2){
+							      var source = autharr2[author_num2].substring(0, autharr2[author_num2].indexOf(' ') + 2);
+
+							      if (source != autharr2[autharr2.length-1].substring(0, autharr2[author_num2].indexOf(' ') + 2)) { //if source is not the last one in the array
+
+							        var counter = 1;//use to keep track of the target index
+							        do {
+							          var ind = parseInt(author_num2) + counter;
+							          var target = autharr2[ind].substring(0, autharr2[ind].indexOf(' ') + 2);
+							          ////check for duplicates////
+							          //var instances = 0;
+							          //check if already exists...instances += numDuplicates;
+							          links_western.push({"source":source, "target":target, "value":0, "year":pubyear, "type":type, "title":title, "outlet":outlet, "citations":citations, "URL":url, "from":datafrom});
+
+							          counter += 1;
+							        } while ((target != autharr2[autharr2.length-1].substring(0, autharr2[author_num2].indexOf(' ') + 2)) && ((counter + author_num2) < autharr2.length)); //while target is not the last element and we don't go out of bounds
+							      } // end if
+
+							      //base case:one author...don't need to add it
+
+							    }//end inner for 
+							    if (row_num2 == publications_western.length-1)
+							    	callback(null); 
+							}//end outer for							
+						},
+
+						function(callback){
 							var links = _.toArray(links_co_supervision);
 							_.each(links, function(element1, index1){
 								_.each(science_faculty_data, function(element2, index2){
@@ -405,9 +565,10 @@ function process2 (res, results) {
 								});
 							});
 
-							  //need to convert the links_science array so that the source and target refer to elements in the science array rather than to names...this is how d3 needs it
-							  for (link in links_science){
-							    //go through the faculty list
+							console.log("converting links_science...");
+							//need to convert the links_science array so that the source and target refer to elements in the 'science' array rather than to names...this is how d3 needs it
+							for (link in links_science){
+								//go through the faculty list
 							    for (element in science){
 							      //checks if the source and target are the same as a faculty member...name has to be normalized first so it is "Lastname Firstinitial" so that they can be compared
 							      if (links_science[link].source == (science[element].Name.substring(0,science[element].Name.indexOf(',')) + " " + science[element].Name.substring(science[element].Name.indexOf(',')+1,science[element].Name.indexOf(',')+2))) {
@@ -419,14 +580,42 @@ function process2 (res, results) {
 							        links_science[link].target = parseInt(element);
 							        }
 							    }//end inner for
-							    if (link == links_science.length-1)
+							    if (link == links_science.length-1){
+							    	console.log("finished converting links_science");
+							    	callback(null);					
+							    	}		    
+							}//end outer for
+						},
+
+						function(callback){
+							console.log("converting links_western...");
+							//need to convert the links_western array so that the source and target refer to elements in the 'allfaculty' array rather than to names...this is how d3 needs it
+							for (link in links_western){
+								console.log("link: " + link + " of " + links_western.length);
+							    //go through the faculty list
+							    for (element in allfaculty){
+							      //checks if the source and target are the same as a faculty member...name has to be normalized first so it is "Lastname Firstinitial" so that they can be compared
+							      if (links_western[link].source == (allfaculty[element].Name.substring(0,allfaculty[element].Name.indexOf(',')) + " " + allfaculty[element].Name.substring(allfaculty[element].Name.indexOf(',')+1,allfaculty[element].Name.indexOf(',')+2))) {
+							          //set the source to be the index of the element ("element" in this case)
+							          links_western[link].source = parseInt(element);
+							      }
+							      if (links_western[link].target == (allfaculty[element].Name.substring(0,allfaculty[element].Name.indexOf(',')) + " " + allfaculty[element].Name.substring(allfaculty[element].Name.indexOf(',')+1,allfaculty[element].Name.indexOf(',')+2))) {
+							        //set the target to be the index of the element ("element" in this case)
+							        links_western[link].target = parseInt(element);
+							        }
+							    }//end inner for
+							    if (link == links_western.length-1){
+							    	console.log("finished converting links_western");
 							    	callback(null);
-							  }//end outer for
+							    }
+							}//end outer for
 						}
 		  			],
 
 		  			//callback
 		  			function(err){
+		  				console.log("further processing of links...");
+		  				if(err) throw new Error(JSON.stringify("Error: " + err));
 		  				async.series(
 		  					[
 			  					function(callback){
@@ -434,26 +623,33 @@ function process2 (res, results) {
 			  							function(callback){
 					  						//remove all links that are not between authors within science at western--i.e., remove all outside/non-faculty links--and store in links_science_exclusive
 									  		links_science_exclusive = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
+											//remove all links that are not between authors within western
+									  		links_western_exclusive = _.filter(links_western, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 
 									  		//remove duplicates
 									  		//provide an iterator function that specifies the criteria for comparison
 									  		links_science_exclusive = _.uniq(links_science_exclusive, false, function(x){ return (x.source + x.target + x.year + x.type + x.title + x.outlet); });
+									  		links_western_exclusive = _.uniq(links_western_exclusive, false, function(x){ return (x.source + x.target + x.year + x.type + x.title + x.outlet); });
 
 									  		links_for_network = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 									  		links_co_supervision_converted = _.filter(links_co_supervision_converted, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
-									  		db2.saveDoc('links_co_supervision_converted', {data:links_co_supervision_converted}, function(er, ok){
-			  									if (er) throw new Error(JSON.stringify(er));
+
+									  		console.log(links_co_supervision_converted);
+
+									  		db.saveDoc('links_co_supervision_converted', {data:links_co_supervision_converted}, function(er, ok){
+			  									if (er) throw new Error(JSON.stringify(er) + " on links_co_supervision_converted");
 			  									util.puts('Saved links_co_supervision_converted to the database.');
-			  									db2.saveDoc('links_for_network', {data: links_for_network}, function(er, ok){
-			  										if (er) throw new Error(JSON.stringify(er));
+			  									db.saveDoc('links_for_network', {data: links_for_network}, function(er, ok){
+			  										if (er) throw new Error(JSON.stringify(er + " on links_for_network"));
 			  										util.puts('Saved links_for_network to the database.');
-			  										////////////////////////
-			  										// TESTING: SAVING LINKS_SCIENCE TO USE AS LINKS FOR THE NETWORK
-			  										/////////////
-			  										db2.saveDoc('links_science_exclusive', {data: links_science_exclusive}, function (er, ok){
-			  											if (er) throw new Error(JSON.stringify(er));
-			  											util.puts('Saved links_science_exclusive to the database.');	
-			  											callback(null);
+			  										db.saveDoc('links_science_exclusive', {data: links_science_exclusive}, function (er, ok){
+			  											if (er) throw new Error(JSON.stringify(er  + " on links_science_exclusive"));
+			  											util.puts('Saved links_science_exclusive to the database.');
+														db.saveDoc('links_western_exclusive', {data: links_western_exclusive}, function (er, ok){
+			  												if (er) throw new Error(JSON.stringify(er + " on links_western_exclusive"));
+			  												util.puts('Saved links_western_exclusive to the database.');	
+			  												callback(null);
+			  											});			  												
 			  										});		  										
 			  									});
 			  								});
@@ -465,7 +661,7 @@ function process2 (res, results) {
 									  		links_for_network = getUniqueLinks(links_science_exclusive);
 									  		callback(null);	
 			  							}
-			  							],
+			  						],
 
 			  							//callback
 			  							function(err){
@@ -479,7 +675,7 @@ function process2 (res, results) {
 			  							[
 			  								function(callback){
 			  									//for the first entry in viz_data
-			  									db2
+			  									db
 		  										.saveDoc('viz_data',
 		  											{'co_author_by_name': links_science}, function(er, ok){
 			  											if (er) throw new Error(JSON.stringify(er));
@@ -488,9 +684,9 @@ function process2 (res, results) {
 			  										});
 			  								},
 			  								function(callback){
-			  									db2.getDoc('viz_data', function(err, doc){
+			  									db.getDoc('viz_data', function(err, doc){
 			  										doc.links_science_exclusive = links_science_exclusive;
-			  										db2.saveDoc('viz_data', doc, function(er, ok){
+			  										db.saveDoc('viz_data', doc, function(er, ok){
 			  											if (er) throw new Error(JSON.stringify(er));
 										    			util.puts('Saved links_science_exclusive to the database.');
 										    			callback(null);
@@ -498,9 +694,9 @@ function process2 (res, results) {
 			  									});
 			  								},
 			  								function(callback){
-			  									db2.getDoc('viz_data', function(err, doc){
+			  									db.getDoc('viz_data', function(err, doc){
 			  										doc.links_science_exclusive_unique = links_science_exclusive_unique;
-			  										db2.saveDoc('viz_data', doc, function(er, ok){
+			  										db.saveDoc('viz_data', doc, function(er, ok){
 			  											if (er) throw new Error(JSON.stringify(er));
 										    			util.puts('Saved links_science_exclusive_unique to the database.');
 										    			callback(null);
@@ -508,9 +704,9 @@ function process2 (res, results) {
 			  									});
 			  								},
 			  								function(callback){
-			  									db2.getDoc('viz_data', function(err, doc){
+			  									db.getDoc('viz_data', function(err, doc){
 			  										doc.links_for_network = links_for_network;
-			  										db2.saveDoc('viz_data', doc, function(er, ok){
+			  										db.saveDoc('viz_data', doc, function(er, ok){
 			  											if (er) throw new Error(JSON.stringify(er));
 										    			util.puts('Saved links_for_network to the database.');
 										    			callback(null);
@@ -614,7 +810,7 @@ function process2 (res, results) {
 						async.series(
 							[
 								function(callback){
-									db2.getDoc('processed_data', function(err, doc){
+									db.getDoc('processed_data', function(err, doc){
 										//doc.lists.grants_unique = grantsUnique;
 										doc.lists.grant_sponsors = grantSponsors;
 										doc.lists.grant_departments = grantDepartments;
@@ -622,7 +818,7 @@ function process2 (res, results) {
 										doc.lists.award_statuses = awardStatuses;
 										doc.lists.grant_year_range_begin = grantYearRangeBegin;
 										doc.lists.grant_year_range_end = grantYearRangeEnd;
-										db2.saveDoc('processed_data', doc, function(er, ok){
+										db.saveDoc('processed_data', doc, function(er, ok){
 					  						if (er) throw new Error(JSON.stringify(er));
 								    		util.puts('Saved unique grants data to the database.');
 								    		callback(null);										
@@ -630,9 +826,9 @@ function process2 (res, results) {
 									});
 				  				},
 				  				function(callback){
-									db2.getDoc('processed_data', function(err, doc){
+									db.getDoc('processed_data', function(err, doc){
 										doc.grants_not_unique = grants;
-										db2.saveDoc('processed_data', doc, function(er, ok){
+										db.saveDoc('processed_data', doc, function(er, ok){
 					  						if (er) throw new Error(JSON.stringify(er));
 								    		util.puts('Saved unique grants (not unique) data to the database.');
 								    		callback(null);										
@@ -757,10 +953,10 @@ function process2 (res, results) {
 				sankeyData["links"].push({ "source":6, "target":8, "value":0.1 });
 
 
-				db2
+				db
 				.getDoc('viz_data', function(err, doc){
 					doc.sankey_data_faculty = sankeyData;
-					db2.saveDoc('viz_data', doc, function(er, ok){
+					db.saveDoc('viz_data', doc, function(er, ok){
 						if (er) throw new Error(JSON.stringify(er));
 	    				util.puts('Saved sankey faculty data to the database.');
 	    				callback(null);
@@ -842,9 +1038,9 @@ function process2 (res, results) {
 					sankeyDataDepartments["links"].push({ "source":source, "target":target, "value":v });
 				});
 
-				db2.getDoc('viz_data', function(err, doc){
+				db.getDoc('viz_data', function(err, doc){
 					doc.sankey_data_departments = sankeyDataDepartments;
-					db2.saveDoc('viz_data', doc, function(er, ok){
+					db.saveDoc('viz_data', doc, function(er, ok){
 						 if (er) throw new Error(JSON.stringify(er));
 			    		util.puts('Saved sankey data departments to the database.');
 			    		callback(null, sankeyDataDepartments);
@@ -890,9 +1086,9 @@ function process2 (res, results) {
 
 					//callback
 					function(err){
-						db2.getDoc('viz_data', function(err, doc){
+						db.getDoc('viz_data', function(err, doc){
 							doc.treemap_data = {'nested_by_sponsor': nested_by_sponsor, 'nested_by_department': nested_by_department };
-							db2.saveDoc('viz_data', doc, function(er, ok){
+							db.saveDoc('viz_data', doc, function(er, ok){
 								if (er) throw new Error(JSON.stringify(er));
 					    		util.puts('Saved tremap data departments to the database.');
 					    		callback(null, nested_by_department);	
@@ -915,7 +1111,7 @@ function process2 (res, results) {
 		 	}
 		}
 	);//end async.series
-}//end process2
+}//end processData
 
 //takes an array of link objects and returns the same array with all duplicate links removed
 //directionality doesn't matter 

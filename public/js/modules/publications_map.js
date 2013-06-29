@@ -3,7 +3,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	var links_for_network;
 	var science_faculty_data;
-	var departments_uniq;
+	var science_departments;
 	var pub_years_uniq;
 	var animatebegin = 2008; //TODO: set to min year by default
 	var animateend = 2013; //TODO: set to max year by default
@@ -633,7 +633,7 @@ var PUBLICATIONS_MAP = (function () {
 	$("#filterdepartments").chosen().change( function () {
 	  var removed = _.difference(filterdepartmentsvisible, $("#filterdepartments").val()); //if a value was removed, this will not be empty
 	  var added = _.difference($("#filterdepartments").val(), filterdepartmentsvisible);   //if a value was added, this will not be empty
-	  var filterdepartmentshidden = _.difference(departments_uniq, $("#filterdepartments").val());
+	  var filterdepartmentshidden = _.difference(science_departments, $("#filterdepartments").val());
 	  d3.selectAll('.node').each(function (node) {
 	    if (removed == node.Department){
 	      d3.select(this).transition().duration(1000).style("opacity", 0);
@@ -668,10 +668,10 @@ var PUBLICATIONS_MAP = (function () {
 
 
 	//populates the filter area based on department data
-	function populateFilter(departments_uniq) {
+	function populateFilter(science_departments) {
 
 	  //loop through each grantDept and append it
-	  departments_uniq.forEach(function(element){
+	  science_departments.forEach(function(element){
 	      $('#filterdepartments')
 	      .append($("<option selected></option>")
 	      .attr("value",element)
@@ -699,7 +699,7 @@ var PUBLICATIONS_MAP = (function () {
 	var years = [];
 	var contractTypes = [];
 	var namesUnique = [];
-	//var departments_uniq = [];
+	//var science_departments = [];
 	//var ranksUnique = [];
 	var contractTypesUnique = [];
 	var departmentCounts = new Object();
@@ -1184,7 +1184,7 @@ var PUBLICATIONS_MAP = (function () {
 	//@return: none
 	function getNetworkData (callback){
 
-	  var links_for_network, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup;
+	  var links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, all_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup;
 
 	  async.parallel(
 	    [
@@ -1221,6 +1221,22 @@ var PUBLICATIONS_MAP = (function () {
 	      },
 
 	      function(callback){
+	        if(store.session.has("links_western_exclusive")){
+	          console.log("links_western_exclusive is already in sessionStorage...no need to fetch again");
+	          links_western_exclusive = store.session("links_western_exclusive");
+	          callback(null);
+	        }
+	        else {
+	          console.log("fetching links_western_exclusive...");
+	          $.get('network/links_western_exclusive', function(result) {
+	            links_western_exclusive = JSON.parse(result.links_western_exclusive);
+	            store.session("links_western_exclusive", links_western_exclusive);
+	            callback(null);
+	          });
+	        }
+	      },	      
+
+	      function(callback){
 	        if(store.session.has("science_faculty_data")){
 	          console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
 	          science_faculty_data = store.session("science_faculty_data");
@@ -1237,20 +1253,53 @@ var PUBLICATIONS_MAP = (function () {
 	      },
 
 	      function(callback){
-	        if(store.session.has("departments_uniq")){
-	          console.log("departments_uniq is already in sessionStorage...no need to fetch again");
-	          departments_uniq = store.session("departments_uniq");
+	        if(store.session.has("all_faculty_data")){
+	          console.log("all_faculty_data is already in sessionStorage...no need to fetch again");
+	          all_faculty_data = store.session("all_faculty_data");
 	          callback(null);          
 	        }
 	        else {
-	          console.log("fetching departments_uniq...");
-	          $.get('network/departments_uniq', function(result){
-	            departments_uniq = JSON.parse(result.departments_uniq);
-	            store.session("departments_uniq", departments_uniq);
+	          console.log("fetching all_faculty_data...");
+	          $.get('/network/all_faculty_data', function(result){
+	            all_faculty_data = JSON.parse(result.all_faculty_data);
+	            //so that it doesn't store...causing DOM exception 22 if this is uncommented
+	            //store.session("all_faculty_data", all_faculty_data);
+	            callback(null);            
+	          });
+	        } 
+	      },
+
+	      function(callback){
+	        if(store.session.has("science_departments")){
+	          console.log("science_departments is already in sessionStorage...no need to fetch again");
+	          science_departments = store.session("science_departments");
+	          callback(null);          
+	        }
+	        else {
+	          console.log("fetching science_departments...");
+	          $.get('network/science_departments', function(result){
+	            science_departments = JSON.parse(result.science_departments);
+	            store.session("science_departments", science_departments);
 	            callback(null);            
 	          });
 	        }
 	      },
+
+	      function(callback){
+	        if(store.session.has("all_departments")){
+	          console.log("all_departments is already in sessionStorage...no need to fetch again");
+	          all_departments = store.session("all_departments");
+	          callback(null);          
+	        }
+	        else {
+	          console.log("fetching all_departments...");
+	          $.get('network/all_departments', function(result){
+	            all_departments = JSON.parse(result.all_departments);
+	            store.session("all_departments", all_departments);
+	            callback(null);            
+	          });
+	        }
+	      },	      
 
 	      function(callback){
 	        if(store.session.has("pub_years_uniq")){
@@ -1286,21 +1335,22 @@ var PUBLICATIONS_MAP = (function () {
 	    ],
 
 	      function(err, results){
-	        callback(links_for_network, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup);
+	      	if (err) throw new Error(err);
+	        callback(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, all_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup);
 	      }
 	    );
 	}//end getNetworkData
 
 
-	function buildNetwork(links_for_network, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup){
+	function buildNetwork(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, all_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup){
 
 	  $('#vizloader').hide();
 
 	  //construct the legend
-	  constructNetworkLegend(departments_uniq);
+	  constructNetworkLegend(science_departments);
 
 	  //populate the filter are with departments
-	  populateFilter(departments_uniq);
+	  populateFilter(science_departments);
 
 	  var filteryears = d3.select("#matrixviz")
 	    .data(pub_years_uniq)
@@ -1312,9 +1362,9 @@ var PUBLICATIONS_MAP = (function () {
 
 	  ////////////////populate the networkviz based on the data we just got above/////////////
 	  network_force
-	    .nodes(science_faculty_data)
+	    .nodes(all_faculty_data)
 	    //.links(links_for_network);
-	    .links(links_combined); 
+	    .links(links_western_exclusive); 
 
 	  network_force
 	    .gravity(dgravity)
@@ -1326,7 +1376,7 @@ var PUBLICATIONS_MAP = (function () {
 	      //transition is to match the transition of the nodes
 	  link = networksvg.selectAll("line.link")
 	      //.data(links_for_network)
-	      .data(links_combined) 
+	      .data(links_western_exclusive) 
 	    .enter().append("svg:line")
 	      .attr("class", "link")
 	      .style("visibility", "visible")
@@ -1356,7 +1406,7 @@ var PUBLICATIONS_MAP = (function () {
 	    ;
 
 	  node = networksvg.selectAll("circle.node")
-	    .data(science_faculty_data)
+	    .data(all_faculty_data)
 	    .enter().append("svg:circle")
 	    .attr("class", "node")
 	    .attr("r", 1)
@@ -1479,18 +1529,18 @@ var PUBLICATIONS_MAP = (function () {
 	//
 	function getCenter() {
 	    //to populate the search bar
-	  if(store.session.has("departments_uniq")){
-	    console.log("departments_uniq is already in sessionStorage...no need to fetch again");
+	  if(store.session.has("science_departments")){
+	    console.log("science_departments is already in sessionStorage...no need to fetch again");
 	  }
 	  else {
-	    console.log("fetching departments_uniq...");
-	    $.get('/network/departments_uniq', function(result) {
-	      var departments_uniq = JSON.parse(result.departments_uniq);
-	      store.session("departments_uniq", departments_uniq);
+	    console.log("fetching science_departments...");
+	    $.get('/network/science_departments', function(result) {
+	      var science_departments = JSON.parse(result.science_departments);
+	      store.session("science_departments", science_departments);
 	    });
 	  }
 
-	  store.session("departments_uniq").forEach(function (d) {
+	  store.session("science_departments").forEach(function (d) {
 	    deptCircles.push({"name": d, "count": 0, "xcoords": [], "ycoords": [], "deptcoords": []});  
 	  });
 
@@ -1542,7 +1592,7 @@ var PUBLICATIONS_MAP = (function () {
 	//@return: none
 	function getMatrixData (callbackMatrix){
 
-	  var links_for_matrix, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup;
+	  var links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, links_co_sup;
 
 	  async.parallel(
 	    [
@@ -1595,16 +1645,16 @@ var PUBLICATIONS_MAP = (function () {
 	      },
 
 	      function(callback){
-	        if(store.session.has("departments_uniq")){
-	          console.log("departments_uniq is already in sessionStorage...no need to fetch again");
-	          departments_uniq = store.session("departments_uniq");
+	        if(store.session.has("science_departments")){
+	          console.log("science_departments is already in sessionStorage...no need to fetch again");
+	          science_departments = store.session("science_departments");
 	          callback(null);          
 	        }
 	        else {
-	          console.log("fetching departments_uniq...");
-	          $.get('network/departments_uniq', function(result){
-	            departments_uniq = JSON.parse(result.departments_uniq);
-	            store.session("departments_uniq", departments_uniq);
+	          console.log("fetching science_departments...");
+	          $.get('network/science_departments', function(result){
+	            science_departments = JSON.parse(result.science_departments);
+	            store.session("science_departments", science_departments);
 	            callback(null);            
 	          });
 	        }
@@ -1644,21 +1694,21 @@ var PUBLICATIONS_MAP = (function () {
 	    ],
 
 	    function(err, results){
-	      callbackMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup);
+	      callbackMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, links_co_sup);
 	    }
 	  );
 	}//end getMatrixData
 
 
 
-	function buildMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, departments_uniq, pub_years_uniq, links_co_sup){
+	function buildMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, links_co_sup){
 
 	  var links_combined = links_science_exclusive.concat(links_co_sup);
 
 	  $('#vizloader').hide();  
 
 	  //construct the legend
-	  constructMatrixLegend(departments_uniq);
+	  constructMatrixLegend(science_departments);
 
 	  var matrix = [],
 	      nodes = science_faculty_data,
@@ -1840,9 +1890,9 @@ var PUBLICATIONS_MAP = (function () {
 	//     force.resume();
 	// }
 
-	function constructNetworkLegend(departments_uniq) {
+	function constructNetworkLegend(science_departments) {
 	  var label = networklegend.selectAll(".label")
-	    .data(departments_uniq)
+	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")
 	    .text(function(d) { return d; })
@@ -1851,9 +1901,9 @@ var PUBLICATIONS_MAP = (function () {
 	    .style("background-color", function(d){ return color10(d); });
 	}
 
-	function constructMatrixLegend(departments_uniq) {
+	function constructMatrixLegend(science_departments) {
 	  var label = matrixlegend.selectAll(".label")
-	    .data(departments_uniq)
+	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")
 	    .text(function(d) { return d; })
