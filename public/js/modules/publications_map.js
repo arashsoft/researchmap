@@ -1,6 +1,10 @@
 var PUBLICATIONS_MAP = (function () { 
 	
-
+	/////////////////////////////////////////////////////////////////////
+	//
+	//				GLOBAL (MODULE) VARIABLE DECLARATIONS
+	//
+	////////////////////////////////////////////////////////////////////
 	var links_for_network;
 	var science_faculty_data;
 	var science_departments;
@@ -8,8 +12,132 @@ var PUBLICATIONS_MAP = (function () {
 	var animatebegin = 2008; //TODO: set to min year by default
 	var animateend = 2013; //TODO: set to max year by default
 
+	var dataset;
+	var pubdata;
+	var departments = [];
+	var names = [];
+	var ranks = [];
+	var years = [];
+	var contractTypes = [];
+	var namesUnique = [];
+	var contractTypesUnique = [];
+	var departmentCounts = new Object();
+	var rankCounts = new Object();
+	var contractTypesCounts = new Object();
+	var departmentsHighestCount;
+	var dcounts = []; //1D array for the department counts
+	var rcounts = []; //1D array for the rank counts
+	var ctcounts = [];
+	var males = 0;
+	var females = 0;
+	var genderDistribution = new Object();
+	var autharr_surnames = [];
+	var pubdata_filtered;
+	var count1 = 0;
+	var count2 = 0;
+	//var pubs_science = [];
+	//var links_science = []; //containing links where at least one node (author) is a member of the faculty of science
+	//var links_science_exclusive = []; //containing links where every node (author) is a member of the faculty of science
+	//var links_science_exclusive_unique = []; //containing links where every node (author) is a member of the faculty of science where duplicates are removed
+	//var links_for_network = []; //this is a copy of links_science_exclusive_unique. A copy is needed because without one links_science_exclusive_unique will be modified while constructing the network
+	var network_constructed = false;
+	var matrix_constructed = false;
+	var copubscounted = false;//to keep track of whether copubs have been counted
+
+	//
+	//Matrix variables
+	//
+
+	var margin = {top: 0, right: 0, bottom: 10, left: 180},
+	    matrix_margin = {top: 100, right: 0, bottom: 10, left: 100},
+	    width = 350,
+	    height = 250,
+	    matrix_height = 1800,
+	    matrix_width = 1800;
+
+	var matrix_x = d3.scale.ordinal().rangeBands([0, matrix_width]),
+	    matrix_z = d3.scale.linear().domain([0, 21]).range([0,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
+	    matrix_c = d3.scale.category10().domain(d3.range(10));
+
+	var matrixsvg = d3.select("#matrixviz").append("svg:svg")
+	    .attr("width", $('#vizcontainer').width())
+	    .attr("height", $('#vizcontainer').height())    
+	  .append("svg:g")
+	    //to make it fit on the screen properly
+	    .attr("transform", "scale(0.5)")
+	    .call(d3.behavior.zoom().on("zoom", redrawMatrix))
+	  .append("svg:g")
+	      .attr("transform", "translate(175, 175)");
+
+	var matrixlegend = d3.select("#matrixlegend"); //where the matrix legend will go
+
+	//
+	//Network variables
+	//
+
+	//get the width and height of the div containing the svg--this way the dimensions are specified dynamically
+	var svgwidth = $('#vizcontainer').width();
+	var svgheight = $('#vizcontainer').height();
+
+	var networkzoom = d3.behavior.zoom();
+
+	var networksvg = d3.select("#networkviz").append("svg:svg").attr("width", svgwidth).attr("height", svgheight)
+	    .append('svg:g')
+	    .attr("pointer-events", "all")
+	   .append('svg:g')
+	    .call(networkzoom.on("zoom", redrawNetwork))
+	    .call(d3.behavior.drag().on("drag", pan))
+	   .append('svg:g')
+	  ;
+
+	//this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the network), it allows the visualization
+	//to be panned
+	var networksvgbackground = networksvg.append("svg:rect").attr("width", svgwidth).attr("height", svgheight).style("fill", "aliceblue").style("opacity", 0);
+
+	  //this will be used to calculate the positions of the nodes when rearranged
+	var  circleOutline = networksvg.append("svg:circle").attr("cx", svgwidth/2).attr("cy", svgheight/2).attr("r", svgwidth/2.5).style("stroke", "gray").style("stoke-width", "1px").style("fill", "white").style("opacity", 0);
 
 
+	// var department_centers = [];//REMOVE?
+	var normal_center = {
+	  y: svgheight/2,
+	  x: svgwidth/2
+	  };
+
+	//default values for the network
+	var dcharge = -100;
+	var dlinkDistance = 70;
+	var dgravity = 0.2;
+	var dfriction = 0.9;
+	var dlinkStrength = 1;
+
+	//consructs the new force-directed layout
+	var network_force = d3.layout.force().size([svgwidth,svgheight]);
+
+	var networklegend = d3.select("#networklegend"); //where the network legend will go
+
+	var node;
+	var link;
+	var deptCircle;
+	var deptCircles = []; //contains information about the circles used for departments
+
+
+	//var color10 = d3.scale.ordinal().range(["#00ffff", "#ff9900", "#0100b3", "#9c9284", "#ffff4e", "#ff0000", "#333333", "#ff00ff", "#41924B", "#cc0000"]);
+
+	var color10 = d3.scale.category10();
+
+	var science_faculty_members = [];
+	var science_faculty_members_unique = [];
+	//var science_faculty_data;	
+
+
+	/////////////////////////////////////////////////////////////////////
+	//
+	//								JQUERY
+	//
+	////////////////////////////////////////////////////////////////////
+
+	//tooltip for the network visualization
 	$( "#networkviz" ).tooltip({
 	  items: "circle",
 	  content: function() {
@@ -121,7 +249,7 @@ var PUBLICATIONS_MAP = (function () {
 	  //if the user has specified that nodes w/o links should be hidden
 	  if ($('input#filterNodesLinks').is(':checked')){
 	    d3.selectAll("circle.node").each( function () {
-	    that = this;//because of the nested loop
+	    var that = this;//because of the nested loop
 	      var match = false;
 	      d3.selectAll("line.link").each( function() {
 	          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
@@ -233,7 +361,7 @@ var PUBLICATIONS_MAP = (function () {
 	  //if the user wants to include the nodes in the scoping
 	  if($('#scopeNodes').is(':checked')) {
 	    d3.selectAll("circle.node").each( function () {
-	    that = this;//because of the nested loop
+	    var that = this;//because of the nested loop
 	      var match = false;
 	      //compare each line (link) to the current node. if their coordinates match (i.e., the link is a connection to the node) and the link is currently visible (i.e., it has not been hidden during the scoping)
 	      //then set the match boolean to true
@@ -293,7 +421,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	        function(callback){
 	          var t = d3.selectAll("circle.node").each( function () {
-	            that = this;//because of the nested loop
+	            var that = this;//because of the nested loop
 	            var match = false;
 	            d3.selectAll("line.link").each( function() {
 	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
@@ -330,15 +458,34 @@ var PUBLICATIONS_MAP = (function () {
 	        }
 	    );
 	  }, 3000);
+	});
 
+	$('#discardUnlinkedNodes').click(function() {
+		d3.selectAll("circle.node").each( function () {
+	      var that = this;//because of the nested loop
+	      var match = false;
+	      d3.selectAll("line.link").each( function() {
+	      	if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
+	        	match = true;
+	        }
+	       }); 
+	       if (match == false){
+	       	d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0);
+	        d3.select(this).transition().delay(1000).remove();
+	        }
+	    });
 	});
 
 
+	/*
+	filters (hides) all nodes that do not have links connected to them
 
-
+	@params: none
+	@returns: none
+	*/
 	function filterNodesWithoutLinks() {
 	  d3.selectAll("circle.node").each( function () {
-	    that = this;//because of the nested loop
+	    var that = this;//because of the nested loop
 	    var match = false;
 	    d3.selectAll("line.link").each( function() {
 	        if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
@@ -382,7 +529,7 @@ var PUBLICATIONS_MAP = (function () {
 	        //if the user has already specified that only  nodes with links should be displayed
 	        if ($('input#filterNodesLinks').is(':checked')){
 	          d3.selectAll("circle.node").each( function () {
-	          that = this;//because of the nested loop
+	          var that = this;//because of the nested loop
 	            var match = false;
 	            d3.selectAll("line.link").each( function() {
 	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
@@ -433,7 +580,7 @@ var PUBLICATIONS_MAP = (function () {
 	        //if the user has already specified that only  nodes with links should be displayed
 	        if ($('input#filterNodesLinks').is(':checked')){
 	          d3.selectAll("circle.node").each( function () {
-	          that = this;//because of the nested loop
+	          var that = this;//because of the nested loop
 	            var match = false;
 	            d3.selectAll("line.link").each( function() {
 	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
@@ -484,7 +631,7 @@ var PUBLICATIONS_MAP = (function () {
 	        //if the user has already specified that only  nodes with links should be displayed
 	        if ($('input#filterNodesLinks').is(':checked')){
 	          d3.selectAll("circle.node").each( function () {
-	          that = this;//because of the nested loop
+	          var that = this;//because of the nested loop
 	            var match = false;
 	            d3.selectAll("line.link").each( function() {
 	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
@@ -535,7 +682,7 @@ var PUBLICATIONS_MAP = (function () {
 	        //if the user has already specified that only  nodes with links should be displayed
 	        if ($('input#filterNodesLinks').is(':checked')){
 	          d3.selectAll("circle.node").each( function () {
-	          that = this;//because of the nested loop
+	          var that = this;//because of the nested loop
 	            var match = false;
 	            d3.selectAll("line.link").each( function() {
 	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
@@ -578,7 +725,7 @@ var PUBLICATIONS_MAP = (function () {
 	});
 	$('input#filterNodesLinks').on('ifChecked', function(){
 	    d3.selectAll("circle.node").each( function () {
-	    that = this;//because of the nested loop
+	    var that = this;//because of the nested loop
 	      var match = false;
 	      d3.selectAll("line.link").each( function() {
 	          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
@@ -602,7 +749,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	// $('input#scopeNodes').on('ifChecked', function() {
 	//   d3.selectAll("circle.node").each( function () {
-	//   that = this;//because of the nested loop
+	//   var that = this;//because of the nested loop
 	//     var match = false;
 	//     //compare each line (link) to the current node. if their coordinates match (i.e., the link is a connection to the node) and the link is currently visible (i.e., it has not been hidden during the scoping)
 	//     //then set the match boolean to true
@@ -691,135 +838,7 @@ var PUBLICATIONS_MAP = (function () {
 
 
 
-	var dataset;
-	var pubdata;
-	var departments = [];
-	var names = [];
-	var ranks = [];
-	var years = [];
-	var contractTypes = [];
-	var namesUnique = [];
-	//var science_departments = [];
-	//var ranksUnique = [];
-	var contractTypesUnique = [];
-	var departmentCounts = new Object();
-	var rankCounts = new Object();
-	var contractTypesCounts = new Object();
-	var departmentsHighestCount;
-	var dcounts = []; //1D array for the department counts
-	var rcounts = []; //1D array for the rank counts
-	var ctcounts = [];
-	var males = 0;
-	var females = 0;
-	var genderDistribution = new Object();
-	var autharr_surnames = [];
-	var pubdata_filtered;
-	var count1 = 0;
-	var count2 = 0;
-	//var pubs_science = [];
-	//var links_science = []; //containing links where at least one node (author) is a member of the faculty of science
-	//var links_science_exclusive = []; //containing links where every node (author) is a member of the faculty of science
-	//var links_science_exclusive_unique = []; //containing links where every node (author) is a member of the faculty of science where duplicates are removed
-	//var links_for_network = []; //this is a copy of links_science_exclusive_unique. A copy is needed because without one links_science_exclusive_unique will be modified while constructing the network
-	var network_constructed = false;
-	var matrix_constructed = false;
-	var copubscounted = false;//to keep track of whether copubs have been counted
 
-
-	//=======================================================================================
-	//                            Matrix variables
-
-	var margin = {top: 0, right: 0, bottom: 10, left: 180},
-	    matrix_margin = {top: 100, right: 0, bottom: 10, left: 100},
-	    width = 350,
-	    height = 250,
-	    matrix_height = 1800,
-	    matrix_width = 1800;
-
-	var matrix_x = d3.scale.ordinal().rangeBands([0, matrix_width]),
-	    matrix_z = d3.scale.linear().domain([0, 21]).range([0,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
-	    matrix_c = d3.scale.category10().domain(d3.range(10));
-
-	var matrixsvg = d3.select("#matrixviz").append("svg:svg")
-	    // .attr("width", matrix_width + matrix_margin.left + matrix_margin.right)
-	    // .attr("height", matrix_height + matrix_margin.top + matrix_margin.bottom)
-	    .attr("width", $('#vizcontainer').width())
-	    .attr("height", $('#vizcontainer').height())    
-	    //.style("margin-left", -matrix_margin.left + "px")
-
-	  .append("svg:g")
-	    //.attr("transform", "translate(" + matrix_margin.left + "," + matrix_margin.top + ")")
-
-
-	    //to make it fit on the screen properly
-	    .attr("transform", "scale(0.5)")
-	    .call(d3.behavior.zoom().on("zoom", redrawMatrix))
-	  .append("svg:g")
-	      .attr("transform", "translate(175, 175)");
-
-	var matrixlegend = d3.select("#matrixlegend"); //where the matrix legend will go
-
-
-	//=======================================================================================
-
-
-	//=======================================================================================
-	//                            Network variables
-
-	//get the width and height of the div containing the svg--this way the dimensions are specified dynamically
-	var svgwidth = $('#vizcontainer').width();
-	var svgheight = $('#vizcontainer').height();
-
-	var networkzoom = d3.behavior.zoom();
-
-	var networksvg = d3.select("#networkviz").append("svg:svg").attr("width", svgwidth).attr("height", svgheight)
-	    .append('svg:g')
-	    .attr("pointer-events", "all")
-	   .append('svg:g')
-	    .call(networkzoom.on("zoom", redrawNetwork))
-	    .call(d3.behavior.drag().on("drag", pan))
-	   .append('svg:g')
-	  ;
-
-	//this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the network), it allows the visualization
-	//to be panned
-	var networksvgbackground = networksvg.append("svg:rect").attr("width", svgwidth).attr("height", svgheight).style("fill", "aliceblue").style("opacity", 0);
-
-	  //this will be used to calculate the positions of the nodes when rearranged
-	var  circleOutline = networksvg.append("svg:circle").attr("cx", svgwidth/2).attr("cy", svgheight/2).attr("r", svgwidth/2.5).style("stroke", "gray").style("stoke-width", "1px").style("fill", "white").style("opacity", 0);
-
-
-	// var department_centers = [];//REMOVE?
-	var normal_center = {
-	  y: svgheight/2,
-	  x: svgwidth/2
-	  };
-
-	//default values for the network
-	var dcharge = -100;
-	var dlinkDistance = 70;
-	var dgravity = 0.2;
-	var dfriction = 0.9;
-	var dlinkStrength = 1;
-
-	//consructs the new force-directed layout
-	var network_force = d3.layout.force().size([svgwidth,svgheight]);
-
-	var networklegend = d3.select("#networklegend"); //where the network legend will go
-
-	var node;
-	var link;
-	var deptCircle;
-	var deptCircles = []; //contains information about the circles used for departments
-
-
-	//var color10 = d3.scale.ordinal().range(["#00ffff", "#ff9900", "#0100b3", "#9c9284", "#ffff4e", "#ff0000", "#333333", "#ff00ff", "#41924B", "#cc0000"]);
-
-	var color10 = d3.scale.category10();
-
-	var science_faculty_members = [];
-	var science_faculty_members_unique = [];
-	//var science_faculty_data;
 
 
 
@@ -1000,7 +1019,7 @@ var PUBLICATIONS_MAP = (function () {
 	    //filter out all nodes that have no connections
 	    setTimeout(function() {
 	      d3.selectAll("circle.node").each( function () {
-	      that = this;//because of the nested loop
+	      var that = this;//because of the nested loop
 	        var match = false;
 	        d3.selectAll("line.link").each( function() {
 	            if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
@@ -1072,7 +1091,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	//   else {
 	//     d3.selectAll("circle.node").each( function () {
-	//     that = this;//because of the nested loop
+	//     var that = this;//because of the nested loop
 	//       var match = false;
 	//       d3.selectAll("line.link").each( function() {
 	//           if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
@@ -1120,7 +1139,7 @@ var PUBLICATIONS_MAP = (function () {
 	  // //if the user wants to include the nodes in the scoping
 	  // if($('#scopeNodes').is(':checked')) {
 	  //   d3.selectAll("circle.node").each( function () {
-	  //   that = this;//because of the nested loop
+	  //   var that = this;//because of the nested loop
 	  //     var match = false;
 	  //     //compare each line (link) to the current node. if their coordinates match (i.e., the link is a connection to the node) and the link is currently visible (i.e., it has not been hidden during the scoping)
 	  //     //then set the match boolean to true
@@ -1186,6 +1205,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	  var links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, all_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup;
 
+	  //retrieves the data either from sessionStorage or from the database
 	  async.parallel(
 	    [
 	      function(callback){
@@ -1349,7 +1369,7 @@ var PUBLICATIONS_MAP = (function () {
 	  //construct the legend
 	  constructNetworkLegend(science_departments);
 
-	  //populate the filter are with departments
+	  //populate the filter area with departments
 	  populateFilter(science_departments);
 
 	  var filteryears = d3.select("#matrixviz")
@@ -1362,9 +1382,9 @@ var PUBLICATIONS_MAP = (function () {
 
 	  ////////////////populate the networkviz based on the data we just got above/////////////
 	  network_force
-	    .nodes(all_faculty_data)
+	    .nodes(science_faculty_data)
 	    //.links(links_for_network);
-	    .links(links_western_exclusive); 
+	    .links(links_science_exclusive); 
 
 	  network_force
 	    .gravity(dgravity)
@@ -1376,7 +1396,7 @@ var PUBLICATIONS_MAP = (function () {
 	      //transition is to match the transition of the nodes
 	  link = networksvg.selectAll("line.link")
 	      //.data(links_for_network)
-	      .data(links_western_exclusive) 
+	      .data(links_science_exclusive) 
 	    .enter().append("svg:line")
 	      .attr("class", "link")
 	      .style("visibility", "visible")
@@ -1406,7 +1426,7 @@ var PUBLICATIONS_MAP = (function () {
 	    ;
 
 	  node = networksvg.selectAll("circle.node")
-	    .data(all_faculty_data)
+	    .data(science_faculty_data)
 	    .enter().append("svg:circle")
 	    .attr("class", "node")
 	    .attr("r", 1)
@@ -1545,7 +1565,7 @@ var PUBLICATIONS_MAP = (function () {
 	  });
 
 	  d3.selectAll("circle.node").each( function () {
-	    that = this;
+	    var that = this;
 	    nodeDept = this.__data__.department;
 	    deptCircles.forEach (function(n) {
 	      if (nodeDept == n.name){
