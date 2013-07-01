@@ -1,5 +1,17 @@
+/*
+Copyright (c) 2013 Paul Parsons
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE 
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, 
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+SOFTWARE.
+*/
+
 var PUBLICATIONS_MAP = (function () { 
 	
+
 	/////////////////////////////////////////////////////////////////////
 	//
 	//				GLOBAL (MODULE) VARIABLE DECLARATIONS
@@ -11,6 +23,7 @@ var PUBLICATIONS_MAP = (function () {
 	var pub_years_uniq;
 	var animatebegin = 2008; //TODO: set to min year by default
 	var animateend = 2013; //TODO: set to max year by default
+	var brush; //for the polybrush
 
 	var dataset;
 	var pubdata;
@@ -475,6 +488,45 @@ var PUBLICATIONS_MAP = (function () {
 	        }
 	    });
 	});
+
+	$('#selectLasso').on('ifChecked', function() {
+		brush = d3.svg.polybrush()
+	    .x(d3.scale.linear().range([0, svgwidth]))
+	    .y(d3.scale.linear().range([0, svgheight]))
+	    .on("brushstart", function() {
+	      networksvg.selectAll(".selected").classed("selected", false);
+	    })
+	    .on("brush", function() {
+	      // iterate through all circle.node
+	      networksvg.selectAll("circle.node").each(function(d) {
+	        // if the circle in the current iteration is within the brush's selected area
+	        if (brush.isWithinExtent(d.x, d.y)) {
+	        	//adjust the style
+	          	d3.select(this).style("stroke", "red").style("stroke-width", "2px").style("fill", "white");
+	        } 
+	        // if the circle in the current iteration is not within the brush's selected area
+	        else {
+	        	//reset the style
+	          d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+	        }
+	      });
+	    })
+	   	networksvg.append("svg:g")
+	    .attr("class", "brush")
+	    .call(brush);
+	})
+    .on('ifUnchecked', function() {
+    	// iterate through all circle.node
+      	networksvg.selectAll("circle.node").each(function(d) {
+        // if the circle in the current iteration is within the brush's selected area
+        if (brush.isWithinExtent(d.x, d.y)) {
+        	//reset the style
+          d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+      	}
+      });
+      	//remove the brush completely
+    	$('.brush').remove()
+    });
 
 
 	/*
@@ -1363,6 +1415,7 @@ var PUBLICATIONS_MAP = (function () {
 
 
 	function buildNetwork(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, all_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup){
+
 
 	  $('#vizloader').hide();
 
