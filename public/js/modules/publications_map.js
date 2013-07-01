@@ -24,7 +24,8 @@ var PUBLICATIONS_MAP = (function () {
 	var animatebegin = 2008; //TODO: set to min year by default
 	var animateend = 2013; //TODO: set to max year by default
 	var brush; //for the polybrush
-
+	var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
+	var selectedNodes = []; //array of objects that the user has selected
 	var dataset;
 	var pubdata;
 	var departments = [];
@@ -489,7 +490,7 @@ var PUBLICATIONS_MAP = (function () {
 	    });
 	});
 
-	$('#selectLasso').on('ifChecked', function() {
+	$('input#selectLasso').on('ifChecked', function() {
 		brush = d3.svg.polybrush()
 	    .x(d3.scale.linear().range([0, svgwidth]))
 	    .y(d3.scale.linear().range([0, svgheight]))
@@ -502,12 +503,19 @@ var PUBLICATIONS_MAP = (function () {
 	        // if the circle in the current iteration is within the brush's selected area
 	        if (brush.isWithinExtent(d.x, d.y)) {
 	        	//adjust the style
-	          	d3.select(this).style("stroke", "red").style("stroke-width", "2px").style("fill", "white");
+	          	d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
+	          	selectedNodes.push(this.__data__);
+	          	selectedNodes = _.uniq(selectedNodes, false, function(x){ return (x.Name + x.Department) });
+	          	console.log(selectedNodes); 
 	        } 
 	        // if the circle in the current iteration is not within the brush's selected area
 	        else {
-	        	//reset the style
-	          d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+	        	//if the current node was not selected with the individual selector (i.e., it was selected with the lasso)
+	        	if(this.selectedIndividually == false){
+	  	  			selectedNodes = _.without(selectedNodes, this.__data__);      		
+	        		//reset the style
+	          		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+	          	}
 	        }
 	      });
 	    })
@@ -517,16 +525,36 @@ var PUBLICATIONS_MAP = (function () {
 	})
     .on('ifUnchecked', function() {
     	// iterate through all circle.node
-      	networksvg.selectAll("circle.node").each(function(d) {
-        // if the circle in the current iteration is within the brush's selected area
-        if (brush.isWithinExtent(d.x, d.y)) {
-        	//reset the style
-          d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
-      	}
-      });
+      // 	networksvg.selectAll("circle.node").each(function(d) {
+      //   // if the circle in the current iteration is within the brush's selected area
+      //   if (brush.isWithinExtent(d.x, d.y)) {
+      //   	//reset the style
+      //     d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+      // 	}
+      // });
       	//remove the brush completely
     	$('.brush').remove()
     });
+
+	$('input#selectIndividual').on('ifChecked', function() {
+		individualSelect = true; 	//set the individualSelect flag to true. this will be used in the tick function
+	})
+    .on('ifUnchecked', function() {
+    	individualSelect = false;
+    }); 
+
+    $('input#selectNone').on('ifChecked', function() {
+    	selectedNodes = []; //empty the array
+    	// iterate through all circle.node
+      	networksvg.selectAll("circle.node").each(function(d) {
+      		this.selectedIndividually = false;
+        	// if the circle in the current iteration is within the brush's selected area
+        	if (this.style.strokeWidth == "4px") {
+        		//reset the style
+          	d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+      		}
+      	});    	
+    }); 
 
 
 	/*
@@ -1486,12 +1514,17 @@ var PUBLICATIONS_MAP = (function () {
 	    .style("visibility", "visible")
 	    .attr("department", function (d) { 
 	      return d.Department; })
+	    //.attr("selectedIndividually", "false") //<-- for the selecting action
 	    .attr("copubs", 0)
 	    .attr("name", function (d) { return d.Name; })
 	    .attr("rank", function (d) { return d.Rank; })
 	    .attr("contract", function (d) { return d.Contract; })
 	    .style("fill", function(d){ return color10(d.Department); })
 	    .call(network_force.drag);
+
+	  d3.selectAll("circle.node").each(function() {
+	  	this.selectedIndividually = false;
+	  });  
 
 	  node.transition().duration(2000).attr("r", 10);
 
@@ -1592,6 +1625,24 @@ var PUBLICATIONS_MAP = (function () {
 	        d3.select(this).style("stroke-width", "1px").style("stroke", "gray");
 	      }
 	    }
+	  })
+	  .on("mouseup", function(d) {
+	  	if(individualSelect) {
+	  		//if this node is already selected
+	  		if (this.style.strokeWidth == "4px") {
+	  			selectedNodes = _.without(selectedNodes, this.__data__);
+	  			this.selectedIndividually = false;
+		  		console.log(selectedNodes);
+		  		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color10(d.Department); });	  			
+	  		}
+	  		else {
+		  		selectedNodes.push(this.__data__);
+		  		this.selectedIndividually = true;
+		  		selectedNodes = _.uniq(selectedNodes, false, function(x){ return (x.Name + x.Department) });
+		  		console.log(selectedNodes);
+		  		d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
+	  		}
+		}
 	  });
 
 	}//end tick

@@ -125,11 +125,11 @@
           <p>nodes</p>
           <ul class="actionlist"> 
             <li>
-              <input type="radio" name="iCheck" id="filterNodesAll" checked>
+              <input type="radio" name="iCheck" id="filterNodesAll" checked></input>
               <label for="filterCo_sups">all</label>
             </li>
             <li>
-              <input type="radio" name="iCheck" id="filterNodesLinks">
+              <input type="radio" name="iCheck" id="filterNodesLinks"></input>
               <label for="filterCo_sups">with links only</label>
             </li>
           </ul>          
@@ -210,14 +210,22 @@
         <div class="action">
           <ul class="actionlist"> 
             <li>
-              <input type="checkbox" id="selectLasso"></input> 
-              <label for="selectLasso">lasso</label>
+              <input type="radio" name="iCheck" id="selectNone" checked></input> 
+              <label for="selectNone">none</label>
             </li>
+            <li>
+              <input type="radio" name="iCheck" id="selectLasso"></input>
+              <label for="selectLasso">group (lasso)</label>
+            </li>
+            <li>
+              <input type="radio" name="iCheck" id="selectIndividual"></input>
+              <label for="selectIndividual">individual</label>
+            </li>            
           </ul>
-            Usage:
+            lasso usage:
             Click to add an anchor point, double click to close the selection.  
             Drag the selection to reposition it.
-            Double click outside the selection to clear it.
+            Click outside the selection to clear it.
         </div>
 
         <h3>transform</h3><hr>
