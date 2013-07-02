@@ -14,7 +14,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	/////////////////////////////////////////////////////////////////////
 	//
-	//				GLOBAL (MODULE) VARIABLE DECLARATIONS
+	//				GLOBAL (MODULE-LEVEL) VARIABLE DECLARATIONS
 	//
 	////////////////////////////////////////////////////////////////////
 	var links_for_network;
@@ -498,6 +498,8 @@ var PUBLICATIONS_MAP = (function () {
 	      networksvg.selectAll(".selected").classed("selected", false);
 	    })
 	    .on("brush", function() {
+	    	//update the div that lists the current selections
+	    	updateSelectionArea();
 	      // iterate through all circle.node
 	      networksvg.selectAll("circle.node").each(function(d) {
 	        // if the circle in the current iteration is within the brush's selected area
@@ -543,18 +545,36 @@ var PUBLICATIONS_MAP = (function () {
     	individualSelect = false;
     }); 
 
+    //if the user turns off the select action
     $('input#selectNone').on('ifChecked', function() {
-    	selectedNodes = []; //empty the array
     	// iterate through all circle.node
-      	networksvg.selectAll("circle.node").each(function(d) {
-      		this.selectedIndividually = false;
-        	// if the circle in the current iteration is within the brush's selected area
-        	if (this.style.strokeWidth == "4px") {
-        		//reset the style
-          	d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
-      		}
-      	});    	
+      	// networksvg.selectAll("circle.node").each(function(d) {
+      	// 	this.selectedIndividually = false;
+       //  	// if the circle in the current iteration is within the brush's selected area
+       //  	if (this.style.strokeWidth == "4px") {
+       //  		//reset the style
+       //    	d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+      	// 	}
+      	// });    	
+    })
+    .on('ifUnchecked', function() {
+    	//show the selectionArea div
+    	$('#selectionArea').show('slow');
     }); 
+
+    //if the user clicks the button to remove all selections
+    $('#selectionRemove').click(function() {
+    	selectedNodes = []; //empty the array
+    	updateSelectionArea("empty"); //update the selection area by emptying it
+    	//hide the selectionArea div
+    	$('#selectionArea').hide('slow');
+    	//return to the defaul for the radios (i.e., check the 'none' option)
+    	$('input#selectNone').iCheck('check');
+    	//reset the style of the nodes
+    	d3.selectAll("circle.node").each(function() {
+    		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+    	});
+    });
 
 
 	/*
@@ -942,6 +962,11 @@ var PUBLICATIONS_MAP = (function () {
 	//===========================================================
 
 	$(document).ready(function() {
+
+		//hide the selectionArea div
+		$('#selectionArea').hide();
+
+		$('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });
 
 	  //to populate the search bar
 	  if(store.session.has("science_names")){
@@ -1628,6 +1653,8 @@ var PUBLICATIONS_MAP = (function () {
 	  })
 	  .on("mouseup", function(d) {
 	  	if(individualSelect) {
+	  		//update the div that lists the current selections
+	  		updateSelectionArea();
 	  		//if this node is already selected
 	  		if (this.style.strokeWidth == "4px") {
 	  			selectedNodes = _.without(selectedNodes, this.__data__);
@@ -1987,32 +2014,7 @@ var PUBLICATIONS_MAP = (function () {
 	        d.x += (normal_center.x - d.x) * 0.12 * tick.alpha;
 
 	      };
-	};
-
-	/////to stop nodes from automatically moving//////
-	// var node_drag = d3.behavior.drag()
-	//     .on("dragstart", dragstart)
-	//     .on("drag", dragmove)
-	//     .on("dragend", dragend);
-
-	// function dragstart(d, i) {
-	//     force.stop() // stops the force auto positioning before you start dragging
-	// }
-
-	// function dragmove(d, i) {
-	//   console.log("dragmove");
-	//     d.px += d3.event.dx;
-	//     d.py += d3.event.dy;
-	//     d.x += d3.event.dx;
-	//     d.y += d3.event.dy; 
-	//     tick(); // this is the key to make it work together with updating both px,py,x,y on d !
-	// }
-
-	// function dragend(d, i) {
-	//     d.fixed = true; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
-	//     tick();
-	//     force.resume();
-	// }
+	}
 
 	function constructNetworkLegend(science_departments) {
 	  var label = networklegend.selectAll(".label")
@@ -2161,6 +2163,33 @@ var PUBLICATIONS_MAP = (function () {
 	      highest = counts[d];
 	  });
 	  return highest; 
+	}
+
+	function updateSelectionArea (command) {
+		if (command == "empty") {
+			//empty the selection area by removing p and hr elements
+			//keeps the h3 element
+			$('#selectionArea').contents().filter('div').remove();
+		}
+		else {
+			var items = d3.select("#selectionArea").selectAll(".item")
+				.data(selectedNodes);
+
+			items.enter()
+				.append("div")
+				.attr("class", "item")
+				.text(function(d) { return d.Name; } );
+
+			items.exit().remove();
+
+
+			// selectedNodes.forEach(function (node) {
+			// 	var name = node.Name;
+		 //      	var depart = node.Department;
+		 //      	var output = "<div>" + name + "<br>Department: " + depart + "</div>";
+			// 	$('#selectionArea').append(output);
+			//});
+		}
 	}
 
 }());

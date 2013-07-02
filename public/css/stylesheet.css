@@ -447,6 +447,37 @@ for matrix
   color: rgb(200,200,200);
 }
 
+#selectionArea {
+  position: absolute;
+  height: 450px;
+  width: 300px;
+  left: 1%;
+  top: 10%;
+  color: rgb(200,200,200);
+  border: 1px solid #ebebeb;
+  overflow: auto;
+  padding: 10px;
+  background: white;
+  opacity: 0.95;
+}
+
+#selectionArea h2 {
+  font-family: 'Fjalla One', sans-serif;
+  padding-bottom: 15px;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  text-align: center;  
+  color: black;
+}
+
+#selectionArea div{
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 0.9em;
+  padding: 7px 0px;
+  font-weight: 200;
+  border-bottom: 1px solid;
+}
+
 #matrixviz {
   display: inline-block;
   clear: both;
