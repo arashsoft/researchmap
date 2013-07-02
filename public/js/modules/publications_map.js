@@ -547,15 +547,20 @@ var PUBLICATIONS_MAP = (function () {
 
     //if the user turns off the select action
     $('input#selectNone').on('ifChecked', function() {
+    	var noneSelected = true;
     	// iterate through all circle.node
-      	// networksvg.selectAll("circle.node").each(function(d) {
-      	// 	this.selectedIndividually = false;
-       //  	// if the circle in the current iteration is within the brush's selected area
-       //  	if (this.style.strokeWidth == "4px") {
-       //  		//reset the style
-       //    	d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
-      	// 	}
-      	// });    	
+      	networksvg.selectAll("circle.node").each(function(d) {
+        	// if the circle in the current iteration is within the brush's selected area
+         	if (this.style.strokeWidth == "4px") {
+         		noneSelected = false;
+   			}
+      	 });
+
+      	//if no nodes are selected
+      	if (noneSelected == true){   
+      		//hide the selectionArea div
+    		$('#selectionArea').hide('slow'); 
+    	}	
     })
     .on('ifUnchecked', function() {
     	//show the selectionArea div
@@ -965,8 +970,8 @@ var PUBLICATIONS_MAP = (function () {
 
 		//hide the selectionArea div
 		$('#selectionArea').hide();
-
 		$('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });
+		$('#selectionList').sortable();
 
 	  //to populate the search bar
 	  if(store.session.has("science_names")){
@@ -1653,8 +1658,6 @@ var PUBLICATIONS_MAP = (function () {
 	  })
 	  .on("mouseup", function(d) {
 	  	if(individualSelect) {
-	  		//update the div that lists the current selections
-	  		updateSelectionArea();
 	  		//if this node is already selected
 	  		if (this.style.strokeWidth == "4px") {
 	  			selectedNodes = _.without(selectedNodes, this.__data__);
@@ -1669,6 +1672,8 @@ var PUBLICATIONS_MAP = (function () {
 		  		console.log(selectedNodes);
 		  		d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
 	  		}
+	  		//update the div that lists the current selections
+	  		updateSelectionArea();	
 		}
 	  });
 
@@ -2165,20 +2170,38 @@ var PUBLICATIONS_MAP = (function () {
 	  return highest; 
 	}
 
+	/*
+	updates the selectionArea div, which displays the names of the currently selected nodes
+
+	@params: command: function can be called with special commands such as "empty"
+	@returns: none
+	*/
 	function updateSelectionArea (command) {
 		if (command == "empty") {
-			//empty the selection area by removing p and hr elements
+			//empty the selection area by removing div elements
 			//keeps the h3 element
-			$('#selectionArea').contents().filter('div').remove();
+			$('#selectionList').contents().filter('li').remove();
 		}
 		else {
-			var items = d3.select("#selectionArea").selectAll(".item")
-				.data(selectedNodes);
+			var items = d3.select("#selectionList").selectAll(".item")
+
+				.data(selectedNodes, function(d) { return d.Name; } ); //<--this "key function" replaces the default bind-by-index behavior 
 
 			items.enter()
-				.append("div")
+				.append("li")
 				.attr("class", "item")
-				.text(function(d) { return d.Name; } );
+				.text(function(d) { return d.Name; } )
+				.style("color", function(d) { return color10(d.Department); } );
+
+			items.on("mouseover", function() {
+				d3.select(this)
+					.style("background-color", function(d) { return color10(d.Department) })
+					.style("color", "white");
+			})
+				.on("mouseout", function() {
+					d3.select(this).style("background-color", "white")
+					.style("color", function(d) { return color10(d.Department); } );	
+				});
 
 			items.exit().remove();
 
