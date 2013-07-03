@@ -461,6 +461,39 @@ for matrix
   opacity: 0.95;
 }
 
+#cloningArea {
+  position: absolute;
+  height: 300px;
+  width: 300px;
+  left: 1%;
+  top: 10%;
+  color: rgb(200,200,200);
+  border: 1px solid #ebebeb;
+  overflow: auto;
+  padding: 10px;
+  background: white;
+  opacity: 0.95;
+}
+
+#gatheringArea {
+  position: absolute;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 1.8em;
+  height: 300px;
+  width: 300px;
+  left: 56%;
+  top: 10%;
+  color: #ebebeb;
+  border: 5px dashed #ebebeb;
+  overflow: auto;
+  padding: 10px;
+  background: white;
+  opacity: 0.95;
+  border-radius: 5px;
+  line-height: 300px;
+  text-align: center;
+}
+
 #selectionArea h2 {
   font-family: 'Fjalla One', sans-serif;
   padding-bottom: 15px;
@@ -471,10 +504,10 @@ for matrix
 }
 
 #selectionArea li{
-  font-family: 'Helvetica Neue', sans-serif;
-  font-size: 0.9em;
-  padding: 7px 0px;
-  font-weight: 200;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1em;
+  padding: 8px 5px;
+  font-weight: bold;
   border-bottom: 1px solid #ebebeb;
 }
 

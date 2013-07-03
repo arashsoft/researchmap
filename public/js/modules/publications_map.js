@@ -508,7 +508,6 @@ var PUBLICATIONS_MAP = (function () {
 	          	d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
 	          	selectedNodes.push(this.__data__);
 	          	selectedNodes = _.uniq(selectedNodes, false, function(x){ return (x.Name + x.Department) });
-	          	console.log(selectedNodes); 
 	        } 
 	        // if the circle in the current iteration is not within the brush's selected area
 	        else {
@@ -581,6 +580,12 @@ var PUBLICATIONS_MAP = (function () {
     	});
     });
 
+    $('input#gatheringMode').on('ifChecked', function() {
+    	$('#gatheringArea').show('slow');
+    })
+    .on('ifUnchecked', function() {
+    	$('#gatheringArea').hide('slow');
+    });
 
 	/*
 	filters (hides) all nodes that do not have links connected to them
@@ -971,7 +976,26 @@ var PUBLICATIONS_MAP = (function () {
 		//hide the selectionArea div
 		$('#selectionArea').hide();
 		$('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });
-		$('#selectionList').sortable();
+		//$('#selectionList').sortable();
+
+		$('#cloningArea').hide();
+		$('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
+
+		$('#gatheringArea').hide();
+		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false });
+
+		$( "#gatheringArea" ).droppable({
+      		accept: "#selectionArea",
+      		activeClass: "ui-state-hover",
+      		hoverClass: "ui-state-active",
+      		drop: function( event, ui ) {
+      			console.log("yup, in here");
+        		$( this )
+          		.addClass( "ui-state-highlight" )
+          		.find( "p" )
+            	.html( "Dropped!" );
+     		}
+    	});
 
 	  //to populate the search bar
 	  if(store.session.has("science_names")){
@@ -1057,7 +1081,11 @@ var PUBLICATIONS_MAP = (function () {
 	  networkzoom.translate([10, 00]);
 	  networksvg.transition().duration(2000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
 
+	  //hide the selectionArea div
+	  $('#selectionArea').hide('slow');
 
+	  $('#gatheringArea').hide('slow');
+	  $('#cloningArea').hide('slow');
 
 	  //reset the network
 	  
@@ -1087,6 +1115,7 @@ var PUBLICATIONS_MAP = (function () {
 	  $('input#filterGrants').iCheck('check');
 	  $('input#filterCo_sups').iCheck('check');
 	  $('input#filterCo_pubs').iCheck('check');
+	  $('input#gatherMode').iCheck('uncheck');
 
 	  $('#animateYearPlaceholder').text("");
 
@@ -1495,19 +1524,24 @@ var PUBLICATIONS_MAP = (function () {
 	  network_force
 	    .nodes(science_faculty_data)
 	    //.links(links_for_network);
-	    .links(links_science_exclusive); 
+	    .links(links_combined); 
 
 	  network_force
 	    .gravity(dgravity)
 	    .friction(dfriction)
 	    .charge(dcharge)
 	    .linkDistance(dlinkDistance)
-	      .start();           
+	      .start();  
+
+	 var node_drag = d3.behavior.drag()
+        .on("dragstart", dragstart)
+        .on("drag", dragmove)
+        .on("dragend", dragend);	              
 
 	      //transition is to match the transition of the nodes
 	  link = networksvg.selectAll("line.link")
 	      //.data(links_for_network)
-	      .data(links_science_exclusive) 
+	      .data(links_combined) 
 	    .enter().append("svg:line")
 	      .attr("class", "link")
 	      .style("visibility", "visible")
@@ -1550,7 +1584,25 @@ var PUBLICATIONS_MAP = (function () {
 	    .attr("rank", function (d) { return d.Rank; })
 	    .attr("contract", function (d) { return d.Contract; })
 	    .style("fill", function(d){ return color10(d.Department); })
-	    .call(network_force.drag);
+	    .call(node_drag);
+        
+    function dragstart(d, i) {
+        network_force.stop() // stops the force auto positioning before you start dragging
+    }
+
+    function dragmove(d, i) {
+        d.px += d3.event.dx;
+        d.py += d3.event.dy;
+        d.x += d3.event.dx;
+        d.y += d3.event.dy; 
+        tick(); // this is the key to make it work together with updating both px,py,x,y on d !
+    }
+
+    function dragend(d, i) {
+        d.fixed = true; //set the node to fixed so the force doesn't include the node in its auto positioning stuff
+        tick();
+        network_force.resume();
+    }     
 
 	  d3.selectAll("circle.node").each(function() {
 	  	this.selectedIndividually = false;
@@ -1571,24 +1623,10 @@ var PUBLICATIONS_MAP = (function () {
 	  // var currentwidth = networksvg.width = $('#networkviz').width();
 	  // d3.select("#networkviz").attr("width", currentwidth).attr("height", currentheight); //not updating the actual svg element
 
-	  //if distortion checkbox is checked, enable the fisheye
-	  // if ($('#fisheye').is(':checked')){
-	  //   networksvg.on("mousemove", function() {
-	  //     fisheye.focus(d3.mouse(this));
-
-	  //     node.each(function(d) { d.fisheye = fisheye(d); })
-	  //         .attr("cx", function(d) { return d.fisheye.x; })
-	  //         .attr("cy", function(d) { return d.fisheye.y; })
-	  //         .attr("r", function(d) { return d.fisheye.z * 4.5; });
-
-	  //     link.attr("x1", function(d) { return d.source.fisheye.x; })
-	  //         .attr("y1", function(d) { return d.source.fisheye.y; })
-	  //         .attr("x2", function(d) { return d.target.fisheye.x; })
-	  //         .attr("y2", function(d) { return d.target.fisheye.y; });
-	  //   });
-	  // }
-	  // else
-	  // disable the fisheye
+	  	if($('input#motionFreeze').is(':checked')) {
+	  		console.log("uyp");
+			network_force.stop();	
+		}
 
 	  if($('#arrange').val( ) == "department") {
 
@@ -1641,20 +1679,20 @@ var PUBLICATIONS_MAP = (function () {
 	  }
 
 	  node.on("mouseover", function(d) {
-	    if (this.style.visibility == "visible") { //only want to display the mouseover if the node is visible!
-	      //also only want to change this if the node has not been highlighted from a search (i.e., if it is not red)
-	      if (this.style.stroke != "#ff0000"){
-	        d3.select(this).style("stroke", "black")
-	          .style("stroke-width", "2px");
-	      }
-	    }
+	    // if (this.style.visibility == "visible") { //only want to display the mouseover if the node is visible!
+	    //   //also only want to change this if the node has not been highlighted from a search (i.e., if it is not red)
+	    //   if (this.style.stroke != "#ff0000"){
+	    //     d3.select(this).style("stroke", "black")
+	    //       .style("stroke-width", "2px");
+	    //   }
+	    // }
 	  })
 	  .on("mouseout", function(d) {
-	    if (this.style.visibility == "visible") {
-	      if (this.style.stroke != "#ff0000"){      
-	        d3.select(this).style("stroke-width", "1px").style("stroke", "gray");
-	      }
-	    }
+	    // if (this.style.visibility == "visible") {
+	    //   if (this.style.stroke != "#ff0000"){      
+	    //     d3.select(this).style("stroke-width", "1px").style("stroke", "gray");
+	    //   }
+	    // }
 	  })
 	  .on("mouseup", function(d) {
 	  	if(individualSelect) {
@@ -1662,21 +1700,18 @@ var PUBLICATIONS_MAP = (function () {
 	  		if (this.style.strokeWidth == "4px") {
 	  			selectedNodes = _.without(selectedNodes, this.__data__);
 	  			this.selectedIndividually = false;
-		  		console.log(selectedNodes);
 		  		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color10(d.Department); });	  			
 	  		}
 	  		else {
 		  		selectedNodes.push(this.__data__);
 		  		this.selectedIndividually = true;
 		  		selectedNodes = _.uniq(selectedNodes, false, function(x){ return (x.Name + x.Department) });
-		  		console.log(selectedNodes);
 		  		d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
 	  		}
 	  		//update the div that lists the current selections
 	  		updateSelectionArea();	
 		}
 	  });
-
 	}//end tick
 
 
@@ -2195,7 +2230,7 @@ var PUBLICATIONS_MAP = (function () {
 
 			items.on("mouseover", function() {
 				d3.select(this)
-					.style("background-color", function(d) { return color10(d.Department) })
+					.style("background-color", "rgb(36,137,197)")//function(d) { return color10(d.Department) })
 					.style("color", "white");
 			})
 				.on("mouseout", function() {

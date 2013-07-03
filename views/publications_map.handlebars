@@ -45,6 +45,12 @@
           <h2>selections</h2>
           <ul id="selectionList"></ul>
         </div>
+        <div id="gatheringArea">
+          <h2>drag nodes here</h2>
+        </div>
+        <div id="cloningArea">
+          <h2>Clone of ...</h2>
+        </div>        
       </div>
       <div id="matrixviz" style="display: none;">
         <div id="matrixbar">
@@ -116,6 +122,7 @@
             <option value=""></option>
             <option value="random">random</option>
             <option value="department">department</option>
+            <option value="department">link type</option>
           </select>
         </div>
 
@@ -130,11 +137,11 @@
           <ul class="actionlist"> 
             <li>
               <input type="radio" name="iCheck" id="filterNodesAll" checked></input>
-              <label for="filterCo_sups">all</label>
+              <label for="filterNodesAll">all</label>
             </li>
             <li>
               <input type="radio" name="iCheck" id="filterNodesLinks"></input>
-              <label for="filterCo_sups">with links only</label>
+              <label for="filterNodesLinks">with links only</label>
             </li>
           </ul>          
 
@@ -169,6 +176,12 @@
 
         <h3>gather</h3><hr>
         <div class="action">
+          <ul class="actionlist"> 
+            <li>
+              <input type="checkbox" id="gatheringMode"></input> 
+              <label for="gatheringMode">gathering area</label>
+            </li>
+          </ul>
         </div>
 
         <h3>granularity</h3><hr>
@@ -196,6 +209,17 @@
           </form>
         
         </div>   
+
+
+        <h3>motion</h3><hr>
+        <div class="action">
+          <ul class="actionlist"> 
+            <li>
+              <input type="checkbox" id="motionFreeze"></input> 
+              <label for="motionFreeze">freeze visualization</label>
+            </li>
+          </ul>
+        </div>        
 
         <h3>scope</h3><hr>
         <div class="action"> 
