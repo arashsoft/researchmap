@@ -2047,7 +2047,7 @@ var PUBLICATIONS_MAP = (function () {
 					.style("color", "white");
 				d3.selectAll("circle.node").each(function() {
 					if (this.__data__.Department != d && !_.contains(selectedDepartments, this.__data__.Department)) {
-							d3.select(this).style("opacity", "0.1");
+							d3.select(this).style("opacity", "0.05");
 					}
 					else {
 						d3.select(this).style("opacity", "1");
@@ -2078,7 +2078,7 @@ var PUBLICATIONS_MAP = (function () {
 							if(_.contains(selectedDepartments, this.__data__.Department))
 								d3.select(this).style("opacity", "1");
 							else
-								d3.select(this).style("opacity", "0.1");
+								d3.select(this).style("opacity", "0.05");
 						});
 
 
@@ -2119,7 +2119,7 @@ var PUBLICATIONS_MAP = (function () {
 						.style("border-color", "rgba(255,255,255,1)");
 					d3.selectAll("circle.node").each(function() {
 						if (this.__data__.Department != d && !_.contains(selectedDepartments, this.__data__.Department)) {
-								d3.select(this).style("opacity", "0.1");
+								d3.select(this).style("opacity", "0.05");
 						}
 						else {
 							d3.select(this).style("opacity", "1");
