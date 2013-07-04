@@ -58,6 +58,8 @@ var PUBLICATIONS_MAP = (function () {
 	var matrix_constructed = false;
 	var copubscounted = false;//to keep track of whether copubs have been counted
 
+	var dragging = false; //set to true when the user is dragging an element
+
 
 	  var nodeTooltip = d3.select("#networkviz").append("div")   
     	.attr("class", "nodeTooltip")               
@@ -968,6 +970,8 @@ var PUBLICATIONS_MAP = (function () {
 		$('#gatheringArea').hide();
 		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false });
 
+		$('#animateYearPlaceholder').hide();
+
 		$( "#gatheringArea" ).droppable({
       		accept: "#selectionArea",
       		activeClass: "ui-state-hover",
@@ -1454,9 +1458,9 @@ var PUBLICATIONS_MAP = (function () {
 	  	var links_combined = links_science_exclusive.concat(links_co_sup);
 
 	  	network_force
-	    .nodes(science_faculty_data)
-	    //.links(links_for_network);
-	    .links(links_combined); 
+		    .nodes(science_faculty_data)
+		    //.links(links_for_network);
+		    .links(links_combined); 
 
 	  	network_force
 	    .gravity(dgravity)
@@ -1466,9 +1470,9 @@ var PUBLICATIONS_MAP = (function () {
 	      .start();  
 
 	 	var node_drag = d3.behavior.drag()
-        .on("dragstart", dragstart)
-        .on("drag", dragmove)
-        .on("dragend", dragend);	              
+	        .on("dragstart", dragstart)
+	        .on("drag", dragmove)
+	        .on("dragend", dragend);	              
 
 	      //transition is to match the transition of the nodes
 	  	link = networksvg.selectAll("line.link")
@@ -1488,41 +1492,45 @@ var PUBLICATIONS_MAP = (function () {
 	      .style("stroke-width", "1px");
 
 	  	deptCircle = networksvg.selectAll("circle.dept")
-	    .data(deptCircles)
-	    .enter()
-	    .append("svg:circle")
-	    .attr("class", "dept")
-	    .attr("r", 1)
-	    .attr("cx", function(d) { return d[1]; })
-	    .attr("cy", function(d) { return d[2]; })
-	    .style("visibility", "hidden")
-	    .style("opacity", 0)
-	    .style("fill", "white")
-	    .style("stroke", function(d){ return color10(d[0]); })
-	    .style("stroke-width", 2)
-	    ;
+		    .data(deptCircles)
+		    .enter()
+		    .append("svg:circle")
+		    .attr("class", "dept")
+		    .attr("r", 1)
+		    .attr("cx", function(d) { return d[1]; })
+		    .attr("cy", function(d) { return d[2]; })
+		    .style("visibility", "hidden")
+		    .style("opacity", 0)
+		    .style("fill", "white")
+		    .style("stroke", function(d){ return color10(d[0]); })
+		    .style("stroke-width", 2);
 
 	 	node = networksvg.selectAll("circle.node")
-	    .data(science_faculty_data)
-	    .enter().append("svg:circle")
-	    .attr("class", "node")
-	    .attr("r", 1)
-	    .style("visibility", "visible")
-	    .attr("department", function (d) { 
-	      return d.Department; })
-	    //.attr("selectedIndividually", "false") //<-- for the selecting action
-	    .attr("copubs", 0)
-	    .attr("name", function (d) { return d.Name; })
-	    .attr("rank", function (d) { return d.Rank; })
-	    .attr("contract", function (d) { return d.Contract; })
-	    .style("fill", function(d){ return color10(d.Department); })
-	    .call(node_drag);
+		    .data(science_faculty_data)
+		    .enter().append("svg:circle")
+		    .attr("class", "node")
+		    .attr("r", 1)
+		    .style("visibility", "visible")
+		    .attr("department", function (d) { 
+		      return d.Department; })
+		    //.attr("selectedIndividually", "false") //<-- for the selecting action
+		    .attr("copubs", 0)
+		    .attr("name", function (d) { return d.Name; })
+		    .attr("rank", function (d) { return d.Rank; })
+		    .attr("contract", function (d) { return d.Contract; })
+		    .style("fill", function(d){ return color10(d.Department); })
+		    .call(node_drag);
         
 	    function dragstart(d, i) {
+	    	dragging = true;
 	        network_force.stop() // stops the force auto positioning before you start dragging
 	    }
 
 	    function dragmove(d, i) {
+	    	if($('input#freezeNodes').is(':checked')) {
+	    		d3.select(this).attr("cursor", "move");
+	    	}
+
 	        d.px += d3.event.dx;
 	        d.py += d3.event.dy;
 	        d.x += d3.event.dx;
@@ -1536,6 +1544,7 @@ var PUBLICATIONS_MAP = (function () {
 	    	}
 	        tick();
 	        network_force.resume();
+	        dragging = false;
 	    }     
 
 		d3.selectAll("circle.node").each(function() {
@@ -1618,14 +1627,7 @@ var PUBLICATIONS_MAP = (function () {
 	  }
 
 	  node.on("mouseover", function(d) {
-	    // if (this.style.visibility == "visible") { //only want to display the mouseover if the node is visible!
-	    //   //also only want to change this if the node has not been highlighted from a search (i.e., if it is not red)
-	    //   if (this.style.stroke != "#ff0000"){
-	    //     d3.select(this).style("stroke", "black")
-	    //       .style("stroke-width", "2px");
-	    //   }
-	    // }
-
+	  	if (!dragging) {
 			nodeTooltip.transition()        
                 .duration(200)      
                 .style("opacity", .9);      
@@ -1639,7 +1641,8 @@ var PUBLICATIONS_MAP = (function () {
     			"at": "right bottom",
     			"of": $(this)
     		});
-	  	})
+	  	}
+	  })
                 
 	  .on("mouseout", function(d) {
 	    // if (this.style.visibility == "visible") {
