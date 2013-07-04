@@ -2135,9 +2135,10 @@ form.signin input::-webkit-input-placeholder {
 #networklegend div.label{
   display: inline-block;
   color: black;
-  font-family: 'Helvetica Neue';
-  font-size: 11px;
-  margin-bottom: 5px;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 0.8em;
+  padding: 4px 0px 4px 4px;
+  cursor: default;
   }
 
   #matrixlegend {
@@ -2199,7 +2200,8 @@ form.signin input::-webkit-input-placeholder {
   color: black;
   font-family: 'Helvetica Neue';
   font-size: 11px;
-  margin-bottom: 5px;
+  padding: 4px 0px 4px 4px;
+
   }  
 
 .labelcolor {
@@ -2209,8 +2211,8 @@ form.signin input::-webkit-input-placeholder {
   display: inline-block;
   margin: 2px 0px;
   position: relative;
-  bottom: -1px;
-  margin: 0px 20px 0px 4px;
+  bottom: 1px;
+  margin: 0px 15px 0px 5px;
 }
 
 /*.PIList {

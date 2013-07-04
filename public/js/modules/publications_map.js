@@ -2022,14 +2022,119 @@ var PUBLICATIONS_MAP = (function () {
 	}
 
 	function constructNetworkLegend(science_departments) {
+
+		var selectedDepartments = [];
+
 	  var label = networklegend.selectAll(".label")
 	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")
-	    .text(function(d) { return d; })
+	    .style("border", "2px dashed")
+	    .style("border-color", "rgba(255,255,255,0)")
+	    //.attr("selected", false) //keeps track of whether a label in the legend has been selected (i.e., clicked on)
+	    .text(function(d) { return d; });
+
+	    label
 	    .append("div")
 	    .attr("class", "labelcolor")
 	    .style("background-color", function(d){ return color10(d); });
+
+		label
+			.on("mouseover", function(d) {
+				var label = this;
+				d3.select(label)
+					.style("background-color", "rgb(36,137,197)")
+					.style("color", "white");
+				d3.selectAll("circle.node").each(function() {
+					if (this.__data__.Department != d && !_.contains(selectedDepartments, this.__data__.Department)) {
+							d3.select(this).style("opacity", "0.1");
+					}
+					else {
+						d3.select(this).style("opacity", "1");
+					}
+				});
+				d3.selectAll("line.link").each(function(link) {
+					if ((link.source.Department == d && link.target.Department == d) || (_.contains(selectedDepartments, link.target.Department) && _.contains(selectedDepartments, link.source.Department))) {
+							d3.select(this).style("opacity", "1");
+					}
+					else
+						d3.select(this).style("opacity", "0");
+				});
+			})
+			.on("mouseout", function(d) {
+				var label = this;				
+				if (!_.contains(selectedDepartments, d)){
+					d3.select(label)
+						.style("background-color", "white")
+						.style("color", "black");	
+
+					//if no departments are currently selected
+					if( _.isEmpty(selectedDepartments)){
+						d3.selectAll("circle.node").style("opacity", "1");
+						d3.selectAll("line.link").style("opacity", "1");
+					}
+					else {									
+						d3.selectAll("circle.node").each(function() {
+							if(_.contains(selectedDepartments, this.__data__.Department))
+								d3.select(this).style("opacity", "1");
+							else
+								d3.select(this).style("opacity", "0.1");
+						});
+
+
+						d3.selectAll("line.link").each(function(link) {
+							if (_.contains(selectedDepartments, link.source.Department) && _.contains(selectedDepartments, link.target.Department))
+								d3.select(this).style("opacity", "1");
+							else
+								d3.select(this).style("opacity", "0");
+						});	
+					}
+				}			
+			})
+			.on("click", function(d) {
+				var label = this;
+				//if currently selected, "unselect" it
+				if (_.contains(selectedDepartments, d)){
+					selectedDepartments = _.without(selectedDepartments, d);
+					console.log(selectedDepartments);
+					 d3.select(label)
+					 	.style("border-color", "rgba(255,255,255,0)");
+					d3.selectAll("circle.node").each(function() {
+						if (this.style.opacity == "0.1" && !label.selected)
+							d3.select(this).style("opacity", "1");
+					});
+					d3.selectAll("line.link").each(function(link) {
+						if (this.style.opacity == "0" && !label.selected)
+							d3.select(this).style("opacity", "1");
+					});	
+					label.selected = false;				
+				}
+				//if not currently selected, "select" it
+				else {
+					selectedDepartments.push(d);
+					console.log(selectedDepartments);
+					d3.select(label)
+						.style("background-color", "rgb(36,137,197)")
+						.style("color", "white")
+						.style("border-color", "rgba(255,255,255,1)");
+					d3.selectAll("circle.node").each(function() {
+						if (this.__data__.Department != d && !_.contains(selectedDepartments, this.__data__.Department)) {
+								d3.select(this).style("opacity", "0.1");
+						}
+						else {
+							d3.select(this).style("opacity", "1");
+						}
+					});
+					d3.selectAll("line.link").each(function(link) {
+						if ((link.source.Department == d && link.target.Department == d) || (_.contains(selectedDepartments, link.target.Department) && _.contains(selectedDepartments, link.source.Department))) {
+								d3.select(this).style("opacity", "1");
+						}
+						else
+							d3.select(this).style("opacity", "0");
+					});
+					label.selected = true; //TODO: remove this property
+				}			
+			});
 	}
 
 	function constructMatrixLegend(science_departments) {
