@@ -167,10 +167,10 @@
           <div id="networkyearrange">
           </div>
 
-          <p>departments</p>
+<!--           <p>departments</p>
           <select id="filterdepartments" data-placeholder="Click to add departments" style="width:100%;" multiple class="chzn-select" tabindex="8">
               <option value=""></option>
-          </select>          
+          </select>   -->        
 
         </div>
 
@@ -195,8 +195,24 @@
         <h3>presentation</h3><hr>
         <div class="action">
               
-          <form>
-           <h4>Density: </h4>
+          <p>node/link properties</p>
+          <label for="networkDensity">density:</label>
+          <input type="text" id="networkDensity" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkDensitySlider"></div> 
+          <label for="networkCharge">charge:</label>
+          <input type="text" id="networkCharge" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkChargeSlider"></div> 
+          <label for="networkLinkDistance">link distance:</label>
+          <input type="text" id="networkLinkDistance" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkLinkDistanceSlider"></div> 
+          <label for="networkLinkStrength">link strength:</label>
+          <input type="text" id="networkLinkStrength" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkLinkStrengthSlider"></div> 
+          <label for="networkFriction">friction:</label>
+          <input type="text" id="networkFriction" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkFrictionSlider"></div>     
+
+<!--            <h4>Density: </h4>
            <input id="gravitySlider" type="range" onchange="network_force.gravity(value).start()" min ="0" max="1" step =".01"  value=".1" /><input type="text" value=".1" /><br>
            <h4>Charge: </h4>
            <input id="chargeSlider" type="range" onchange="network_force.charge(value).start()" min ="-300" max="200" step ="10"  value="-120" /><br>
@@ -206,7 +222,7 @@
            <input id="strengthSlider" type="range" onchange="network_force.linkStrength(value).start()" min ="0" max="1" step ="0.1"  value="1" /><br> 
            <h4>Friction: </h4>
            <input id="frictionSlider" type="range" onchange="network_force.friction(value).start()" min ="0" max="1" step ="0.1"  value="0.9" /><br>             
-          </form>
+          </form> -->
         
         </div>   
 

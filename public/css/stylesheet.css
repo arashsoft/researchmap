@@ -423,8 +423,8 @@ for matrix
 
 .nodeTooltip {   
   position: absolute;           
-  min-width: 125px;                  
-  min-height: 80px;                 
+  min-width: 75px;                  
+  min-height: 65px;                 
   padding: 5px;             
   font: 0.8em 'Oswald', sans-serif;        
   background: #efefef; 
@@ -1523,7 +1523,8 @@ body .ui-tooltip {
   cursor: pointer;
   background: rgb(36,137,197);
 /*  border:  1px solid silver;*/  
-  border-radius: 2px;
+  border-radius: 4px;
+  border: 2px dotted white;
 }
 .ui-slider .ui-slider-range {
   position: absolute;
@@ -1546,7 +1547,7 @@ body .ui-tooltip {
 */  margin: 8px 6px; 
 }
 .ui-slider-horizontal .ui-slider-handle {
-  top: -.6em;
+  top: -.8em;
   margin-left: -.6em;
 }
 .ui-slider-horizontal .ui-slider-range {
@@ -1690,7 +1691,7 @@ body .ui-tooltip {
 }
 .ui-widget-header {
   border: 2px solid rgb(230,230,230)/*{borderColorHeader}*/;
-  background: rgb(243,243,243)/*{bgColorHeader}*/ url(images/ui-bg_highlight-soft_75_cccccc_1x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/;
+  background: rgb(36,137,197)/*{bgColorHeader}*/ url(images/ui-bg_highlight-soft_75_cccccc_1x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/;
   color: #222222/*{fcHeader}*/;
   font-weight: bold;
 }

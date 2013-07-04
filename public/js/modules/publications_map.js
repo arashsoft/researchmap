@@ -253,6 +253,7 @@ var PUBLICATIONS_MAP = (function () {
 	  range: true,
 	  min: 2008,
 	  max: 2013,
+	  animate: true,
 	  values: [ 2008, 2013 ],
 	  slide: function( event, ui ) {
 	    $( "#networkyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
@@ -302,6 +303,7 @@ var PUBLICATIONS_MAP = (function () {
 	  range: true,
 	  min: 2008,
 	  max: 2013,
+	  animate: true,
 	  values: [ 2008, 2013 ],
 	  slide: function( event, ui ) {
 	    $( "#animateyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
@@ -316,6 +318,7 @@ var PUBLICATIONS_MAP = (function () {
 	$("#animateSlider").slider({
 	  min: 2008,
 	  max: 2013,
+	  animate: true,
 	  value: 2013,
 	  slide: function( event, ui ) {
 	  yearSelected = ui.value;
@@ -351,6 +354,8 @@ var PUBLICATIONS_MAP = (function () {
 	  min: 2008,
 	  max: 2013,
 	  value: 2013,
+	  animate: true,
+	  range: "min",
 	  slide: function( event, ui ) {
 	  yearSelected = ui.value;
 	  $( "#scopeYear" ).val( ui.value );
@@ -376,7 +381,8 @@ var PUBLICATIONS_MAP = (function () {
 	        }
 	      }
 	    }
-	  });
+	  });	  	  
+
 
 	  $('input#freezeNodes').iCheck('uncheck');
 
@@ -411,6 +417,71 @@ var PUBLICATIONS_MAP = (function () {
 	  else
 	    d3.selectAll("circle.node").style("visibility", function () { return "visible"; }); 
 	  }
+	});
+
+	$('#networkDensitySlider').slider({
+		min: 0,
+		max: 1,
+		range: "min",
+		step: 0.01,
+		animate: true,
+		value: dgravity,
+		slide: function( event, ui ) {
+			$('#networkDensity').val( ui.value );
+			network_force.gravity(ui.value).resume();
+		}
+	});
+
+	$('#networkChargeSlider').slider({
+		min: -300,
+		max: 200,
+		range: "min",
+		step: 10,
+		animate: true,		
+		value: dcharge,
+		slide: function( event, ui ) {
+			$('#networkCharge').val( ui.value );
+			network_force.charge(ui.value).resume();
+		}
+	});
+
+	$('#networkLinkDistanceSlider').slider({
+		min: 0,
+		max: 100,
+		range: "min",
+		step: 1,
+		animate: true,
+		value: dlinkDistance,
+		slide: function( event, ui ) {
+			$('#networkLinkDistance').val( ui.value );
+			network_force.linkDistance(ui.value).resume();
+		}
+	});
+
+	$('#networkLinkStrengthSlider').slider({
+		min: 0,
+		max: 1,
+		range: "min",
+		step: 0.01,
+		animate: true,
+		value: dlinkStrength,
+		slide: function( event, ui ) {
+			$('#networkLinkStrength').val( ui.value );
+			network_force.linkStrength(ui.value).resume();
+		}
+	});
+
+	$('#networkFrictionSlider').slider({
+		min: 0,
+		max: 1,
+		range: "min",
+		step: 0.01,
+		animate: true,
+		value: dfriction,
+		slide: function( event, ui ) {
+			$('#networkFriction').val( ui.value );
+			network_force.friction(ui.value).resume();
+		}
 	});
 
 	//////////////////
