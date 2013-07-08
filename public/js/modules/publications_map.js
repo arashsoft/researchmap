@@ -58,7 +58,7 @@ var PUBLICATIONS_MAP = (function () {
 	var matrix_constructed = false;
 	var copubscounted = false;//to keep track of whether copubs have been counted
 
-	var dragging = false; //set to true when the user is dragging an element
+	var dragging = false; //set to true when the user is dragging an element in the network
 
 
 	  var nodeTooltip = d3.select("#networkviz").append("div")   
@@ -131,7 +131,7 @@ var PUBLICATIONS_MAP = (function () {
 		//.style("fill", "aliceblue").style("opacity", 1);
 
 	  //this will be used to calculate the positions of the nodes when rearranged
-	var  circleOutline = networksvg.append("svg:circle").attr("cx", svgwidth/2).attr("cy", svgheight/2).attr("r", svgwidth/2.5).style("stroke", "gray").style("stoke-width", "1px").style("fill", "white").style("opacity", 0);
+	var  circleOutline = networksvg.append("svg:circle").attr("cx", svgwidth/2).attr("cy", svgheight/2).attr("r", svgwidth/3).style("stroke", "gray").style("stroke-width", "1px").style("fill", "none").style("opacity", 0);
 
 
 	// var department_centers = [];//REMOVE?
@@ -186,11 +186,6 @@ var PUBLICATIONS_MAP = (function () {
 	  }
 	});
 
-
-	$(function() {
-	  $( "#slider" ).slider();
-	});
-
 	$(document).ready(function() {
 
 	  //for icheckbox
@@ -236,7 +231,73 @@ var PUBLICATIONS_MAP = (function () {
 	    constructNetwork();
 	    $('#networkactions').delay(800).show(800);
 	  });
-	});
+
+		//hide the selectionArea div
+		$('#selectionArea').hide();
+		$('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });
+		//$('#selectionList').sortable();
+
+		$('#cloningArea').hide();
+		$('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
+
+		$('#gatheringArea').hide();
+		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false });
+
+		$('#animateYearPlaceholder').hide();
+
+		$( "#gatheringArea" ).droppable({
+      		accept: "#selectionArea",
+      		activeClass: "ui-state-hover",
+      		hoverClass: "ui-state-active",
+      		drop: function( event, ui ) {
+      			console.log("yup, in here");
+        		$( this )
+          		.addClass( "ui-state-highlight" )
+          		.find( "p" )
+            	.html( "Dropped!" );
+     		}
+    	});
+
+	  //to populate the search bar
+	  if(store.session.has("science_names")){
+	    console.log("science_names is already in sessionStorage...no need to fetch again");
+	  }
+	  else {
+	    console.log("fetching science_names...");
+	    $.get('/network/science_names', function(result) {
+	      var science_names = JSON.parse(result.science_names);
+	      store.session("science_names", science_names);
+	    });
+	  }
+
+	  //populate the autocomplete search box with the science members
+	  $( "#tags" ).autocomplete({
+	    source: store.session("science_names"),
+	    delay: 500,
+	    minLength: 2,
+	    select: function (event, ui) {
+	      var name = ui.item.value;
+	      highlightSelectedNode(name);
+	    }
+	  });
+
+	  $('input#filterNodesAll').iCheck('check');
+
+	  $('#selectionArea').hide();
+
+
+	  //listen to the zoom buttons 
+	  $('#networkzoomin').click(function() {
+	    console.log("uip");
+	      networkzoom.scale(networkzoom.scale()+0.1);
+	      networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+	  });
+	  $('#networkzoomout').click(function() {
+	      networkzoom.scale(networkzoom.scale()-0.1);
+	      networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+	  });
+
+	});//end document.ready
 
 	$( "#networkyearrange" ).slider({
 	  range: true,
@@ -1019,68 +1080,73 @@ var PUBLICATIONS_MAP = (function () {
 	//JQuery listening for changes to action selectors
 	//===========================================================
 
-	$(document).ready(function() {
+	// $(document).ready(function() {
 
-		//hide the selectionArea div
-		$('#selectionArea').hide();
-		$('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });
-		//$('#selectionList').sortable();
+	// 	//hide the selectionArea div
+	// 	$('#selectionArea').hide();
+	// 	$('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });
+	// 	//$('#selectionList').sortable();
 
-		$('#cloningArea').hide();
-		$('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
+	// 	$('#cloningArea').hide();
+	// 	$('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
 
-		$('#gatheringArea').hide();
-		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false });
+	// 	$('#gatheringArea').hide();
+	// 	$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false });
 
-		$('#animateYearPlaceholder').hide();
+	// 	$('#animateYearPlaceholder').hide();
 
-		$( "#gatheringArea" ).droppable({
-      		accept: "#selectionArea",
-      		activeClass: "ui-state-hover",
-      		hoverClass: "ui-state-active",
-      		drop: function( event, ui ) {
-      			console.log("yup, in here");
-        		$( this )
-          		.addClass( "ui-state-highlight" )
-          		.find( "p" )
-            	.html( "Dropped!" );
-     		}
-    	});
+	// 	$( "#gatheringArea" ).droppable({
+ //      		accept: "#selectionArea",
+ //      		activeClass: "ui-state-hover",
+ //      		hoverClass: "ui-state-active",
+ //      		drop: function( event, ui ) {
+ //      			console.log("yup, in here");
+ //        		$( this )
+ //          		.addClass( "ui-state-highlight" )
+ //          		.find( "p" )
+ //            	.html( "Dropped!" );
+ //     		}
+ //    	});
 
-	  //to populate the search bar
-	  if(store.session.has("science_names")){
-	    console.log("science_names is already in sessionStorage...no need to fetch again");
-	  }
-	  else {
-	    console.log("fetching science_names...");
-	    $.get('/network/science_names', function(result) {
-	      var science_names = JSON.parse(result.science_names);
-	      store.session("science_names", science_names);
-	    });
-	  }
+	//   //to populate the search bar
+	//   if(store.session.has("science_names")){
+	//     console.log("science_names is already in sessionStorage...no need to fetch again");
+	//   }
+	//   else {
+	//     console.log("fetching science_names...");
+	//     $.get('/network/science_names', function(result) {
+	//       var science_names = JSON.parse(result.science_names);
+	//       store.session("science_names", science_names);
+	//     });
+	//   }
 
-	  //populate the autocomplete search box with the science members
-	  $( "#tags" ).autocomplete({
-	    source: store.session("science_names"),
-	    delay: 500,
-	    minLength: 2,
-	    select: function (event, ui) {
-	      var name = ui.item.value;
-	      highlightSelectedNode(name);
-	    }
-	  });
+	//   //populate the autocomplete search box with the science members
+	//   $( "#tags" ).autocomplete({
+	//     source: store.session("science_names"),
+	//     delay: 500,
+	//     minLength: 2,
+	//     select: function (event, ui) {
+	//       var name = ui.item.value;
+	//       highlightSelectedNode(name);
+	//     }
+	//   });
 
-	  //listen to the zoom buttons 
-	  $('#networkzoomin').click(function() {
-	    console.log("uip");
-	      networkzoom.scale(networkzoom.scale()+0.1);
-	      networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
-	  });
-	  $('#networkzoomout').click(function() {
-	      networkzoom.scale(networkzoom.scale()-0.1);
-	      networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
-	  }); 
-	}); //end document.ready
+	//   $('input#filterNodesAll').iCheck('check');
+
+	//   $('#selectionArea').hide();
+
+
+	//   //listen to the zoom buttons 
+	//   $('#networkzoomin').click(function() {
+	//     console.log("uip");
+	//       networkzoom.scale(networkzoom.scale()+0.1);
+	//       networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+	//   });
+	//   $('#networkzoomout').click(function() {
+	//       networkzoom.scale(networkzoom.scale()-0.1);
+	//       networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+	//   }); 
+	// }); //end document.ready
 
 	//if the user empties the search box, restore the opacity of all links and nodes
 	$('#tags').change(function() {
@@ -1170,14 +1236,14 @@ var PUBLICATIONS_MAP = (function () {
 
 	});// end network reset
 
-	$('#arrange').change(function() {
-	  if(this.value == "random"){
-	    network_force.linkStrength(dlinkStrength).charge(dcharge).gravity(dgravity).linkDistance(dlinkDistance).start();
-	  }
-	  else if(this.value == "department"){
-	    network_force.linkStrength(0).charge(-250).start();
-	  }
-	});
+	// $('#arrange').change(function() {
+	//   if(this.value == "random"){
+	//     network_force.linkStrength(dlinkStrength).charge(dcharge).gravity(dgravity).linkDistance(dlinkDistance).start();
+	//   }
+	//   else if(this.value == "department"){
+	//     network_force.linkStrength(0).charge(-250).start();
+	//   }
+	// });
 
 	$('#granularity').change(function() {
 	  if(this.value == "individuals"){
@@ -1512,24 +1578,17 @@ var PUBLICATIONS_MAP = (function () {
 	  	populateFilter(science_departments);
 
 	  	var filteryears = d3.select("#matrixviz")
-	    .data(pub_years_uniq)
-	    .enter().append("p")
-	    // .attr("value", function(d){ return d; })
-	    .text(function(d){ return d; });
+	    	.data(pub_years_uniq)
+	    	.enter().append("p")
+	    	// .attr("value", function(d){ return d; })
+	    	.text(function(d){ return d; });
 
 	  	var links_combined = links_science_exclusive.concat(links_co_sup);
 
 	  	network_force
 		    .nodes(science_faculty_data)
 		    //.links(links_for_network);
-		    .links(links_combined); 
-
-	  	network_force
-	    .gravity(dgravity)
-	    .friction(dfriction)
-	    .charge(dcharge)
-	    .linkDistance(dlinkDistance)
-	      .start();  
+		    .links(links_combined);   
 
 	 	var node_drag = d3.behavior.drag()
 	        .on("dragstart", dragstart)
@@ -1553,19 +1612,6 @@ var PUBLICATIONS_MAP = (function () {
 	      //.style("stroke-width", function (d) { return d.value/4; });
 	      .style("stroke-width", "1px");
 
-	  	deptCircle = networksvg.selectAll("circle.dept")
-		    .data(deptCircles)
-		    .enter()
-		    .append("svg:circle")
-		    .attr("class", "dept")
-		    .attr("r", 1)
-		    .attr("cx", function(d) { return d[1]; })
-		    .attr("cy", function(d) { return d[2]; })
-		    .style("visibility", "hidden")
-		    .style("opacity", 0)
-		    .style("fill", "white")
-		    .style("stroke", function(d){ return color10(d[0]); })
-		    .style("stroke-width", 2);
 
 	 	node = networksvg.selectAll("circle.node")
 		    .data(science_faculty_data)
@@ -1582,6 +1628,24 @@ var PUBLICATIONS_MAP = (function () {
 		    .attr("contract", function (d) { return d.Contract; })
 		    .style("fill", function(d){ return color10(d.Department); })
 		    .call(node_drag);
+
+		//getDeptCenters(science_departments.length, circleOutline[0][0].r.animVal.value, circleOutline[0][0].cx.animVal.value, circleOutline[0][0].cy.animVal.value);
+		getCenter();
+
+
+	  	// deptCircle = networksvg.selectAll("circle.dept")
+		  //   .data(deptCircles)
+		  //   .enter()
+		  //   .append("svg:circle")
+		  //   .attr("class", "dept")
+		  //   .attr("r", 1)
+		  //   .attr("cx", function(d) { return d[1]; })
+		  //   .attr("cy", function(d) { return d[2]; })
+		  //   //.style("visibility", "hidden")
+		  //   .style("opacity", 1)
+		  //   .style("fill", "white")
+		  //   .style("stroke", function(d){ return color10(d[0]); })
+		  //   .style("stroke-width", 2);				    
         
 	    function dragstart(d, i) {
 	    	dragging = true;
@@ -1609,6 +1673,8 @@ var PUBLICATIONS_MAP = (function () {
 	        dragging = false;
 	    }     
 
+
+		//keep track of whether a node has been selected individually
 		d3.selectAll("circle.node").each(function() {
 	  		this.selectedIndividually = false;
 	  	});  
@@ -1617,13 +1683,37 @@ var PUBLICATIONS_MAP = (function () {
 
 	  	network_constructed = true;
 
-	  	// /*Registers the specified listener to receive events of the specified type from the force layout. Currently, only "tick" events are supported, which are dispatched for each tick of the simulation. Listen to tick events to update the displayed positions of nodes and links.*/
-	 	 network_force.on("tick", tick)
+	  	// /*Registers the specified listener to receive events of the specified type from the force layout. 
+	  	//Currently, only "tick" events are supported, which are dispatched for each tick of the simulation. 
+
+	  	network_force
+	    	.gravity(dgravity)
+	    	.friction(dfriction)
+	    	.charge(dcharge)
+	    	.linkDistance(dlinkDistance)
+	    	.on("tick", tick)
+	      	.start();
 	}//end buildNetwork
 
+	$('#arrange').chosen().change(function() {
+		if (this.value == "department") {
+			network_force.gravity(0).linkStrength(0).charge(-100).start(); //set the network paramaters
+	  		//network_force.stop();
+	  	}
+	  	if (this.value == "random") {
+	  		network_force.gravity(0.6);
+	    	//network_force.linkStrength(dlinkStrength).charge(dcharge).gravity(dgravity).linkDistance(dlinkDistance).start();	  		
+	  	}
+	});
 
-	//called for each "tick" of the simulation
-	function tick () {
+
+	/*
+	called for each "tick" of the simulation
+	listens to tick events to update the displayed positions of nodes and links.
+
+	@params: e: ??
+	*/
+	function tick (e) {
 	  // var currentheight = networksvg.height = $('#networkviz').height();
 	  // var currentwidth = networksvg.width = $('#networkviz').width();
 	  // d3.select("#networkviz").attr("width", currentwidth).attr("height", currentheight); //not updating the actual svg element
@@ -1633,29 +1723,60 @@ var PUBLICATIONS_MAP = (function () {
 			network_force.stop();	
 		}
 
+		//if the user has chosen to arrange the nodes according to their respective departments
 	  if($('#arrange').val( ) == "department") {
 
-	    node
-	      .attr("cx", function(d){ 
-	        dept = d.Department;//department that the person belongs to
-	        deptCircles.forEach(function(d) { 
-	          if(d[0] == dept) {
-	            var xcoord = d[1]; // return the x coordinate
-	          }
-	        });//get the x coordinate
-	        return d.x += (xcoord - d.x) * network_force.alpha();
-	      })
-	      .attr("cy", function(d){ 
-	        dept = d.Department;//department that the person belongs to
-	        deptCircles.forEach(function(d) { 
-	          if(d[0] == dept) {
-	            var ycoord = d[2]; // return the y coordinate
-	          }
-	        });//get the y coordinate        
-	        return d.y += (ycoord - d.y) * network_force.alpha();
-	      })
-	      .style("stroke", "gray")
-	      .style("stroke-width", "1px");
+		node
+		    .each(function() {
+				d3.select(this).attr("cx", function(d){ 
+					var dept = d.Department;//department that the person belongs to
+					var focusx;//the x coordinate of the focus point for a node
+					deptCircles.forEach(function(d) { 
+						if(d.name == dept) {
+							focusx = d.focuscoords[0]; // return the x coordinate
+						}
+					});//get the x coordinate
+					return d.x += (focusx - d.x) * 0.2 * network_force.alpha();
+				});
+				d3.select(this).attr("cy", function(d){ 
+					var dept = d.Department;//department that the person belongs to
+					var focusy;//the y coordinate of the focus point for a node					
+					deptCircles.forEach(function(d) { 
+						if(d.name == dept) {
+							focusy = d.focuscoords[1]; // return the y coordinate
+						}
+					});//get the y coordinate        
+					return d.y += (focusy - d.y) * 0.2 * network_force.alpha();
+				});
+		    })
+		    .each(collide(.5))
+			.style("stroke", "gray")
+			.style("stroke-width", "1px");
+
+		// node
+		// 	.attr("cx", function(d){ 
+		// 		var dept = d.Department;//department that the person belongs to
+		// 		var focusx;//the x coordinate of the focus point for a node
+		// 		deptCircles.forEach(function(d) { 
+		// 			if(d.name == dept) {
+		// 				focusx = d.focuscoords[0]; // return the x coordinate
+		// 			}
+		// 		});//get the x coordinate
+		// 		return d.x += (focusx - d.x) * 0.2 * network_force.alpha();
+		// 	})
+		// 	.attr("cy", function(d){ 
+		// 		var dept = d.Department;//department that the person belongs to
+		// 		var focusy;//the y coordinate of the focus point for a node					
+		// 		deptCircles.forEach(function(d) { 
+		// 			if(d.name == dept) {
+		// 				focusy = d.focuscoords[1]; // return the y coordinate
+		// 			}
+		// 		});//get the y coordinate        
+		// 		return d.y += (focusy - d.y) * 0.2 * network_force.alpha();
+		// 	})
+		//     // .each(collide(.5))
+		// 	.style("stroke", "gray")
+		// 	.style("stroke-width", "1px");
 
 	    link
 	      .attr("x1", function(d) { return d.source.x; })
@@ -1665,22 +1786,24 @@ var PUBLICATIONS_MAP = (function () {
 	    }
 
 	  else {
-	    //moves each node towards the normal_center
-	    node
-	      .attr("cx", function(d) { 
-	        return d.x += (normal_center.x - d.x) * 0.12 * network_force.alpha();
-	        })
-	      .attr("cy", function(d) { 
-	        return d.y += (normal_center.y - d.y) * 0.12 * network_force.alpha(); 
-	        })
-	      .style("stroke", "gray")
-	      .style("stroke-width", function(d) { 
-	      	if (d.fixed == true)
-	      		return "3px";
-	      	else
-	      		return "1px";
-	      	})
-	      ;
+
+		node
+		    .each(function() { //moves each node towards the normal_center
+			    d3.select(this).attr("cx", function(d) {
+					return d.x += (normal_center.x - d.x) * 0.12 * network_force.alpha();
+				});
+				d3.select(this).attr("cy", function(d) {
+					return d.y += (normal_center.y - d.y) * 0.12 * network_force.alpha();
+				});
+		   		d3.select(this).style("stroke", "gray");
+		      	d3.select(this).style("stroke-width", function(d) { 
+			      	if (d.fixed == true)
+			      		return "3px";
+			      	else
+			      		return "1px";
+		      	});		    	
+		    })
+		    .each(collide(.5));
 
 	    link.attr("x1", function(d) { return d.source.x; })
 	      .attr("y1", function(d) { return d.source.y; })
@@ -1741,53 +1864,106 @@ var PUBLICATIONS_MAP = (function () {
 	}//end tick
 
 
+	/*
+	move nodes toward cluster centers
+
+	@params: alpha: 
+	@returns: anonymous function...
+	*/
+	function moveTowardClusterCenter(alpha) {
+	  return function(d) {
+	    d.y += (d.py - d.y) * alpha;
+	    d.x += (d.px - d.x) * alpha;
+	  };
+	}
 
 	/*
+	move nodes toward the center of the visualization area
+
+	@params: alpha: 
+	@returns: anonymous function...
+	*/
+	function moveTowardNormalCenter(node) {
+		var test = 2;
+	  return function(d) {
+	    d.y += (normal_center.y - d.y) * alpha;
+	    d.x += (normal_center.x - d.x) * alpha;
+	  };
+	}
+
+	/*
+	gets the center...?
+
 	@params:
 	@returns:
 	*/
 	function getCenter() {
-	    //to populate the search bar
-	  if(store.session.has("science_departments")){
-	    console.log("science_departments is already in sessionStorage...no need to fetch again");
-	  }
-	  else {
-	    console.log("fetching science_departments...");
-	    $.get('/network/science_departments', function(result) {
-	      var science_departments = JSON.parse(result.science_departments);
-	      store.session("science_departments", science_departments);
-	    });
-	  }
-
-	  store.session("science_departments").forEach(function (d) {
-	    deptCircles.push({"name": d, "count": 0, "xcoords": [], "ycoords": [], "deptcoords": []});  
-	  });
-
-	  d3.selectAll("circle.node").each( function () {
-	    var that = this;
-	    nodeDept = this.__data__.department;
-	    deptCircles.forEach (function(n) {
-	      if (nodeDept == n.name){
-	        n.count += 1;
-	        n.xcoords.push(that.attributes.cx);
-	        n.ycoords.push(that.attributes.yx);
-	      }
-	    });
-	  });
-
-	  //now calculate the deptcoords
-
+		async.waterfall([
+			function(callback){
+			  if(store.session.has("science_departments")){
+			    console.log("science_departments is already in sessionStorage...no need to fetch again");
+			  }
+			  else {
+			    console.log("fetching science_departments...");
+			    $.get('/network/science_departments', function(result) {
+			      var science_departments = JSON.parse(result.science_departments);
+			      store.session("science_departments", science_departments);
+	    		});
+	  		  }
+	  		  callback(null, store.session("science_departments"));
+			},
+			function(science_departments, callback){
+	  		  var temp = store.session("science_departments").forEach(function (d) {
+	    	 	deptCircles.push({"name": d, "count": 0, "xcoords": [], "ycoords": [], "focuscoords": []});  
+	  		  });
+	  		  callback(null, science_departments, deptCircles);
+			},
+			function(science_departments, deptCircles, callback){
+			  //calculate equidistant points on a circle for the foci
+			  	var numpoints = science_departments.length;
+				var slice = 2 * Math.PI / numpoints;
+				var radius = circleOutline[0][0].r.animVal.value;
+				var centerx = circleOutline[0][0].cx.animVal.value;
+				var centery = circleOutline[0][0].cy.animVal.value;
+				//create numpoints number of circles, one for each department
+				for (i = 0; i < numpoints; i++)
+				{
+				    var angle = slice * i;
+				    var newX = (centerx + radius * Math.cos(angle));
+				    var newY = (centery + radius * Math.sin(angle));
+				    networksvg.append("svg:circle").attr("class", "deptCircle").attr("cx", newX).attr("cy", newY).attr("r", 50).style("fill", "none").style("stroke-width", "2px").style("stroke", "gray").style("opacity", "0");
+				    deptCircles[i].focuscoords= [newX, newY];
+				}	
+				callback(null, 'done');			
+			}
+			],
+			function(err, result){
+			  d3.selectAll("circle.node").each( function () {
+			    var that = this;
+			    deptCircles.forEach (function(n) {
+			      if (that.__data__.Department == n.name){
+			        n.count += 1;
+			        n.xcoords.push(that.__data__.px);
+			        n.ycoords.push(that.__data__.py);
+			      }
+			    });
+			  });
+			}
+		);//end async.waterfall
 	}//end getCenter
 
 	// //getDeptCenters(9, circleOutline[0][0].r.animVal.value, circleOutline[0][0].cx.animVal.value, circleOutline[0][0].cy.animVal.value)
 	// function getDeptCenters(numpoints, radius, centerx, centery) {
 	//     var slice = 2 * Math.PI / numpoints;
+
+	//     //create numpoints number of circles, one for each department
 	//     for (i = 0; i < numpoints; i++)
 	//     {
 	//         var angle = slice * i;
 	//         var newX = (centerx + radius * Math.cos(angle));
 	//         var newY = (centery + radius * Math.sin(angle));
 	//         networksvg.append("svg:circle").attr("class", "deptCircle").attr("cx", newX).attr("cy", newY).attr("r", 25);
+	//         departmentFoci.push();
 	//     }
 	// }
 
@@ -2092,7 +2268,7 @@ var PUBLICATIONS_MAP = (function () {
 	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")
-	    .style("border", "2px dashed")
+	    .style("border", "1px dashed")
 	    .style("border-color", "rgba(255,255,255,0)")
 	    //.attr("selected", false) //keeps track of whether a label in the legend has been selected (i.e., clicked on)
 	    .text(function(d) { return d; });
@@ -2229,26 +2405,6 @@ var PUBLICATIONS_MAP = (function () {
 	      + " scale(" + scale + ")");
 	}
 
-	// function pan() {
-	//   networksvg.attr("x", d3.event.x).attr("y", d3.event.y);
-	// }
-
-	// removes duplicates and returns distinct array
-	function eliminateDuplicates(arr) {
-	  var i,
-	      len=arr.length,
-	      out=[],
-	      obj={};
-
-	  for (i=0;i<len;i++) {
-	    obj[arr[i]]=0;
-	  }
-	  for (i in obj) {
-	    out.push(i);
-	  }
-	  return out;
-	}
-
 	function highlightSelectedNode (name) {
 	  d3.selectAll("circle.node").each( function () {
 	    if (this.__data__.Name != name)
@@ -2382,5 +2538,41 @@ var PUBLICATIONS_MAP = (function () {
 			//});
 		}
 	}
+
+	/* 
+	Resolve collisions between nodes
+	@params: alpha: 
+			 nodes: nodes of the network (keep ??)
+	@returns: 
+	*/
+	function collide(alpha) {
+	  var quadtree = d3.geom.quadtree(node);
+	  return function(d) {
+	    var r = this.r.animVal.value + 10,
+	        nx1 = d.x - r,
+	        nx2 = d.x + r,
+	        ny1 = d.y - r,
+	        ny2 = d.y + r;
+	    quadtree.visit(function(quad, x1, y1, x2, y2) {
+	      if (quad.point && (quad.point !== d)) {
+	        var x = d.x - quad.point.x,
+	            y = d.y - quad.point.y,
+	            l = Math.sqrt(x * x + y * y),
+	            r = this.r.animVal.value + 10 + (d.color !== quad.point.color) * padding;
+	        if (l < r) {
+	          l = (l - r) / l * alpha;
+	          d.x -= x *= l;
+	          d.y -= y *= l;
+	          quad.point.x += x;
+	          quad.point.y += y;
+	        }
+	      }
+	      return x1 > nx2
+	          || x2 < nx1
+	          || y1 > ny2
+	          || y2 < ny1;
+	    });
+	  };
+	}	
 
 }());
