@@ -784,7 +784,7 @@ for matrix
 }
 
 .action p {
-  font-size: 2em;
+  font-size: 1.8em;
   font-family: 'Oswald', sans-serif;
   color: rgb(150,150,150);
   padding-bottom: 6px;
@@ -844,7 +844,7 @@ for matrix
   font-weight: bold;
   display: inline-block;
   margin-top: 20px;
-  font-size: 2em;
+  font-size: 1.8em;
 }
 
 #actionpanel h3:hover {
@@ -2137,8 +2137,8 @@ form.signin input::-webkit-input-placeholder {
   display: inline-block;
   color: black;
   font-family: 'Helvetica Neue', sans-serif;
-  font-size: 0.8em;
-  padding: 4px 0px 4px 4px;
+  font-size: 0.75em;
+  padding: 2px 0px 2px 2px;
   cursor: default;
   }
 
@@ -2212,7 +2212,7 @@ form.signin input::-webkit-input-placeholder {
   display: inline-block;
   margin: 2px 0px;
   position: relative;
-  bottom: 1px;
+  bottom: 0px;
   margin: 0px 15px 0px 5px;
 }
 
