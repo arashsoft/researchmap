@@ -90,7 +90,7 @@ exports.data = function(req, res){
 	}	
 
 	else if (request == "links_co_sup"){
-		db.getDoc('links_co_supervision_converted', function(err, doc){
+		db.getDoc('links_cosupervisions_converted', function(err, doc){
 			if (err) console.log(err);
 			res.send({links_co_sup: JSON.stringify(doc.data)});
 		});

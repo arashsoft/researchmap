@@ -796,7 +796,7 @@ var PUBLICATIONS_MAP = (function () {
     								.attr('class', 'node')
     								.attr('r', 10)
     								.style('visibility', 'visible')
-    								.style('fill', function(d) { return color10(d.Department); })
+    								.style('fill', function(d) { return color20(d.Department); })
     								.style("stroke", "gray")
     								.style("stoke-width", "1px");
 
@@ -1560,14 +1560,14 @@ var PUBLICATIONS_MAP = (function () {
 	function getNetworkData (callback){
 
 		//for testing		
-    	$.get('network/test', function(result){
-			science_faculty_data= JSON.parse(result.science_faculty_data);
-			western_faculty_data= JSON.parse(result.western_faculty_data);
-			grant_data= JSON.parse(result.grant_data);
-			supervisor_data= JSON.parse(result.supervisor_data);
-			publication_data= JSON.parse(result.publication_data);
-			console.log("yup");
-          });
+   //  	$.get('network/test', function(result){
+			// science_faculty_data= JSON.parse(result.science_faculty_data);
+			// western_faculty_data= JSON.parse(result.western_faculty_data);
+			// grant_data= JSON.parse(result.grant_data);
+			// supervisor_data= JSON.parse(result.supervisor_data);
+			// publication_data= JSON.parse(result.publication_data);
+			// console.log("yup");
+   //        });
 
 	  var links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup;
 
@@ -1718,27 +1718,28 @@ var PUBLICATIONS_MAP = (function () {
 	            callback(null);
 	          });
 	        }         
-	      },
+	      }
+	      //,
 
 		  /////testing/////
-	      function(callback){
-	      	console.log("fetching grants...");
-	      	$.get('network/all_grants', function(result) {
-	      		all_grants = JSON.parse(result.all_grants);
-	      		callback(null);
-	      	});
-	      }
+	      // function(callback){
+	      // 	console.log("fetching grants...");
+	      // 	$.get('network/all_grants', function(result) {
+	      // 		all_grants = JSON.parse(result.all_grants);
+	      // 		callback(null);
+	      // 	});
+	      // }
 	    ],
 
 	      function(err, results){
 	      	if (err) throw new Error(err);
-	        callback(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup, all_grants);
+	        callback(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup);//, all_grants);
 	      }
 	    );
 	}//end getNetworkData
 
 
-	function buildNetwork(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup, all_grants){
+	function buildNetwork(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup){//, all_grants){
 
 	  	$('#vizloader').hide();
 
@@ -1892,8 +1893,6 @@ var PUBLICATIONS_MAP = (function () {
 	  // var currentwidth = networksvg.width = $('#networkviz').width();
 	  // d3.select("#networkviz").attr("width", currentwidth).attr("height", currentheight); //not updating the actual svg element
 
-	  count_tick += 1;
-	  console.log(count_tick);
 
 	  	if($('input#motionFreeze').is(':checked')) {
 	  		console.log("uyp");
