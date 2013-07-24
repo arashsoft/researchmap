@@ -26,6 +26,7 @@ var PUBLICATIONS_MAP = (function () {
 	var brush; //for the polybrush
 	var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 	var selectedNodes = []; //array of objects that the user has selected
+	var selectedLinks = []; //array of links that between the objects use has selected
 	var dataset;
 	var pubdata;
 	var departments = [];
@@ -123,6 +124,8 @@ var PUBLICATIONS_MAP = (function () {
 	   .append('svg:g')
 	   	  .on("dblclick", null)
 	  ;
+
+	var cloningSvg;
 
 	//this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the network), it allows the visualization
 	//to be panned
@@ -589,6 +592,14 @@ var PUBLICATIONS_MAP = (function () {
 	          	}
 	        }
 	      });
+	      networksvg.selectAll("line.link").each(function(d) {
+	      	if(brush.isWithinExtent(d.source.x, d.source.y) && brush.isWithinExtent(d.target.x, d.target.y)) {
+	      		selectedLinks.push(this.__data__);
+	      	}
+	      	else {
+	      		selectedLinks = _.without(selectedLinks, this.__data__);
+	      	}
+	      })
 	    })
 	   	networksvg.append("svg:g")
 	    .attr("class", "brush")
@@ -629,7 +640,8 @@ var PUBLICATIONS_MAP = (function () {
       	if (noneSelected == true){   
       		//hide the selectionArea div
     		$('#selectionArea').hide('slow'); 
-    	}	
+    		$('#cloningArea').hide('slow');
+    	}
     })
     .on('ifUnchecked', function() {
     	//show the selectionArea div
@@ -639,9 +651,11 @@ var PUBLICATIONS_MAP = (function () {
     //if the user clicks the button to remove all selections
     $('#selectionRemove').click(function() {
     	selectedNodes = []; //empty the array
+    	selectedLinks = [];
     	updateSelectionArea("empty"); //update the selection area by emptying it
     	//hide the selectionArea div
     	$('#selectionArea').hide('slow');
+    	$('#cloningArea').hide('slow');
     	//return to the defaul for the radios (i.e., check the 'none' option)
     	$('input#selectNone').iCheck('check');
     	//reset the style of the nodes
@@ -656,6 +670,137 @@ var PUBLICATIONS_MAP = (function () {
     .on('ifUnchecked', function() {
     	$('#gatheringArea').hide('slow');
     });
+
+    $('#selectionClone').click(function() {
+    	if(selectedNodes.length == 0)
+    		return ;
+    	var cloningWidth = 300;
+    	var cloningHeight = 300;
+    	//zoom behavior
+    	var cloningZoom = d3.behavior.zoom()
+    								.scaleExtent([0.5, 5])
+    								.on("zoom", function() {
+    									trans=d3.event.translate;
+	  									scale=d3.event.scale;
+
+										cloningSvg.attr("transform",
+										    "translate(" + trans + ")"
+										    + " scale(" + scale + ")");
+									});
+
+    	$('#cloningArea').contents().filter('svg').remove();
+    	cloningSvg = d3.select('#cloningArea')
+    						.append('svg:svg')
+    						.attr('width', cloningWidth)
+    						.attr('height', cloningHeight)
+    						.append('svg:g')
+    						.call(cloningZoom)
+
+    	$('#cloningArea').show('slow');
+    	//clone selected data so that we can create a new layout
+    	var s = JSON.stringify(selectedNodes);
+    	var nodes = JSON.parse(s);
+
+    	s = JSON.stringify(selectedLinks);
+    	var links = JSON.parse(s);
+    	links.forEach(function(link) {
+    		nodes.forEach(function(node, index) {
+    			if(node.ID == link.source.ID)
+    				link.source = index;
+    			if(node.ID == link.target.ID)
+    				link.target = index;
+    		})
+    	});
+
+    	var cloningLink = cloningSvg.selectAll('line.link')
+    								.data(links)
+    								.enter().append('svg:line')
+    								.attr('class', 'link')
+    								.style("visibility", "visible")
+								    .style("stroke", "black")
+								    .style("stroke-dasharray", function (d) {
+								      if (d.type == "cosup")
+								        return "4, 4";
+								      else
+								        return "10, 0";
+								    });
+
+		var cloningNode = cloningSvg.selectAll('circle.node')
+    								.data(nodes)
+    								.enter().append('svg:circle')
+    								.attr('class', 'node')
+    								.attr('r', 10)
+    								.style('visibility', 'visible')
+    								.style('fill', function(d) { return color10(d.Department); })
+    								.style("stroke", "gray")
+    								.style("stoke-width", "1px");
+
+    	var cloning_network_force = d3.layout.force()
+    							.size([cloningWidth, cloningHeight])
+    							.nodes(nodes)
+    							.links(links)
+	    						//.gravity(dgravity)
+	    						.friction(dfriction)
+	    						//.charge(dcharge)
+	    						.linkDistance(30)
+
+	    function cloningAreaTick() {
+	    	cloningLink.attr("x1", function(d) { return d.source.x; })
+      			.attr("y1", function(d) { return d.source.y; })
+      			.attr("x2", function(d) { return d.target.x; })
+      			.attr("y2", function(d) { return d.target.y; });
+
+  			cloningNode.attr("cx", function(d) { return d.x; })
+      			.attr("cy", function(d) { return d.y; });
+	    }
+
+	    var nodeDrag = d3.behavior.drag()
+    							.on("dragstart", function(d, i) {
+    								dragging = true;
+    								cloning_network_force.stop();
+    							})
+    							.on("drag", function(d, i) {
+    								d.px += d3.event.dx;
+	        						d.py += d3.event.dy;
+							        d.x += d3.event.dx;
+							        d.y += d3.event.dy;
+							        cloningAreaTick();
+    							})
+    							.on("dragend", function(d, i) {
+    								cloningAreaTick();
+    								cloning_network_force.resume();
+    								dragging = false;
+    							})
+    	cloningNode.call(nodeDrag)
+    				.on("mouseover", function(d) {
+    					d3.select(this).attr("cursor", "pointer");
+					  	d3.select(this).style("stroke-width", "3px");
+					  	if (!dragging) {
+							nodeTooltip.transition()        
+				                .duration(200)      
+				                .style("opacity", .95);      
+				            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + d.Department + "<br>" + d.Rank)                
+				            	.style("left", (parseInt(d3.select(this).attr("cx")) + document.getElementById("networkviz").offsetLeft) + "px")     
+				                .style("top", d.y + "px");
+
+				            //position the tooltip relative to the svg circle
+					  	    $('.nodeTooltip').position({
+				    			"my": "left+20 top+20",
+				    			"at": "right bottom",
+				    			"of": $(this)
+				    		});
+					  	}
+    				})
+    				.on("mouseout", function(d) {
+    					d3.select(this).style("stroke-width", "1px");	    
+					  	nodeTooltip.transition()        
+				        	.duration(500)      
+				            .style("opacity", 0);
+				    });
+
+	    cloning_network_force.on("tick", cloningAreaTick);
+	    cloning_network_force.start();
+    }) //end of selectionClone click
 
 	/*
 	filters (hides) all nodes that do not have links connected to them
@@ -1719,6 +1864,10 @@ var PUBLICATIONS_MAP = (function () {
 	  		//if this node is already selected
 	  		if (this.style.strokeWidth == "4px") {
 	  			selectedNodes = _.without(selectedNodes, this.__data__);
+	  			networksvg.selectAll("line.link").each(function(link) {
+	  				if(link.source == d || link.target == d)
+	  					selectedLinks = _.without(selectedLinks, d);
+	  			});
 	  			this.selectedIndividually = false;
 		  		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color10(d.Department); });	  			
 	  		}
@@ -1726,6 +1875,15 @@ var PUBLICATIONS_MAP = (function () {
 		  		selectedNodes.push(this.__data__);
 		  		this.selectedIndividually = true;
 		  		selectedNodes = _.uniq(selectedNodes, false, function(x){ return (x.Name + x.Department) });
+		  		networksvg.selectAll("line.link").each(function(link) {
+	  				if(link.source == d || link.target == d) {
+	  					selectedNodes.forEach(function(node) {
+	  						if(node == ( (link.source == d) ? link.target: link.source ) )
+	  							selectedLinks.push(link);
+	  					});
+	  				}
+	  					
+	  			});
 		  		d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
 	  		}
 	  		//update the div that lists the current selections
@@ -1975,6 +2133,7 @@ var PUBLICATIONS_MAP = (function () {
 	    .enter().append("g")
 	      .attr("class", "matrixrow")
 	      .attr("transform", function(d, i) { return "translate(0," + matrix_x(i) + ")"; })
+	      .attr("id", function(d, i) { return "row-" + i})
 	      .each(row);
 
 	  row.append("line")
@@ -1992,7 +2151,8 @@ var PUBLICATIONS_MAP = (function () {
 	      .data(matrix)
 	    .enter().append("g")
 	      .attr("class", "matrixcolumn")
-	      .attr("transform", function(d, i) { return "translate(" + matrix_x(i) + ")rotate(-90)"; });
+	      .attr("transform", function(d, i) { return "translate(" + matrix_x(i) + ")rotate(-90)"; })
+	      .attr("id", function(d, i) { return "col-" + i});
 
 	  column.append("line")
 	      .attr("x1", -matrix_width);
@@ -2051,6 +2211,17 @@ var PUBLICATIONS_MAP = (function () {
 	  d3.select("#order").on("change", function() {
 	    clearTimeout(timeout);
 	    order(this.value);
+
+	    if(this.value == "department") {
+	    	for(var i = 0; i < n - 1; i++) {
+	    		if(d3.ascending(nodes[orders[this.value][i]].Department, nodes[orders[this.value][i+1]].Department)) {
+	    			matrixsvg.transition().delay(2500).selectAll("#row-" + orders[this.value][i+1] + " > line").style("stroke", "red");
+	    			matrixsvg.transition().delay(2500).selectAll("#col-" + orders[this.value][i+1] + " > line").style("stroke", "red");
+	    		}
+	    	}
+	    } else {
+	    	matrixsvg.selectAll("line").style("stroke", "white");
+	    }
 	  });
 
 	  //for the matrix
@@ -2117,7 +2288,7 @@ var PUBLICATIONS_MAP = (function () {
 					}
 				});
 				d3.selectAll("line.link").each(function(link) {
-					if ((link.source.Department == d && link.target.Department == d) || (_.contains(selectedDepartments, link.target.Department) && _.contains(selectedDepartments, link.source.Department))) {
+					if ((link.source.Department == d || _.contains(selectedDepartments, link.source.Department)) && (link.target.Department == d || _.contains(selectedDepartments, link.target.Department))) {
 							d3.select(this).style("opacity", "1");
 					}
 					else
@@ -2189,7 +2360,7 @@ var PUBLICATIONS_MAP = (function () {
 						}
 					});
 					d3.selectAll("line.link").each(function(link) {
-						if ((link.source.Department == d && link.target.Department == d) || (_.contains(selectedDepartments, link.target.Department) && _.contains(selectedDepartments, link.source.Department))) {
+						if ((link.source.Department == d || _.contains(selectedDepartments, link.source.Department)) && (link.target.Department == d || _.contains(selectedDepartments, link.target.Department))) {
 								d3.select(this).style("opacity", "1");
 						}
 						else
@@ -2349,6 +2520,7 @@ var PUBLICATIONS_MAP = (function () {
 			//empty the selection area by removing div elements
 			//keeps the h3 element
 			$('#selectionList').contents().filter('li').remove();
+			$('#cloningArea').contents().filter('svg').remove();
 		}
 		else {
 			var items = d3.select("#selectionList").selectAll(".item")
