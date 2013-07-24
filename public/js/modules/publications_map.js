@@ -2422,8 +2422,9 @@ var PUBLICATIONS_MAP = (function () {
 	    if(this.value == "department") {
 	    	for(var i = 0; i < n - 1; i++) {
 	    		if(d3.ascending(nodes[orders[this.value][i]].Department, nodes[orders[this.value][i+1]].Department)) {
-	    			matrixsvg.transition().delay(2500).selectAll("#row-" + orders[this.value][i+1] + " > line").style("stroke", "red");
-	    			matrixsvg.transition().delay(2500).selectAll("#col-" + orders[this.value][i+1] + " > line").style("stroke", "red");
+	    			//delay = 9700 = matrix trasition duration + max rows & columns delay = 2500 + 4 * 1800
+	    			matrixsvg.transition().delay(9700).selectAll("#row-" + orders[this.value][i+1] + " > line").style("stroke", "red");
+	    			matrixsvg.transition().delay(9700).selectAll("#col-" + orders[this.value][i+1] + " > line").style("stroke", "red");
 	    		}
 	    	}
 	    } else {
