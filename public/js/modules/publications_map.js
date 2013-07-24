@@ -157,7 +157,11 @@ var PUBLICATIONS_MAP = (function () {
 
 	//var color10 = d3.scale.ordinal().range(["#00ffff", "#ff9900", "#0100b3", "#9c9284", "#ffff4e", "#ff0000", "#333333", "#ff00ff", "#41924B", "#cc0000"]);
 
-	var color10 = d3.scale.category10();
+	//var color10 = d3.scale.category10();
+
+
+	//this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
+	var color20 = d3.scale.ordinal().range(["#D24B32","#73D74B","#7971D9","#75CCC1","#4F2A3F","#CA4477","#C78D38","#5D8737","#75A0D2","#C08074","#CD50CC","#D0D248","#CA8BC2","#BFC98D","#516875","#434E2F","#66D593","#713521","#644182","#C9C0C3"]);
 
 	var science_faculty_members = [];
 	var science_faculty_members_unique = [];
@@ -646,7 +650,7 @@ var PUBLICATIONS_MAP = (function () {
 	        	if(this.selectedIndividually == false){
 	  	  			selectedNodes = _.without(selectedNodes, this.__data__);      		
 	        		//reset the style
-	          		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+	          		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
 	          	}
 	        }
 	      });
@@ -661,7 +665,7 @@ var PUBLICATIONS_MAP = (function () {
       //   // if the circle in the current iteration is within the brush's selected area
       //   if (brush.isWithinExtent(d.x, d.y)) {
       //   	//reset the style
-      //     d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+      //     d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
       // 	}
       // });
       	//remove the brush completely
@@ -707,7 +711,7 @@ var PUBLICATIONS_MAP = (function () {
     	$('input#selectNone').iCheck('check');
     	//reset the style of the nodes
     	d3.selectAll("circle.node").each(function() {
-    		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color10(d.Department); });
+    		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
     	});
     });
 
@@ -1401,6 +1405,8 @@ var PUBLICATIONS_MAP = (function () {
 	  getNetworkData(buildNetwork);
 	}//end constructNetwork
 
+	var all_grants;
+
 	/*
 	gets the data for the network (either from the sessionStorage or from the db on the server) and then builds the network by passing the buildNetwork function as a callback to getNetworkData
 	@params: callback: a callback function--in this case buildNetwork--that builds the network visualization
@@ -1408,11 +1414,22 @@ var PUBLICATIONS_MAP = (function () {
 	*/
 	function getNetworkData (callback){
 
-	  var links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, all_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup;
+		//for testing		
+    	$.get('network/test', function(result){
+			science_faculty_data= JSON.parse(result.science_faculty_data);
+			western_faculty_data= JSON.parse(result.western_faculty_data);
+			grant_data= JSON.parse(result.grant_data);
+			supervisor_data= JSON.parse(result.supervisor_data);
+			publication_data= JSON.parse(result.publication_data);
+			console.log("yup");
+          });
+
+	  var links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup;
 
 	  //retrieves the data either from sessionStorage or from the database
 	  async.parallel(
 	    [
+
 	      function(callback){
 	        if(store.session.has("links_for_network")){
 	          console.log("links_for_network is already in sessionStorage...no need to fetch again");
@@ -1478,17 +1495,17 @@ var PUBLICATIONS_MAP = (function () {
 	      },
 
 	      function(callback){
-	        if(store.session.has("all_faculty_data")){
-	          console.log("all_faculty_data is already in sessionStorage...no need to fetch again");
-	          all_faculty_data = store.session("all_faculty_data");
+	        if(store.session.has("western_faculty_data")){
+	          console.log("western_faculty_data is already in sessionStorage...no need to fetch again");
+	          western_faculty_data = store.session("western_faculty_data");
 	          callback(null);          
 	        }
 	        else {
-	          console.log("fetching all_faculty_data...");
-	          $.get('/network/all_faculty_data', function(result){
-	            all_faculty_data = JSON.parse(result.all_faculty_data);
+	          console.log("fetching western_faculty_data...");
+	          $.get('/network/western_faculty_data', function(result){
+	            western_faculty_data = JSON.parse(result.western_faculty_data);
 	            //so that it doesn't store...causing DOM exception 22 if this is uncommented
-	            //store.session("all_faculty_data", all_faculty_data);
+	            //store.session("western_faculty_data", western_faculty_data);
 	            callback(null);            
 	          });
 	        } 
@@ -1556,18 +1573,27 @@ var PUBLICATIONS_MAP = (function () {
 	            callback(null);
 	          });
 	        }         
+	      },
+
+		  /////testing/////
+	      function(callback){
+	      	console.log("fetching grants...");
+	      	$.get('network/all_grants', function(result) {
+	      		all_grants = JSON.parse(result.all_grants);
+	      		callback(null);
+	      	});
 	      }
 	    ],
 
 	      function(err, results){
 	      	if (err) throw new Error(err);
-	        callback(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, all_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup);
+	        callback(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup, all_grants);
 	      }
 	    );
 	}//end getNetworkData
 
 
-	function buildNetwork(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, all_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup){
+	function buildNetwork(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup, all_grants){
 
 	  	$('#vizloader').hide();
 
@@ -1583,6 +1609,7 @@ var PUBLICATIONS_MAP = (function () {
 	    	// .attr("value", function(d){ return d; })
 	    	.text(function(d){ return d; });
 
+	  	//var links_combined = links_science_exclusive.concat(links_co_sup);
 	  	var links_combined = links_science_exclusive.concat(links_co_sup);
 
 	  	network_force
@@ -1626,7 +1653,7 @@ var PUBLICATIONS_MAP = (function () {
 		    .attr("name", function (d) { return d.Name; })
 		    .attr("rank", function (d) { return d.Rank; })
 		    .attr("contract", function (d) { return d.Contract; })
-		    .style("fill", function(d){ return color10(d.Department); })
+		    .style("fill", function(d){ return color20(d.Department); })
 		    .call(node_drag);
 
 		//getDeptCenters(science_departments.length, circleOutline[0][0].r.animVal.value, circleOutline[0][0].cx.animVal.value, circleOutline[0][0].cy.animVal.value);
@@ -1644,7 +1671,7 @@ var PUBLICATIONS_MAP = (function () {
 		  //   //.style("visibility", "hidden")
 		  //   .style("opacity", 1)
 		  //   .style("fill", "white")
-		  //   .style("stroke", function(d){ return color10(d[0]); })
+		  //   .style("stroke", function(d){ return color20(d[0]); })
 		  //   .style("stroke-width", 2);				    
         
 	    function dragstart(d, i) {
@@ -1707,6 +1734,8 @@ var PUBLICATIONS_MAP = (function () {
 	});
 
 
+	var count_tick = 0;
+
 	/*
 	called for each "tick" of the simulation
 	listens to tick events to update the displayed positions of nodes and links.
@@ -1717,6 +1746,9 @@ var PUBLICATIONS_MAP = (function () {
 	  // var currentheight = networksvg.height = $('#networkviz').height();
 	  // var currentwidth = networksvg.width = $('#networkviz').width();
 	  // d3.select("#networkviz").attr("width", currentwidth).attr("height", currentheight); //not updating the actual svg element
+
+	  count_tick += 1;
+	  console.log(count_tick);
 
 	  	if($('input#motionFreeze').is(':checked')) {
 	  		console.log("uyp");
@@ -1843,7 +1875,7 @@ var PUBLICATIONS_MAP = (function () {
 	  		if (this.style.strokeWidth == "4px") {
 	  			selectedNodes = _.without(selectedNodes, this.__data__);
 	  			this.selectedIndividually = false;
-		  		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color10(d.Department); });	  			
+		  		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color20(d.Department); });	  			
 	  		}
 	  		else {
 		  		selectedNodes.push(this.__data__);
@@ -2161,7 +2193,7 @@ var PUBLICATIONS_MAP = (function () {
 	      .attr("y", matrix_x.rangeBand() / 2)
 	      .attr("dy", ".32em")
 	      .attr("text-anchor", "end")
-	      .style("fill", function(d, i) { return color10(nodes[i].Department) })
+	      .style("fill", function(d, i) { return color20(nodes[i].Department) })
 	      .text(function(d, i) { return nodes[i].Name; });
 
 	  var column = matrixsvg.selectAll(".matrixcolumn")
@@ -2178,7 +2210,7 @@ var PUBLICATIONS_MAP = (function () {
 	      .attr("y", matrix_x.rangeBand() / 2)
 	      .attr("dy", ".32em")
 	      .attr("text-anchor", "start")
-	      .style("fill", function(d, i) { return color10(nodes[i].Department) })
+	      .style("fill", function(d, i) { return color20(nodes[i].Department) })
 	      .text(function(d, i) { return nodes[i].Name; });
 
 
@@ -2276,7 +2308,7 @@ var PUBLICATIONS_MAP = (function () {
 	    label
 	    .append("div")
 	    .attr("class", "labelcolor")
-	    .style("background-color", function(d){ return color10(d); });
+	    .style("background-color", function(d){ return color20(d); });
 
 		label
 			.on("mouseover", function(d) {
@@ -2384,7 +2416,7 @@ var PUBLICATIONS_MAP = (function () {
 	    .text(function(d) { return d; })
 	    .append("div")
 	    .attr("class", "labelcolor")
-	    .style("background-color", function(d){ return color10(d); });
+	    .style("background-color", function(d){ return color20(d); });
 	}
 
 	function redrawNetwork() {
@@ -2515,16 +2547,16 @@ var PUBLICATIONS_MAP = (function () {
 				.append("li")
 				.attr("class", "item")
 				.text(function(d) { return d.Name; } )
-				.style("color", function(d) { return color10(d.Department); } );
+				.style("color", function(d) { return color20(d.Department); } );
 
 			items.on("mouseover", function() {
 				d3.select(this)
-					.style("background-color", "rgb(36,137,197)")//function(d) { return color10(d.Department) })
+					.style("background-color", "rgb(36,137,197)")//function(d) { return color20(d.Department) })
 					.style("color", "white");
 			})
 				.on("mouseout", function() {
 					d3.select(this).style("background-color", "white")
-					.style("color", function(d) { return color10(d.Department); } );	
+					.style("color", function(d) { return color20(d.Department); } );	
 				});
 
 			items.exit().remove();

@@ -20,10 +20,30 @@ exports.data = function(req, res){
 		});
 	}
 
-	else if (request == "all_faculty_data"){
+	else if (request == "test"){
 		db.getDoc('unprocessed_data', function(err, doc){
 			if (err) console.log(err);
-			res.send({all_faculty_data: JSON.stringify(doc.all_faculty_data)});
+			res.send({
+				science_faculty_data: JSON.stringify(doc.science_faculty_data),
+				western_faculty_data: JSON.stringify(doc.western_faculty_data),
+				grant_data: JSON.stringify(doc.grant_data),
+				supervisor_data: JSON.stringify(doc.supervisor_data),
+				publication_data: JSON.stringify(doc.publication_data)
+			});
+		})
+	}
+
+	else if (request == "all_grants"){
+		db.getDoc('processed_data', function(err, doc){
+			if (err) console.log(err);
+			res.send({all_grants: JSON.stringify(doc.grants_not_unique)});
+		});
+	}	
+
+	else if (request == "western_faculty_data"){
+		db.getDoc('unprocessed_data', function(err, doc){
+			if (err) console.log(err);
+			res.send({western_faculty_data: JSON.stringify(doc.western_faculty_data)});
 		});
 	}	
 

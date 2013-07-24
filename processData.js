@@ -33,6 +33,10 @@ var publications_science = [];
 var publications_western = [];
 var links_science = [];
 var links_western = [];
+var links_cosupervisions = [];
+var links_cosupervisions_converted = [];
+var links_grants = [];
+var links_grants_converted = [];
 //var grants = {};
 var sankeyData = {"nodes":[], "links": []};
 var sankeyDataDepartments = {"nodes":[], "links": []};
@@ -92,7 +96,7 @@ exports.full = function(req, res) {
 /*
 This function reads data from a number of csv files that reside in the /data directory on the server:
 - Science_Faculty.csv: a list of all the faculty members in science
-- All_Faculty.csv: all faculty members at Western
+- Western_Faculty.csv: all faculty members at Western
 - Rola.csv: grant data from ROLA
 - Supervisors.csv: faculty members and the graduate students that they supervise
 - Pubs.csv: publications (authors, titles, outlets, affiliations, etc.)
@@ -141,7 +145,7 @@ function readData (res) {
 			function(callback){
 				console.log("reading in all faculty data...")				
 				csv()
-					.from.stream(fs.createReadStream('./data/All_Faculty.csv'))
+					.from.stream(fs.createReadStream('./data/Western_Faculty.csv'))
 					.on('record', function(row,index){
 						var temp = {};
 						  if (index == 0){
@@ -156,16 +160,16 @@ function readData (res) {
 					})
 					.on('end', function(count){
 						db.getDoc('unprocessed_data', function(err,doc){
-							doc.all_faculty_data = allfaculty;
+							doc.western_faculty_data = allfaculty;
 					  		db.saveDoc('unprocessed_data', doc, function(er, ok) {
 			    				if (er) throw new Error(JSON.stringify(er));
-			    				util.puts('Saved all_faculty_data to the database.');
+			    				util.puts('Saved western_faculty_data to the database.');
 								callback(null, allfaculty);		    		
 			  				});
 						});
 					})
 					.on('error', function(error){
-						callback(error.message, 'All_Faculty.csv')
+						callback(error.message, 'Western_Faculty.csv')
 					 });
 			},			
 
@@ -173,7 +177,7 @@ function readData (res) {
 			function(callback){
 				console.log("reading in grant data...")
 				csv()
-					.from.stream(fs.createReadStream('./data/ROLA.csv'))
+					.from.stream(fs.createReadStream('./data/ROLA.txt'), { delimiter: "|" }) //this is a pipe-delimited file, created with google refine
 					.on('record', function(row,index){
 						var temp = {};
 						  if (index == 0){
@@ -237,7 +241,7 @@ function readData (res) {
 			function(callback){
 				console.log("reading in publication data...")				
 				csv()
-					.from.stream(fs.createReadStream('./data/Pubs.csv'))
+					.from.stream(fs.createReadStream('./data/Pubs.txt'), { delimiter: "|" }) //this is a pipe-delimited file, created with google refine
 					.on('record', function(row,index){
 						var temp = {};
 						  if (index == 0){
@@ -274,13 +278,14 @@ function readData (res) {
 		 	else {
 		 		console.log("");			 			 			 		
 		 		console.log("All CSV data read and saved to database successfully");
+		 		//res.send("All CSV data read and saved to database successfully");
 		 		processData(res, results);
 		 	}
 		 });//end async.series	
 }
 
 /*
-This funciton processes the data the was read in readData
+This funciton processes the data the was read in the readData function
 
 @params: res: response object
 		 results: an array of 5 items that are results of the data reading
@@ -291,7 +296,7 @@ function processData (res, results) {
 	console.log("");
 	//separate the results array into its 5 objects
 	var science_faculty_data = results[0];
-	var all_faculty_data = results[1];
+	var western_faculty_data = results[1];
 	var grant_data = results[2];
 	var supervisor_data = results[3];
 	var publication_data = results[4];
@@ -307,19 +312,14 @@ function processData (res, results) {
 		 						function(callback){
 								 	//extract some unique properties from the faculty list data
 							 		scienceDepartmentsUnique = _.uniq(_.pluck(science_faculty_data, 'Department'));
-							 		allDepartmentsUnique = _.uniq(_.pluck(all_faculty_data, 'Department'));
+							 		allDepartmentsUnique = _.uniq(_.pluck(western_faculty_data, 'Department'));
 									scienceNamesUnique = _.uniq(_.pluck(science_faculty_data, 'Name'));
-									allNamesUnique = _.uniq(_.pluck(all_faculty_data, 'Name'));
+									allNamesUnique = _.uniq(_.pluck(western_faculty_data, 'Name'));
 									scienceRanksUnique = _.uniq(_.pluck(science_faculty_data, 'Rank'));
 									scienceContractsUnique = _.uniq(_.pluck(science_faculty_data, 'Contract'));
 									pubYearsUnique = _.uniq(_.pluck(publication_data, 'Year'));
+					  				pubYearsUnique = _.reject(pubYearsUnique, function(year){ return year == "" || year == "Year"; });//TODO: see if this is useful still									
 									callback(null);
-		 						},
-		 						function(callback){
-									//get rid of some unwanted entries
-					  				pubYearsUnique = _.reject(pubYearsUnique, function(year){ return year == "" || year == "Year"; });
-					  				//TODO: remove all other bizarre entries (i.e., not integers)
-					  				callback(null);
 		 						}
 		 						],
 		 						//callback
@@ -355,18 +355,18 @@ function processData (res, results) {
 			}, //end first function
 
 			function(callback){
-				console.log("in second function");
 				async.parallel(
 					[
 						function(callback){
 							console.log("processing publications_science...");
 						  	for (row_num in publication_data) {
-						    	authors = publication_data[row_num].Authors;
-						    	autharr = authors.split("; "); //make sure to include the space
+						    	//authors = ;
+						    	autharr = publication_data[row_num].Authors.split("; "); //make sure to include the space
 
 							    for (author_num in autharr){
 							      var surname = autharr[author_num].substring(0, autharr[author_num].indexOf(' ') + 2); //surname and first initial
 
+							      //loop through people in science
 							      for (i in scienceNamesUnique){
 							        //extract the surname and the first initial
 							        //e.g., "Lastname,Firstname MiddleInitial" will become "Lastname FirstInitial"
@@ -381,22 +381,7 @@ function processData (res, results) {
 							        }
 							      } //end members   
 
-							    } //end authors
-							    if (row_num == publication_data.length-1)
-							    	callback(null, publications_science);
-						  	}	
-						},
-
-						//do it again for all faculty at western
-						function(callback){
-							console.log("processing publications_western...");
-						  	for (row_num in publication_data) {
-						    	authors = publication_data[row_num].Authors;
-						    	autharr = authors.split("; "); //make sure to include the space
-
-							    for (author_num in autharr){
-							      var surname = autharr[author_num].substring(0, autharr[author_num].indexOf(' ') + 2); //surname and first initial
-
+							      //and again for all people
 							      for (i in allNamesUnique){
 							        //extract the surname and the first initial
 							        //e.g., "Lastname,Firstname MiddleInitial" will become "Lastname FirstInitial"
@@ -406,12 +391,40 @@ function processData (res, results) {
 							          //add the whole row to a new array that keeps track of the pubs with an author from western
 							          publications_western.push(publication_data[row_num]);
 							        }
-							      } //end members 
+							      } //end members 							      
+
 							    } //end authors
 							    if (row_num == publication_data.length-1)
-							    	callback(null, publications_western);
+							    	callback(null, [publications_science, publications_western]);
 						  	}	
 						}
+						//,
+
+						//do it again for all faculty at western
+						// function(callback){
+						// 	console.log("processing publications_western...");
+						//   	for (row_num in publication_data) {
+						//     	authors = publication_data[row_num].Authors;
+						//     	autharr = authors.split("; "); //make sure to include the space
+
+						// 	    for (author_num in autharr){
+						// 	      var surname = autharr[author_num].substring(0, autharr[author_num].indexOf(' ') + 2); //surname and first initial
+
+						// 	      for (i in allNamesUnique){
+						// 	        //extract the surname and the first initial
+						// 	        //e.g., "Lastname,Firstname MiddleInitial" will become "Lastname FirstInitial"
+						// 	        var surname2 = allNamesUnique[i].substring(0,allNamesUnique[i].indexOf(',')) + " " + allNamesUnique[i].substring(allNamesUnique[i].indexOf(',') + 1, allNamesUnique[i].indexOf(',') + 2); 
+							        
+						// 	        if (surname == surname2){ //we have a match
+						// 	          //add the whole row to a new array that keeps track of the pubs with an author from western
+						// 	          publications_western.push(publication_data[row_num]);
+						// 	        }
+						// 	      } //end members 
+						// 	    } //end authors
+						// 	    if (row_num == publication_data.length-1)
+						// 	    	callback(null, publications_western);
+						//   	}	
+						// }
 					],
 
 					//callback
@@ -438,21 +451,35 @@ function processData (res, results) {
 	 				[
 		 				//co-supervision 
 		 				function(callback){
-		 					var sorted = _.sortBy(supervisor_data, function(d) { return d.StudentName; } );
-							var currentStudent = "";
-							var previousStudent = "";
-							var currentSupervisor = "";
-							var previousSupervisor = "";
-							var temp = _.each(sorted, function(key, value){
-								currentStudent = key.StudentName;
-								currentSupervisor = key.SupervisorName;
-								if (currentStudent == previousStudent){
-									co_supervision.push([currentSupervisor, previousSupervisor]);
-								}
-								//update for the next loop through
-								previousSupervisor = key.SupervisorName;
-								previousStudent = key.StudentName;
+
+		 					//determine the cosupervisions by grouping the supervisor_data by StudentName, 
+		 					//then filtering the result to have only length > 1 (i.e., more than one supervisor per StudenName)
+		 					var cosupervisions = _.filter(_.groupBy(supervisor_data, function(x) { return x.StudentName; }), function(x) { return x.length > 1; } )
+		 					
+		 					//construct the links in the format that D3 likes (source, target...where both are numbers)
+		 					//at this point the source and target are names. they need to become numbers later
+							console.log("constructing the links for co-supervision...");
+							_.each(cosupervisions, function(element) {
+								//need both arrays since one is dependent on the other while it is changing (needs to stay consistent)								
+								links_cosupervisions.push({"source":element[0].SupervisorName, "target":element[1].SupervisorName, "value":1, "type":"cosup"});
+								links_cosupervisions_converted.push({"source":element[0].SupervisorName, "target":element[1].SupervisorName, "value":1, "type":"cosup"});
 							});
+
+		 				// 	var sorted = _.sortBy(supervisor_data, function(d) { return d.StudentName; } );
+							// var currentStudent = "";
+							// var previousStudent = "";
+							// var currentSupervisor = "";
+							// var previousSupervisor = "";
+							// var temp = _.each(sorted, function(key, value){
+							// 	currentStudent = key.StudentName;
+							// 	currentSupervisor = key.SupervisorName;
+							// 	if (currentStudent == previousStudent){
+							// 		co_supervision.push([currentSupervisor, previousSupervisor]);
+							// 	}
+							// 	//update for the next loop through
+							// 	previousSupervisor = key.SupervisorName;
+							// 	previousStudent = key.StudentName;
+							// });
 							callback(null);
 						},
 
@@ -461,16 +488,16 @@ function processData (res, results) {
 						links are for both co-supervisions and co-publications
 						*/
 	 					function(callback){
-	 						console.log("constructing the links for co-supervision...");
+	 						//console.log("constructing the links for co-supervision...");
 							//construct the links for the co-supervision data
-							links_co_supervision = [];
-							links_co_supervision_converted = [];
-							_.each(co_supervision, function(element){
-								var source = element[0];
-								var target = element[1];
-								links_co_supervision.push({"source":source, "target":target, "value":1, "type":"cosup"});
-								links_co_supervision_converted.push({"source":source, "target":target, "value":1, "type":"cosup"});
-							});
+							// links_cosupervisions = [];
+							// links_cosupervisions_converted = [];
+							// _.each(co_supervision, function(element){
+							// 	var source = element[0];
+							// 	var target = element[1];
+							// 	links_cosupervisions.push({"source":source, "target":target, "value":1, "type":"cosup"});
+							// 	links_cosupervisions_converted.push({"source":source, "target":target, "value":1, "type":"cosup"});
+							// });
 
 							console.log("constructing the links for co-publications for science...");
 							//construct the "links" array to be used in the networkviz.
@@ -555,13 +582,13 @@ function processData (res, results) {
 						},
 
 						function(callback){
-							var links = _.toArray(links_co_supervision);
+							var links = _.toArray(links_cosupervisions);
 							_.each(links, function(element1, index1){
 								_.each(science_faculty_data, function(element2, index2){
 									if(element1.source == element2.Name)
-										links_co_supervision_converted[index1].source = parseInt(index2);
+										links_cosupervisions_converted[index1].source = parseInt(index2);
 									if(element1.target == element2.Name)
-										links_co_supervision_converted[index1].target = parseInt(index2);
+										links_cosupervisions_converted[index1].target = parseInt(index2);
 								});
 							});
 
@@ -632,13 +659,11 @@ function processData (res, results) {
 									  		links_western_exclusive = _.uniq(links_western_exclusive, false, function(x){ return (x.source + x.target + x.year + x.type + x.title + x.outlet); });
 
 									  		links_for_network = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
-									  		links_co_supervision_converted = _.filter(links_co_supervision_converted, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
+									  		links_cosupervisions_converted = _.filter(links_cosupervisions_converted, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 
-									  		console.log(links_co_supervision_converted);
-
-									  		db.saveDoc('links_co_supervision_converted', {data:links_co_supervision_converted}, function(er, ok){
-			  									if (er) throw new Error(JSON.stringify(er) + " on links_co_supervision_converted");
-			  									util.puts('Saved links_co_supervision_converted to the database.');
+									  		db.saveDoc('links_cosupervisions_converted', {data:links_cosupervisions_converted}, function(er, ok){
+			  									if (er) throw new Error(JSON.stringify(er) + " on links_cosupervisions_converted");
+			  									util.puts('Saved links_cosupervisions_converted to the database.');
 			  									db.saveDoc('links_for_network', {data: links_for_network}, function(er, ok){
 			  										if (er) throw new Error(JSON.stringify(er + " on links_for_network"));
 			  										util.puts('Saved links_for_network to the database.');

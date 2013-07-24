@@ -43,6 +43,13 @@ exports.data = function(req, res){
 				});	});
 	}
 
+	else if (request == "all_grants"){
+		db.getDoc('processed_data', function(err, doc){
+			if (err) console.log(err);
+			res.send({all_grants: JSON.stringify(doc.grants_not_unique)});
+		});
+	}
+
 	else if (request == "sankey_data_faculty"){
 		db.getDoc('viz_data', function(err, doc){
 			db.getDoc('processed_data', function(err, doc2){
