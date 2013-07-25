@@ -78,7 +78,7 @@ var PUBLICATIONS_MAP = (function () {
 	    matrix_width = 1800;
 
 	var matrix_x = d3.scale.ordinal().rangeBands([0, matrix_width]),
-	    matrix_z = d3.scale.linear().domain([0, 21]).range([0,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
+	    matrix_z = d3.scale.linear()/*.domain([0, 21])*/.range([0,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
 	    matrix_c = d3.scale.category10().domain(d3.range(10));
 
 	var matrixsvg = d3.select("#matrixviz").append("svg:svg")
@@ -2292,7 +2292,7 @@ var PUBLICATIONS_MAP = (function () {
 	  $('#vizloader').hide();  
 
 	  //construct the legend
-	  constructMatrixLegend(science_departments);
+	  constructMatrixLegend(science_departments, science_faculty_data);
 
 	  var matrix = [],
 	      nodes = science_faculty_data,
@@ -2305,6 +2305,8 @@ var PUBLICATIONS_MAP = (function () {
 	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
 	  });
 
+	  //calculate the max publications to decide the domain of scale matrix_z
+	  var max_z = 0;
 	  // Convert links to matrix; count occurrences.
 	  links_for_matrix.forEach(function(link) {
 	    matrix[link.source][link.target].z += link.value;
@@ -2313,6 +2315,8 @@ var PUBLICATIONS_MAP = (function () {
 	    // matrix[link.target][link.target].z += link.value;
 	    nodes[link.source].count += link.value;
 	    nodes[link.target].count += link.value;
+	    max_z = matrix[link.source][link.target].z > max_z ? matrix[link.source][link.target].z : max_z;
+	    max_z = matrix[link.target][link.source].z > max_z ? matrix[link.target][link.source].z : max_z;
 	  });
 
 	  // Precompute the orders.
@@ -2329,6 +2333,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	  // The default sort order.
 	  matrix_x.domain(orders.name);
+	  matrix_z.domain([0, max_z]);
 
 	  matrixsvg.append("rect")
 	      .attr("class", "matrixbackground")
@@ -2549,7 +2554,7 @@ var PUBLICATIONS_MAP = (function () {
 						if (this.style.opacity == "0" && !label.selected)
 							d3.select(this).style("opacity", "1");
 					});	
-					label.selected = false;				
+					//label.selected = false;				
 				}
 				//if not currently selected, "select" it
 				else {
@@ -2579,15 +2584,116 @@ var PUBLICATIONS_MAP = (function () {
 			});
 	}
 
-	function constructMatrixLegend(science_departments) {
+	//since matrix rows and columns are not bound with department data, nodes(science_faculty_data) are needed here
+	function constructMatrixLegend(science_departments, nodes) {
+
+	  var selectedDepartments = [];
+
 	  var label = matrixlegend.selectAll(".label")
 	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")
-	    .text(function(d) { return d; })
-	    .append("div")
+	    .style("border", "1px dashed")
+	    .style("border-color", "rgba(255,255,255,0)")
+	    .text(function(d) { return d; });
+
+	    label.append("div")
 	    .attr("class", "labelcolor")
 	    .style("background-color", function(d){ return color20(d); });
+
+	    label.on("mouseover", function(d) {
+	    	var label = this;
+			d3.select(label)
+				.style("background-color", "rgb(36,137,197)")
+				.style("color", "white");
+			d3.selectAll(".matrixrow").each(function() {
+				if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+					d3.select(this).selectAll("rect.matrixcell").style("opacity", "0.05");
+					d3.select(this).selectAll("text").style("opacity", "0.05");
+				}
+				else {
+					d3.select(this).selectAll("rect.matrixcell").style("opacity", "1");
+					d3.select(this).selectAll("text").style("opacity", "1");
+				}
+			});
+			d3.selectAll(".matrixcolumn").each(function() {
+				if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+					d3.select(this).selectAll("text").style("opacity", "0.05");
+				}
+				else {
+					d3.select(this).selectAll("text").style("opacity", "1");
+				}
+			});
+	    })
+	    .on("mouseout", function(d) {
+	    	var label = this;
+			if (!_.contains(selectedDepartments, d)){
+				d3.select(label)
+					.style("background-color", "white")
+					.style("color", "black");
+
+				//if no departments are currently selected
+				if( _.isEmpty(selectedDepartments)){
+					d3.selectAll("rect.matrixcell").style("opacity", "1");
+					d3.selectAll("text").style("opacity", "1");
+				}
+				else {
+					d3.selectAll(".matrixrow").each(function() {
+						if(_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+							d3.select(this).selectAll("rect.matrixcell").style("opacity", "1");
+							d3.select(this).selectAll("text").style("opacity", "1");
+						}
+						else {
+							d3.select(this).selectAll("rect.matrixcell").style("opacity", "0.05");
+							d3.select(this).selectAll("text").style("opacity", "0.05");
+						}
+					});
+					d3.selectAll(".matrixcolumn").each(function() {
+						if(_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+							d3.select(this).selectAll("text").style("opacity", "1");
+						}
+						else {
+							d3.select(this).selectAll("text").style("opacity", "0.05");
+						}
+					});
+				}
+			}
+	    })
+	    .on("click", function(d) {
+	    	var label = this;
+			//if currently selected, "unselect" it
+			if (_.contains(selectedDepartments, d)){
+				selectedDepartments = _.without(selectedDepartments, d);
+				d3.select(label)
+				 	.style("border-color", "rgba(255,255,255,0)");
+			}
+			//if not currently selected, "select" it
+			else {
+				selectedDepartments.push(d);
+				d3.select(label)
+					.style("background-color", "rgb(36,137,197)")
+					.style("color", "white")
+					.style("border-color", "rgba(255,255,255,1)");
+				d3.selectAll(".matrixrow").each(function() {
+					if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+						d3.select(this).selectAll("rect.matrixcell").style("opacity", "0.05");
+						d3.select(this).selectAll("text").style("opacity", "0.05");
+					}
+					else {
+						d3.select(this).selectAll("rect.matrixcell").style("opacity", "1");
+						d3.select(this).selectAll("text").style("opacity", "1");
+					}
+				});
+				d3.selectAll(".matrixcolumn").each(function() {
+					if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+						d3.select(this).selectAll("text").style("opacity", "0.05");
+					}
+					else {
+						d3.select(this).selectAll("text").style("opacity", "1");
+					}
+				});
+			}
+	    })
 	}
 
 	function redrawNetwork() {

@@ -2170,6 +2170,7 @@ form.signin input::-webkit-input-placeholder {
   font-family: 'Helvetica Neue';
   font-size: 11px;
   margin-bottom: 5px;
+  cursor: default;
   }
 
 #treemaplegend {
