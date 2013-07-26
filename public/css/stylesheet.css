@@ -536,6 +536,15 @@ for matrix
   border-bottom: 1px solid #ebebeb;
 }
 
+#cloningArea h2 {
+  font-family: 'Fjalla One', sans-serif;
+  padding-bottom: 15px;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  text-align: center;  
+  color: black;
+}
+
 #matrixviz {
   display: inline-block;
   clear: both;

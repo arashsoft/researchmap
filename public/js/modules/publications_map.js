@@ -125,7 +125,41 @@ var PUBLICATIONS_MAP = (function () {
 	   	  .on("dblclick", null)
 	  ;
 
-	var cloningSvg;
+	var cloningWidth = 280;
+	var cloningHeight = 280;
+
+	//zoom behavior
+	var cloningZoom = d3.behavior.zoom()
+		.scaleExtent([0.5, 5])
+		.on("zoom", function() {
+			trans=d3.event.translate;
+				scale=d3.event.scale;
+
+			cloningSvg.attr("transform",
+			    "translate(" + trans + ")"
+			    + " scale(" + scale + ")");
+		});
+
+	//drag behavior
+	var cloningDrag = d3.behavior.drag()
+    .on("drag", function() { 
+    	d3.select(this).attr("cursor", "move");
+    	networksvg.attr("x", d3.event.x).attr("y", d3.event.y); } )
+    .on("dragend", function() {
+    	d3.select(this).attr("cursor", "default");
+    	//d3.event.preventDefault() //for event bubbling--prevent other listeners from receiving the event         
+    });
+
+	var cloningSvg = d3.select('#cloningArea')
+		.append('svg:svg')
+		.attr('width', cloningWidth)
+		.attr('height', cloningHeight)
+		.append('svg:g')
+	    .attr("pointer-events", "all")
+		.append('svg:g')
+		.call(cloningZoom)
+		.call(cloningDrag)
+		.append('svg:g');
 
 	//this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the network), it allows the visualization
 	//to be panned
@@ -289,6 +323,7 @@ var PUBLICATIONS_MAP = (function () {
 	  });
 
 	  $('input#filterNodesAll').iCheck('check');
+	  $('input#selectNone').iCheck('check');
 
 	  $('#selectionArea').hide();
 
@@ -739,27 +774,13 @@ var PUBLICATIONS_MAP = (function () {
     $('#selectionClone').click(function() {
     	if(selectedNodes.length == 0)
     		return ;
-    	var cloningWidth = 300;
-    	var cloningHeight = 300;
-    	//zoom behavior
-    	var cloningZoom = d3.behavior.zoom()
-    								.scaleExtent([0.5, 5])
-    								.on("zoom", function() {
-    									trans=d3.event.translate;
-	  									scale=d3.event.scale;
 
-										cloningSvg.attr("transform",
-										    "translate(" + trans + ")"
-										    + " scale(" + scale + ")");
-									});
-
-    	$('#cloningArea').contents().filter('svg').remove();
-    	cloningSvg = d3.select('#cloningArea')
-    						.append('svg:svg')
-    						.attr('width', cloningWidth)
-    						.attr('height', cloningHeight)
-    						.append('svg:g')
-    						.call(cloningZoom)
+    	cloningSvg.selectAll('*').remove();
+    	cloningSvg.append('svg:rect')
+    		.attr('width', cloningWidth)
+    		.attr('height', cloningHeight)
+    		.style('fill', 'none')
+    		.style('opacity', '0');
 
     	$('#cloningArea').show('slow');
     	//clone selected data so that we can create a new layout
@@ -778,36 +799,36 @@ var PUBLICATIONS_MAP = (function () {
     	});
 
     	var cloningLink = cloningSvg.selectAll('line.link')
-    								.data(links)
-    								.enter().append('svg:line')
-    								.attr('class', 'link')
-    								.style("visibility", "visible")
-								    .style("stroke", "black")
-								    .style("stroke-dasharray", function (d) {
-								      if (d.type == "cosup")
-								        return "4, 4";
-								      else
-								        return "10, 0";
-								    });
+			.data(links)
+			.enter().append('svg:line')
+			.attr('class', 'link')
+			.style("visibility", "visible")
+		    .style("stroke", "black")
+		    .style("stroke-dasharray", function (d) {
+		      if (d.type == "cosup")
+		        return "4, 4";
+		      else
+		        return "10, 0";
+		    });
 
 		var cloningNode = cloningSvg.selectAll('circle.node')
-    								.data(nodes)
-    								.enter().append('svg:circle')
-    								.attr('class', 'node')
-    								.attr('r', 10)
-    								.style('visibility', 'visible')
-    								.style('fill', function(d) { return color20(d.Department); })
-    								.style("stroke", "gray")
-    								.style("stoke-width", "1px");
+			.data(nodes)
+			.enter().append('svg:circle')
+			.attr('class', 'node')
+			.attr('r', 10)
+			.style('visibility', 'visible')
+			.style('fill', function(d) { return color20(d.Department); })
+			.style("stroke", "gray")
+			.style("stoke-width", "1px");
 
     	var cloning_network_force = d3.layout.force()
-    							.size([cloningWidth, cloningHeight])
-    							.nodes(nodes)
-    							.links(links)
-	    						//.gravity(dgravity)
-	    						.friction(dfriction)
-	    						//.charge(dcharge)
-	    						.linkDistance(30)
+			.size([cloningWidth, cloningHeight])
+			.nodes(nodes)
+			.links(links)
+			//.gravity(dgravity)
+			.friction(dfriction)
+			//.charge(dcharge)
+			.linkDistance(30)
 
 	    function cloningAreaTick() {
 	    	cloningLink.attr("x1", function(d) { return d.source.x; })
@@ -820,48 +841,48 @@ var PUBLICATIONS_MAP = (function () {
 	    }
 
 	    var nodeDrag = d3.behavior.drag()
-    							.on("dragstart", function(d, i) {
-    								dragging = true;
-    								cloning_network_force.stop();
-    							})
-    							.on("drag", function(d, i) {
-    								d.px += d3.event.dx;
-	        						d.py += d3.event.dy;
-							        d.x += d3.event.dx;
-							        d.y += d3.event.dy;
-							        cloningAreaTick();
-    							})
-    							.on("dragend", function(d, i) {
-    								cloningAreaTick();
-    								cloning_network_force.resume();
-    								dragging = false;
-    							})
+			.on("dragstart", function(d, i) {
+				dragging = true;
+				cloning_network_force.stop();
+			})
+			.on("drag", function(d, i) {
+				d.px += d3.event.dx;
+				d.py += d3.event.dy;
+		        d.x += d3.event.dx;
+		        d.y += d3.event.dy;
+		        cloningAreaTick();
+			})
+			.on("dragend", function(d, i) {
+				cloningAreaTick();
+				cloning_network_force.resume();
+				dragging = false;
+			})
     	cloningNode.call(nodeDrag)
-    				.on("mouseover", function(d) {
-    					d3.select(this).attr("cursor", "pointer");
-					  	d3.select(this).style("stroke-width", "3px");
-					  	if (!dragging) {
-							nodeTooltip.transition()        
-				                .duration(200)      
-				                .style("opacity", .95);      
-				            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + d.Department + "<br>" + d.Rank)                
-				            	.style("left", (parseInt(d3.select(this).attr("cx")) + document.getElementById("networkviz").offsetLeft) + "px")     
-				                .style("top", d.y + "px");
+			.on("mouseover", function(d) {
+				d3.select(this).attr("cursor", "pointer");
+			  	d3.select(this).style("stroke-width", "3px");
+			  	if (!dragging) {
+					nodeTooltip.transition()        
+		                .duration(200)      
+		                .style("opacity", .95);      
+		            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + d.Department + "<br>" + d.Rank)                
+		            	.style("left", (parseInt(d3.select(this).attr("cx")) + document.getElementById("networkviz").offsetLeft) + "px")     
+		                .style("top", d.y + "px");
 
-				            //position the tooltip relative to the svg circle
-					  	    $('.nodeTooltip').position({
-				    			"my": "left+20 top+20",
-				    			"at": "right bottom",
-				    			"of": $(this)
-				    		});
-					  	}
-    				})
-    				.on("mouseout", function(d) {
-    					d3.select(this).style("stroke-width", "1px");	    
-					  	nodeTooltip.transition()        
-				        	.duration(500)      
-				            .style("opacity", 0);
-				    });
+		            //position the tooltip relative to the svg circle
+			  	    $('.nodeTooltip').position({
+		    			"my": "left+20 top+20",
+		    			"at": "right bottom",
+		    			"of": $(this)
+		    		});
+			  	}
+			})
+			.on("mouseout", function(d) {
+				d3.select(this).style("stroke-width", "1px");	    
+			  	nodeTooltip.transition()        
+		        	.duration(500)      
+		            .style("opacity", 0);
+		    });
 
 	    cloning_network_force.on("tick", cloningAreaTick);
 	    cloning_network_force.start();
@@ -1474,6 +1495,53 @@ var PUBLICATIONS_MAP = (function () {
 	      network_force.start();
 	    $('#translatematrix').val('').trigger('liszt:updated'); 
 	  }
+	});
+
+	//for matrix
+	$('input#matrixFilterCo_pubs').on("ifChecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.z > 0) {
+				d3.select(this).style("visibility", "visible");
+				if(d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked'))
+					d3.select(this).style("fill", "purple")
+									.style("opacity", function(d) { return matrix_z(d.z + d.cosup); });
+			}
+		});
+	});
+
+	$('input#matrixFilterCo_pubs').on("ifUnchecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.z > 0) {
+				if(d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked'))
+					d3.select(this).style("fill", "blue")
+									.style("opacity", function(d) { return matrix_z(d.cosup); });
+				else
+					d3.select(this).style("visibility", "hidden");
+			}
+		});
+	});
+
+	$('input#matrixFilterCo_sups').on("ifChecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.cosup > 0) {
+				d3.select(this).style("visibility", "visible");
+				if(d.z > 0 && $('input#matrixFilterCo_pubs').is(':checked'))
+					d3.select(this).style("fill", "purple")
+									.style("opacity", function(d) { return matrix_z(d.z + d.cosup); });
+			}
+		});
+	});
+
+	$('input#matrixFilterCo_sups').on("ifUnchecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.cosup > 0) {
+				if(d.z > 0 && $('input#matrixFilterCo_pubs').is(':checked'))
+					d3.select(this).style("fill", "red")
+									.style("opacity", function(d) { return matrix_z(d.z); });
+				else
+					d3.select(this).style("visibility", "hidden");
+			}
+		});
 	});
 
 
@@ -2302,21 +2370,29 @@ var PUBLICATIONS_MAP = (function () {
 	  nodes.forEach(function(node, i) {
 	    node.index = i;
 	    node.count = 0;
-	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0, cosup: 0}; });
 	  });
 
 	  //calculate the max publications to decide the domain of scale matrix_z
 	  var max_z = 0;
+	  var max_cosup = 0;
 	  // Convert links to matrix; count occurrences.
-	  links_for_matrix.forEach(function(link) {
-	    matrix[link.source][link.target].z += link.value;
-	    matrix[link.target][link.source].z += link.value;
-	    // matrix[link.source][link.source].z += link.value;
-	    // matrix[link.target][link.target].z += link.value;
-	    nodes[link.source].count += link.value;
-	    nodes[link.target].count += link.value;
+	  links_combined.forEach(function(link) {
+	  	if(link.type == "cosup") {
+	  		matrix[link.source][link.target].cosup += link.value;
+	    	matrix[link.target][link.source].cosup += link.value;
+	  	}
+	  	else {
+	  		matrix[link.source][link.target].z += 1;
+	    	matrix[link.target][link.source].z += 1;
+	  	}
+	    nodes[link.source].count += 1;
+	    nodes[link.target].count += 1;
+
 	    max_z = matrix[link.source][link.target].z > max_z ? matrix[link.source][link.target].z : max_z;
 	    max_z = matrix[link.target][link.source].z > max_z ? matrix[link.target][link.source].z : max_z;
+	    max_cosup = matrix[link.source][link.target].cosup > max_cosup ? matrix[link.source][link.target].cosup : max_cosup;
+	    max_cosup = matrix[link.target][link.source].cosup > max_cosup ? matrix[link.target][link.source].cosup : max_cosup;
 	  });
 
 	  // Precompute the orders.
@@ -2333,7 +2409,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	  // The default sort order.
 	  matrix_x.domain(orders.name);
-	  matrix_z.domain([0, max_z]);
+	  matrix_z.domain([0, max_z + max_cosup]);
 
 	  matrixsvg.append("rect")
 	      .attr("class", "matrixbackground")
@@ -2379,16 +2455,23 @@ var PUBLICATIONS_MAP = (function () {
 
 
 	  //for the matrix
-	  function row(row) {
+	  function row(row, index) {
 	    var cell = d3.select(this).selectAll(".matrixcell")
-	        .data(row.filter(function(d) { return d.z; }))
+	        .data(row.filter(function(d) { return d.z || d.cosup; }))
 	      .enter().append("rect")
 	        .attr("class", "matrixcell")
 	        .attr("x", function(d) { return matrix_x(d.x); })
 	        .attr("width", matrix_x.rangeBand())
 	        .attr("height", matrix_x.rangeBand())
-	        .style("fill-opacity", function(d) { return matrix_z(d.z); })
-	        .style("fill", "red")
+	        .style("fill-opacity", function(d) { return matrix_z(d.z + d.cosup) })
+	        .style("fill", function(d) {
+	        	if(d.z > 0 && d.cosup == 0)
+	        		return "red";
+	        	if(d.z == 0 && d.cosup > 0)
+	        		return "blue";
+	        	if(d.z && d.cosup)
+	        		return "purple";
+	        })
 	        //.style("fill", function(d) { return nodes[d.x].Department == nodes[d.y].Department ? matrix_c(nodes[d.x].Department) : null; })
 	        .on("mouseover", mouseover)
 	        .on("mouseout", mouseout);
@@ -2396,6 +2479,7 @@ var PUBLICATIONS_MAP = (function () {
 	    cell.append("name1").text(function(d) { return "<b>" + nodes[d.x].Name + " & </b>" + "<br>"; });
 	    cell.append("name2").text(function(d) { return "<b>" + nodes[d.y].Name + "</b>" + "<br>" + "<hr>"; });
 	    cell.append("value").text(function(d) { return "publications: " + d.z + "<br>"; });
+	    cell.append("value2").text(function(d) {return "co_supervisions: " + d.cosup + "<br>"; });
 
 	  }
 
@@ -2420,7 +2504,7 @@ var PUBLICATIONS_MAP = (function () {
 	  }, 5000);
 
 	  //for the matrix
-	  d3.select("#order").on("change", function() {
+	  $("#order").change(function() {
 	    clearTimeout(timeout);
 	    order(this.value);
 
@@ -2814,7 +2898,8 @@ var PUBLICATIONS_MAP = (function () {
 			//empty the selection area by removing div elements
 			//keeps the h3 element
 			$('#selectionList').contents().filter('li').remove();
-			$('#cloningArea').contents().filter('svg').remove();
+			//$('#cloningArea').contents().filter('svg').remove();
+			cloningSvg.selectAll('*').remove();
 		}
 		else {
 			var items = d3.select("#selectionList").selectAll(".item")

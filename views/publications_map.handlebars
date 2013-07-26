@@ -49,7 +49,7 @@
           <h2>drag nodes here</h2>
         </div>
         <div id="cloningArea">
-          <h2>Clone of ...</h2>
+          <h2>Clone</h2>
         </div>        
       </div>
       <div id="matrixviz" style="display: none;">
@@ -293,18 +293,37 @@
       <div id="matrixactions">
         <h3>arrange</h3><hr>
         <div class="action">
-         <!--  <select id="order" data-placeholder="Arrange matrix according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
+          <select id="order" data-placeholder="Arrange matrix according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
             <option value=""></option>
             <option value="name" selected>by Name</option>
             <option value="count">by Count</option>
             <option value="department">by Department</option>
-          </select><br>  -->
-                            <select id="order">
+          </select><br>
+            <!--                <select id="order">
             <option value="name" selected>by Name</option>
             <option value="count">by Count</option>
             <option value="department">by Department</option>
-          </select>  <br>    
+          </select>  <br>    -->
         </div> 
+
+        <h3>filter</h3><hr>
+        <div class="action">
+          <ul class="actionlist"> 
+            <li>
+              <input type="checkbox" checked id="matrixFilterCo_pubs"></input> 
+              <label for="filterCo_pubs">co-publications</label>
+            </li>
+            <li>
+              <input type="checkbox" checked id="matrixFilterCo_sups"></input> 
+              <label for="filterCo_sups">co-supervisions</label>
+            </li>     
+            <li>
+              <input type="checkbox" checked id="matrixFilterGrants"></input> 
+              <label for="filterGrants">co-grants</label>
+            </li>                    
+          </ul>
+          </div>
+
         <h3>translate</h3><hr>
         <div class="action">
           <select id="translatematrix" data-placeholder="Translate to..." class="chzn-select" style="width:150px;" tabindex="4">
