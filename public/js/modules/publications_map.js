@@ -122,8 +122,32 @@ var PUBLICATIONS_MAP = (function () {
 	    .call(networkDrag)
 	    //.call(d3.behavior.drag().on("drag", pan))
 	   .append('svg:g')
-	   	  .on("dblclick", null)
-	  ;
+	   	  /*.on("dblclick", function() {
+	   	  	d3.select('#networkviz').append('div')
+	   	  		.style('position', 'absolute')
+	   	  		.style('left', d3.event.x + 'px')
+	   	  		.style('top', d3.event.y + 'px')
+	   	  		.style('background-color', 'yellow')
+	   	  		.text('-');
+	   	  	d3.event.stopPropagation();
+	   	  })*/;
+/*	$('#networkviz').on("dblclick", function(e) {
+		var x = e.offsetX;
+		var y = e.offsetY + $('#networkbar').height() + $('#networklegend').height();
+		var note = d3.select('#networkviz').append('div')
+   	  		.style('position', 'absolute')
+   	  		.style('left', x + "px")
+   	  		.style('top', y + "px")
+   	  		.style('background-color', 'yellow')
+   	  		.text('--');
+   	  	e.stopPropagation();
+/*
+   	  	var range = document.createRange();
+        range.selectNode(note[0][0]);
+        window.getSelection().addRange(range);
+	});*/
+
+	//$('#networkviz').annotator();
 
 	var cloningWidth = 280;
 	var cloningHeight = 280;
@@ -204,6 +228,7 @@ var PUBLICATIONS_MAP = (function () {
 	var science_faculty_members_unique = [];
 	//var science_faculty_data;	
 
+	var int1; //animate interval timer
 
 	/////////////////////////////////////////////////////////////////////
 	//
@@ -418,22 +443,20 @@ var PUBLICATIONS_MAP = (function () {
 
 	  d3.selectAll("line.link").each( function () {
 	    if (yearSelected < this.__data__.year ) {
-	      d3.select(this).style("opacity", 0);
-	      d3.select(this).style("visibility", "hidden");
+	      d3.select(this).transition().duration(1000).style("opacity", 0);
+	      d3.select(this).transition().delay(1000).style("visibility", "hidden");
 	    }
 	    else {
 	      //only want to set opacity to 0 and then fade it in if it is not currently visible
 	      if (this.style.visibility == "hidden"){
-	        if ($('input#filterCo_sups').is(':checked')){
+	        if ($('input#filterCo_pubs').is(':checked') && this.__data__.type != "cosup"){
 	          d3.select(this).style("visibility", "visible").style("opacity", 0);
-	          d3.select(this).style("opacity", 1);
+	          d3.select(this).transition().duration(1000).style("opacity", 1);
 	        }
 	        //if the user doesn't want to see co-supervision links
-	        else {
-	          if(this.__data__.type != "cosup"){
-	            d3.select(this).style("visibility", "visible").style("opacity", 0);
-	            d3.select(this).style("opacity", 1);
-	          }
+	        else if($('input#filterCo_sups').is(':checked') && this.__data__.type == "cosup"){
+	          d3.select(this).style("visibility", "visible").style("opacity", 0);
+	          d3.select(this).transition().duration(1000).style("opacity", 1);
 	        }
 	      }
 	    }
@@ -441,6 +464,7 @@ var PUBLICATIONS_MAP = (function () {
 	}
 	});
 
+	$( "#animateSliderYear" ).val( $( "#animateyearrange" ).slider( "values", 1 ));
 
 	$("#scopeSlider").slider({
 	  min: 2008,
@@ -585,22 +609,48 @@ var PUBLICATIONS_MAP = (function () {
 	//////////////////
 	$('#animateTime').click(function() {
 	  var currentYear = animatebegin;
-	  var int1 = setInterval(function(){
+	  //reset the network
+	  d3.selectAll("line.link").attr("animViz", "true");
+
+	  $('#animateYearPlaceholder').show('slow');
+	  function animatePerYear(){
 	    async.series(
 	      [
 	        function(callback){
-	          $('#animateYearPlaceholder').delay(3000).text(currentYear);
+	          $('#animateYearPlaceholder').text(currentYear);
 	          var t = d3.selectAll("line.link").each(function(){
 
 	            //if the link is currently visible and its year does not match currentYear
-	            if (this.style.visibility == "visible" && this.__data__.year != currentYear){
-	                d3.select(this).style("stroke", "#e6e6e6");
-	                d3.select(this).transition().duration(2500).style("opacity", 0);
-	                d3.select(this).transition().delay(2500).style("visibility", "hidden");
+	            if (this.__data__.year != currentYear){
+	            	d3.select(this).attr("animViz", "false");
+	            	if(this.style.visibility == "visible") {
+	            		//no animation at the start
+		            	if(currentYear == animatebegin) {
+		            		//changing link color does not look good... 
+		            		d3.select(this)/*.style("stroke", "#e6e6e6")*/.style("opacity", 0);
+		                	d3.select(this).style("visibility", "hidden");
+		            	}
+		            	else {
+		            		d3.select(this).transition().duration(2000)/*.style("stroke", "#e6e6e6")*/.style("opacity", 0);
+			                //d3.select(this).transition().duration(2500).style("opacity", 0);
+			                d3.select(this).transition().delay(2000).style("visibility", "hidden");
+		            	}
+	            	}
 	            }
 	            else {
-	                d3.select(this).style("visibility", "visible");        
-	                d3.select(this).transition().duration(2500).style("opacity", 1).style("stroke", "black");
+	            	if($('input#filterCo_pubs').is(':checked') && this.__data__.type != "cosup" || $('input#filterCo_sups').is(':checked') && this.__data__.type == "cosup") {
+	            		d3.select(this).attr("animViz", "true");
+	            		if(this.style.visibility == "hidden") {
+	            			if(currentYear == animatebegin) {
+		            			d3.select(this).style("visibility", "visible");
+		                		d3.select(this).style("opacity", 1).style("stroke", "black");
+		            		}
+		            		else {
+		            			d3.select(this).style("visibility", "visible");
+		                		d3.select(this).transition().duration(2000).style("opacity", 1).style("stroke", "black");
+		            		}
+	            		}
+	            	}
 	            }
 	          });
 	          callback(null);
@@ -610,21 +660,32 @@ var PUBLICATIONS_MAP = (function () {
 	          var t = d3.selectAll("circle.node").each( function () {
 	            var that = this;//because of the nested loop
 	            var match = false;
+	            //animViz is used here to identify matched links
 	            d3.selectAll("line.link").each( function() {
-	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && d3.select(this).attr("animViz") == "true") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && d3.select(this).attr("animViz") == "true"))){ //if there is a visible link to the current node set the boolean flag to true
 	                 match = true;
 	               }
 	            }); 
 	            if (match == false){
 	              //make the node invisible
-	              d3.select(this).style("stroke", "#e6e6e6");
-	              d3.select(this).transition().duration(700).style("opacity", 0).attr("r", 0);
-	              d3.select(this).transition().delay(700).style("visibility", "hidden");
+	              if(currentYear == animatebegin) {
+	              	d3.select(this).style("opacity", 0).attr("r", 0);
+	                d3.select(this).style("visibility", "hidden");
+	              }
+	              else {
+	              	//d3.select(this).style("stroke", "#e6e6e6");
+	                d3.select(this).transition().duration(2500).style("opacity", 0).attr("r", 0);
+	                d3.select(this).transition().delay(2500).style("visibility", "hidden");
+	              }
 	            }
 	            else {
 	              //if the current node is currently hidden
 	              if (this.style.visibility == "hidden"){
 	                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+	                if(currentYear == animatebegin) {
+	                	d3.select(this).style("visibility", "visible").style("opacity", 0);
+	                	d3.select(this).style("opacity", 1).attr("r", 10);
+	                }
 	                d3.select(this).style("visibility", "visible").style("opacity", 0);
 	                d3.select(this).transition().duration(1000).style("opacity", 1).attr("r", 10);
 	              }
@@ -636,16 +697,32 @@ var PUBLICATIONS_MAP = (function () {
 
 	      //callback
 	      function(err){
-	        if(currentYear == animateend && err == 2){
-	          setTimeout(function(){filterNodesWithoutLinks()}, 3000);
-	          clearInterval(int1);
+/*	        if(err == 2 && currentYear == animateend){
+	          //setTimeout(function(){filterNodesWithoutLinks()}, 3000);
+	          //if(currentYear == animateend) {
+	          	clearInterval(int1);
+	          //}
 	        }
 	        else 
-	          currentYear+=1;  
+	          currentYear+=1;  */
+	        if(err == 2) {
+	        	currentYear++;
+	        	if(currentYear > animateend)
+	        		clearInterval(int1);
 	        }
+	      }
 	    );
-	  }, 3000);
+	  }
+	  animatePerYear();
+	  int1 = setInterval(animatePerYear, 3000);
 	});
+
+	$('#animateReset').click(function() {
+		clearInterval(int1);
+		d3.selectAll("line.link").attr("animViz", "true").style("opacity", 1).style("visibility", "visible");
+		d3.selectAll("circle.node").style("opacity", 1).style("visibility", "visible").attr("r", 10);
+		$('#animateYearPlaceholder').hide('slow');
+	})
 
 	$('#discardUnlinkedNodes').click(function() {
 		d3.selectAll("circle.node").each( function () {
@@ -894,30 +971,30 @@ var PUBLICATIONS_MAP = (function () {
 	@params: none
 	@returns: none
 	*/
-	function filterNodesWithoutLinks() {
+/*	function filterNodesWithoutLinks() {
 	  d3.selectAll("circle.node").each( function () {
 	    var that = this;//because of the nested loop
 	    var match = false;
 	    d3.selectAll("line.link").each( function() {
-	        if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+	        if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.animViz == "true") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.animViz == "true"))){ //if there is a visible link to the current node set the boolean flag to true
 	         match = true;
 	       }
 	    }); 
 	    if (match == false){
 	      //make the node invisible
-	      d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
-	      d3.select(this).transition().delay(300).style("visibility", "hidden");
+	      d3.select(this).transition().duration(800).style("opacity", 0).attr("r", 0);
+	      d3.select(this).transition().delay(800).style("visibility", "hidden");
 	    }
 	    else {
 	      //if the current node is currently hidden
 	      if (this.style.visibility == "hidden"){
 	        //set it to visible, but with an opacity of 0 so that it can be gradually faded in
 	        d3.select(this).style("visibility", "visible").style("opacity", 0);
-	        d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+	        d3.select(this).transition().duration(800).style("opacity", 1).attr("r", 10);
 	      }
 	    }
 	  }); 
-	}
+	}*/
 
 
 	$('input#filterCo_pubs').on('ifChecked', function() {
@@ -926,7 +1003,7 @@ var PUBLICATIONS_MAP = (function () {
 	    [  
 	      function(callback){
 	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type != "cosup" && this.__data__.type != "grant") {
+	          if (this.__data__.type != "cosup" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
 	            d3.select(this).style("visibility", "visible");        
 	            d3.select(this).transition().duration(1000).style("opacity", 1);
 	          }
@@ -1028,7 +1105,7 @@ var PUBLICATIONS_MAP = (function () {
 	    [  
 	      function(callback){
 	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type == "cosup") {
+	          if (this.__data__.type == "cosup" && d3.select(this).attr("animViz") == "true") {
 	            d3.select(this).style("visibility", "visible");        
 	            d3.select(this).transition().duration(1000).style("opacity", 1);
 	          }
@@ -1362,9 +1439,9 @@ var PUBLICATIONS_MAP = (function () {
 	  $('#tags').val("")
 
 	  //reset the scale and translate vector
-	  networkzoom.scale(1);
-	  networkzoom.translate([10, 00]);
-	  networksvg.transition().duration(2000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
+	  networkZoom.scale(1);
+	  networkZoom.translate([10, 00]);
+	  networksvg.transition().duration(2000).attr('transform', 'translate(' + networkZoom.translate() + ') scale(' + networkZoom.scale() + ')');
 
 	  //hide the selectionArea div
 	  $('#selectionArea').hide('slow');
@@ -1404,6 +1481,8 @@ var PUBLICATIONS_MAP = (function () {
 
 	  $('#animateYearPlaceholder').text("");
 
+	  //clear timer
+	  clearInterval(int1);
 	});// end network reset
 
 	// $('#arrange').change(function() {
@@ -1842,6 +1921,7 @@ var PUBLICATIONS_MAP = (function () {
 	      .data(links_combined) 
 	    .enter().append("svg:line")
 	      .attr("class", "link")
+	      .attr("animViz", "true")  //it declares whether the link should be visible after the animation
 	      .style("visibility", "visible")
 	      .style("stroke", "black")
 	      .style("stroke-dasharray", function (d) {
@@ -2845,9 +2925,23 @@ var PUBLICATIONS_MAP = (function () {
 
 	function sizeNodesByCopubs () {
 	  d3.selectAll("circle.node").each( function () {
-	    d3.select(this).transition().duration(1000).attr("r", function() { return 10 + parseInt($(this).attr("copubs"))*4; })
+	    d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return 10 + parseInt($(this).attr("copubs"))*4; })
 	  });
-	  network_force.charge(-200).start();
+//	  setTimeout(function() {
+	  	network_force.charge(function(d, i) {
+	  	  var radius = $("circle.node")[i].r.animVal.value;
+		  //return -Math.pow((radius - 10), 2) * 2;
+		  //return -radius * 35;
+		  return -Math.pow(radius, 2) / 1.5;
+		  //return -200;
+		})
+		.linkDistance(function(d, i) {
+			var r_source = $("circle.node")[d.source.index].r.animVal.value;
+			var r_target = $("circle.node")[d.target.index].r.animVal.value;
+			return 70 + r_source + r_target;
+		}).start();
+//	  }, 1000);
+	  
 	}
 
 	//takes an array of link objects and returns the same array with all duplicate links removed
