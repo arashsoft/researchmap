@@ -44,9 +44,9 @@ exports.data = function(req, res){
 	}
 
 	else if (request == "all_grants"){
-		db.getDoc('processed_data', function(err, doc){
+		db.getDoc('unprocessed_data', function(err, doc){
 			if (err) console.log(err);
-			res.send({all_grants: JSON.stringify(doc.grants_not_unique)});
+			res.send({all_grants: JSON.stringify(doc.grant_data)});
 		});
 	}
 
