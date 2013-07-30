@@ -713,9 +713,9 @@ var GRANTS = (function () {
         var temp = combineObjects(grantobj); 
         grouped_grants[key] = temp;
       } 
+      else
+        grouped_grants[key] = grantobj[0]; //remove the object from its array enclosure so that the resulting grouped_grants is consistent
     });
-
-    console.log(grouped_grants);
 
     bubble_force
       .nodes(_.toArray(grouped_grants)); //d3 needs the data in the form of an array
@@ -1201,12 +1201,6 @@ var GRANTS = (function () {
     };
   } 
 
-  _.each(grouped_grants, function(value, key, list) { 
-    //if there is more than one entry for the grant
-    if (value.length > 1) 
-      //value is an array of objects
-      console.log("yup"); 
-  });
 
 //similar to _.extend, but with the added feature of maintaining different properties (rather than overwriting them)
 //if properties are the same they will be merged/overwritten (same as with _.extend)
