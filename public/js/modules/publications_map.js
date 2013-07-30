@@ -101,7 +101,7 @@ var PUBLICATIONS_MAP = (function () {
 	var svgwidth = $('#vizcontainer').width();
 	var svgheight = $('#vizcontainer').height();
 
-	var networkZoom = d3.behavior.zoom()
+	var networkzoom = d3.behavior.zoom()
 		.scaleExtent([0.5, 5])
 		.on("zoom", redrawNetwork);
 
@@ -118,7 +118,7 @@ var PUBLICATIONS_MAP = (function () {
 	    .append('svg:g')
 	    .attr("pointer-events", "all")
 	   .append('svg:g')
-	    .call(networkZoom)
+	    .call(networkzoom)
 	    .call(networkDrag)
 	    //.call(d3.behavior.drag().on("drag", pan))
 	   .append('svg:g')
@@ -442,7 +442,7 @@ var PUBLICATIONS_MAP = (function () {
 	  $( "#animateSliderYear" ).val( ui.value );
 
 	  d3.selectAll("line.link").each( function () {
-	    if (yearSelected < this.__data__.year ) {
+	    if (this.__data__.year != undefined && yearSelected < this.__data__.year ) {
 	      d3.select(this).transition().duration(1000).style("opacity", 0);
 	      d3.select(this).transition().delay(1000).style("visibility", "hidden");
 	    }
@@ -610,48 +610,82 @@ var PUBLICATIONS_MAP = (function () {
 	$('#animateTime').click(function() {
 	  var currentYear = animatebegin;
 	  //reset the network
-	  d3.selectAll("line.link").attr("animViz", "true");
+	  clearInterval(int1);
+	  //override the current transitions with new ones to stop the current transitions
+	  d3.selectAll("line.link").style("visibility", "visible").style("opacity", 0).attr("animViz", "true");
+	  d3.selectAll("circle.node").style("visibility", "visible").attr("r", 10);
 
 	  $('#animateYearPlaceholder').show('slow');
 	  function animatePerYear(){
+	  	if(currentYear > animateend) {
+	        clearInterval(int1);
+	        return ;
+	    }
 	    async.series(
 	      [
 	        function(callback){
 	          $('#animateYearPlaceholder').text(currentYear);
 	          var t = d3.selectAll("line.link").each(function(){
-
-	            //if the link is currently visible and its year does not match currentYear
-	            if (this.__data__.year != currentYear){
-	            	d3.select(this).attr("animViz", "false");
-	            	if(this.style.visibility == "visible") {
-	            		//no animation at the start
-		            	if(currentYear == animatebegin) {
-		            		//changing link color does not look good... 
-		            		d3.select(this)/*.style("stroke", "#e6e6e6")*/.style("opacity", 0);
-		                	d3.select(this).style("visibility", "hidden");
+	          	//co-supervision links do not have "year" attributes, change their visibility according to filter
+	          	if(this.__data__.type == "cosup") {
+	          		if($('input#filterCo_sups').is(':checked')) {
+	          			d3.select(this).attr("animViz", "true");
+	          			if(currentYear == animatebegin) {
+		          			d3.select(this).style("opacity", 1);
+				            d3.select(this).style("visibility", "visible");
+				        }
+				        else {
+				        	d3.select(this).style("opacity", 1);
+				            d3.select(this).style("visibility", "visible");
+				        }
+			        }
+			        else {
+			        	d3.select(this).attr("animViz", "false");
+			        	if(currentYear == animatebegin) {
+			        		d3.select(this).style("opacity", 0);
+				            d3.select(this).style("visibility", "hidden");
+				        }
+				        else {
+				        	d3.select(this).transition().duration(2000).style("opacity", 0);
+				            d3.select(this).transition().delay(2000).style("visibility", "hidden");
+				        }
+			        }
+	          	}
+	          	else {
+	          		//if the link is currently visible and its year does not match currentYear
+		            if (this.__data__.year != currentYear){
+		            	d3.select(this).attr("animViz", "false");
+		            	if(this.style.visibility == "visible") {
+		            		//no animation at the start
+			            	if(currentYear == animatebegin) {
+			            		//changing link color does not look good... 
+			            		d3.select(this)/*.style("stroke", "#e6e6e6")*/.style("opacity", 0);
+			                	d3.select(this).style("visibility", "hidden");
+			            	}
+			            	else {
+			            		d3.select(this).transition().duration(2000)/*.style("stroke", "#e6e6e6")*/.style("opacity", 0);
+				                //d3.select(this).transition().duration(2500).style("opacity", 0);
+				                d3.select(this).transition().delay(2000).style("visibility", "hidden");
+			            	}
 		            	}
-		            	else {
-		            		d3.select(this).transition().duration(2000)/*.style("stroke", "#e6e6e6")*/.style("opacity", 0);
-			                //d3.select(this).transition().duration(2500).style("opacity", 0);
-			                d3.select(this).transition().delay(2000).style("visibility", "hidden");
+		            }
+		            else {
+		            	if($('input#filterCo_pubs').is(':checked')) {
+		            		d3.select(this).attr("animViz", "true");
+		            		if(this.style.visibility == "hidden") {
+		            			if(currentYear == animatebegin) {
+		            				console.log("ha");
+			            			d3.select(this).style("visibility", "visible");
+			                		d3.select(this).style("opacity", 1).style("stroke", "black");
+			            		}
+			            		else {
+			            			d3.select(this).style("visibility", "visible");
+			                		d3.select(this).transition().duration(2000).style("opacity", 1).style("stroke", "black");
+			            		}
+		            		}
 		            	}
-	            	}
-	            }
-	            else {
-	            	if($('input#filterCo_pubs').is(':checked') && this.__data__.type != "cosup" || $('input#filterCo_sups').is(':checked') && this.__data__.type == "cosup") {
-	            		d3.select(this).attr("animViz", "true");
-	            		if(this.style.visibility == "hidden") {
-	            			if(currentYear == animatebegin) {
-		            			d3.select(this).style("visibility", "visible");
-		                		d3.select(this).style("opacity", 1).style("stroke", "black");
-		            		}
-		            		else {
-		            			d3.select(this).style("visibility", "visible");
-		                		d3.select(this).transition().duration(2000).style("opacity", 1).style("stroke", "black");
-		            		}
-	            		}
-	            	}
-	            }
+		            }
+	          	}
 	          });
 	          callback(null);
 	        },
@@ -707,8 +741,6 @@ var PUBLICATIONS_MAP = (function () {
 	          currentYear+=1;  */
 	        if(err == 2) {
 	        	currentYear++;
-	        	if(currentYear > animateend)
-	        		clearInterval(int1);
 	        }
 	      }
 	    );
@@ -719,10 +751,25 @@ var PUBLICATIONS_MAP = (function () {
 
 	$('#animateReset').click(function() {
 		clearInterval(int1);
-		d3.selectAll("line.link").attr("animViz", "true").style("opacity", 1).style("visibility", "visible");
-		d3.selectAll("circle.node").style("opacity", 1).style("visibility", "visible").attr("r", 10);
+		//override the current transitions with new ones to stop the current transitions
+		d3.selectAll("line.link").transition().duration(0).delay(0);
+		d3.selectAll("line.link")
+			.attr("animViz", "true")
+		  	.style("opacity", function(d) {
+			  	if(d.type != "cosup" || d.type == "cosup" && $('input#filterCo_sups').is(':checked'))
+			  		return 1;
+			  	else
+			  		return 0;
+		  	})
+		  	.style("visibility", function(d) {
+		  		if(d.type != "cosup" || d.type == "cosup" && $('input#filterCo_sups').is(':checked'))
+			  		return "visible";
+			  	else
+			  		return "hidden";
+		  	});
+		d3.selectAll("circle.node").transition().duration(0).delay(0).style("opacity", 1).style("visibility", "visible").attr("r", 10);
 		$('#animateYearPlaceholder').hide('slow');
-	})
+	});
 
 	$('#discardUnlinkedNodes').click(function() {
 		d3.selectAll("circle.node").each( function () {
@@ -1439,9 +1486,9 @@ var PUBLICATIONS_MAP = (function () {
 	  $('#tags').val("")
 
 	  //reset the scale and translate vector
-	  networkZoom.scale(1);
-	  networkZoom.translate([10, 00]);
-	  networksvg.transition().duration(2000).attr('transform', 'translate(' + networkZoom.translate() + ') scale(' + networkZoom.scale() + ')');
+	  networkzoom.scale(1);
+	  networkzoom.translate([10, 00]);
+	  networksvg.transition().duration(2000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
 
 	  //hide the selectionArea div
 	  $('#selectionArea').hide('slow');
@@ -1479,9 +1526,14 @@ var PUBLICATIONS_MAP = (function () {
 	  $('input#gatherMode').iCheck('uncheck');
 	  $('input#selectNone').iCheck('check');
 
+	  $('input#gatheringMode').iCheck('uncheck');
+	  $('input#motionFreeze').iCheck('uncheck');
+	  $('input#freezeNodes').iCheck('uncheck');
+	  $('input#scopeNodes').iCheck('uncheck');
+
 	  $('#animateYearPlaceholder').text("");
 
-	  //clear timer
+	  //clear animation timer
 	  clearInterval(int1);
 	});// end network reset
 
@@ -1494,18 +1546,24 @@ var PUBLICATIONS_MAP = (function () {
 	//   }
 	// });
 
+	//TODO: confliction with filter...
 	$('#granularity').change(function() {
 	  if(this.value == "individuals"){
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
-	    d3.selectAll("circle.dept").style("visibility", "hidden");
-	    d3.selectAll("circle.node").style("visibility", "visible");
+	    d3.selectAll("circle.dept").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 1).style("visibility", "visible");
+	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 1).style("visibility", "visible");
 	  }
 	  if(this.value == "departments"){
-	    d3.selectAll("circle.dept").style("visibility", "visible");
-	    d3.selectAll("circle.dept").transition().delay(1000).duration(1500).style("opacity", 1).attr("r", function(d){ 
-	     return departmentCounts[d[0]] * 2; 
+	    d3.selectAll("circle.dept").style("visibility", "visible").style("opacity", "0");
+	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 1).attr("r", function(d){ 
+	      //return departmentCounts[d[0]] * 2; 
+	      return d.count;
 	    })
-	    d3.selectAll("circle.node").transition().delay(2000).style("visibility", "hidden");    
+	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("circle.node").transition().delay(1500).style("visibility", "hidden");    
+	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("line.link").transition().delay(1500).style("visibility", "hidden");
 	  }
 	});
 
@@ -2268,9 +2326,18 @@ var PUBLICATIONS_MAP = (function () {
 				    var angle = slice * i;
 				    var newX = (centerx + radius * Math.cos(angle));
 				    var newY = (centery + radius * Math.sin(angle));
-				    networksvg.append("svg:circle").attr("class", "deptCircle").attr("cx", newX).attr("cy", newY).attr("r", 50).style("fill", "none").style("stroke-width", "2px").style("stroke", "gray").style("opacity", "0");
+				    //networksvg.append("svg:circle").attr("class", "dept").attr("cx", newX).attr("cy", newY).attr("r", 50).style("fill", "none").style("stroke-width", "2px").style("stroke", "gray").style("opacity", "0");
 				    deptCircles[i].focuscoords= [newX, newY];
 				}	
+				networksvg.selectAll("circle.dept")
+					.data(deptCircles).enter().append("svg:circle")
+					.attr("class", "dept")
+					.attr("cx", function(d) { return d.focuscoords[0]; }).attr("cy", function(d) { return d.focuscoords[1]; })
+					.attr("r", 50)
+					.style("fill", function(d) { return color20(d.name); })
+					.style("stroke-width", "2px")
+					.style("stroke", "gray")
+					.style("opacity", "0");
 				callback(null, 'done');			
 			}
 			],
