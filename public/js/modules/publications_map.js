@@ -78,7 +78,7 @@ var PUBLICATIONS_MAP = (function () {
 	    matrix_width = 1800;
 
 	var matrix_x = d3.scale.ordinal().rangeBands([0, matrix_width]),
-	    matrix_z = d3.scale.linear().domain([0, 21]).range([0,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
+	    matrix_z = d3.scale.linear()/*.domain([0, 21])*/.range([0,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
 	    matrix_c = d3.scale.category10().domain(d3.range(10));
 
 	var matrixsvg = d3.select("#matrixviz").append("svg:svg")
@@ -101,7 +101,7 @@ var PUBLICATIONS_MAP = (function () {
 	var svgwidth = $('#vizcontainer').width();
 	var svgheight = $('#vizcontainer').height();
 
-	var networkZoom = d3.behavior.zoom()
+	var networkzoom = d3.behavior.zoom()
 		.scaleExtent([0.5, 5])
 		.on("zoom", redrawNetwork);
 
@@ -118,14 +118,72 @@ var PUBLICATIONS_MAP = (function () {
 	    .append('svg:g')
 	    .attr("pointer-events", "all")
 	   .append('svg:g')
-	    .call(networkZoom)
+	    .call(networkzoom)
 	    .call(networkDrag)
 	    //.call(d3.behavior.drag().on("drag", pan))
 	   .append('svg:g')
-	   	  .on("dblclick", null)
-	  ;
+	   	  /*.on("dblclick", function() {
+	   	  	d3.select('#networkviz').append('div')
+	   	  		.style('position', 'absolute')
+	   	  		.style('left', d3.event.x + 'px')
+	   	  		.style('top', d3.event.y + 'px')
+	   	  		.style('background-color', 'yellow')
+	   	  		.text('-');
+	   	  	d3.event.stopPropagation();
+	   	  })*/;
+/*	$('#networkviz').on("dblclick", function(e) {
+		var x = e.offsetX;
+		var y = e.offsetY + $('#networkbar').height() + $('#networklegend').height();
+		var note = d3.select('#networkviz').append('div')
+   	  		.style('position', 'absolute')
+   	  		.style('left', x + "px")
+   	  		.style('top', y + "px")
+   	  		.style('background-color', 'yellow')
+   	  		.text('--');
+   	  	e.stopPropagation();
+/*
+   	  	var range = document.createRange();
+        range.selectNode(note[0][0]);
+        window.getSelection().addRange(range);
+	});*/
 
-	var cloningSvg;
+	//$('#networkviz').annotator();
+
+	var cloningWidth = 280;
+	var cloningHeight = 280;
+
+	//zoom behavior
+	var cloningZoom = d3.behavior.zoom()
+		.scaleExtent([0.5, 5])
+		.on("zoom", function() {
+			trans=d3.event.translate;
+				scale=d3.event.scale;
+
+			cloningSvg.attr("transform",
+			    "translate(" + trans + ")"
+			    + " scale(" + scale + ")");
+		});
+
+	//drag behavior
+	var cloningDrag = d3.behavior.drag()
+    .on("drag", function() { 
+    	d3.select(this).attr("cursor", "move");
+    	networksvg.attr("x", d3.event.x).attr("y", d3.event.y); } )
+    .on("dragend", function() {
+    	d3.select(this).attr("cursor", "default");
+    	//d3.event.preventDefault() //for event bubbling--prevent other listeners from receiving the event         
+    });
+
+	var cloningSvg = d3.select('#cloningArea')
+		.append('svg:svg')
+		.attr('width', cloningWidth)
+		.attr('height', cloningHeight)
+		.append('svg:g')
+	    .attr("pointer-events", "all")
+		.append('svg:g')
+		.call(cloningZoom)
+		.call(cloningDrag)
+		.append('svg:g');
 
 	//this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the network), it allows the visualization
 	//to be panned
@@ -170,6 +228,7 @@ var PUBLICATIONS_MAP = (function () {
 	var science_faculty_members_unique = [];
 	//var science_faculty_data;	
 
+	var int1; //animate interval timer
 
 	/////////////////////////////////////////////////////////////////////
 	//
@@ -289,6 +348,7 @@ var PUBLICATIONS_MAP = (function () {
 	  });
 
 	  $('input#filterNodesAll').iCheck('check');
+	  $('input#selectNone').iCheck('check');
 
 	  $('#selectionArea').hide();
 
@@ -382,23 +442,21 @@ var PUBLICATIONS_MAP = (function () {
 	  $( "#animateSliderYear" ).val( ui.value );
 
 	  d3.selectAll("line.link").each( function () {
-	    if (yearSelected < this.__data__.year ) {
-	      d3.select(this).style("opacity", 0);
-	      d3.select(this).style("visibility", "hidden");
+	    if (this.__data__.year != undefined && yearSelected < this.__data__.year ) {
+	      d3.select(this).transition().duration(1000).style("opacity", 0);
+	      d3.select(this).transition().delay(1000).style("visibility", "hidden");
 	    }
 	    else {
 	      //only want to set opacity to 0 and then fade it in if it is not currently visible
 	      if (this.style.visibility == "hidden"){
-	        if ($('input#filterCo_sups').is(':checked')){
+	        if ($('input#filterCo_pubs').is(':checked') && this.__data__.type != "cosup"){
 	          d3.select(this).style("visibility", "visible").style("opacity", 0);
-	          d3.select(this).style("opacity", 1);
+	          d3.select(this).transition().duration(1000).style("opacity", 1);
 	        }
 	        //if the user doesn't want to see co-supervision links
-	        else {
-	          if(this.__data__.type != "cosup"){
-	            d3.select(this).style("visibility", "visible").style("opacity", 0);
-	            d3.select(this).style("opacity", 1);
-	          }
+	        else if($('input#filterCo_sups').is(':checked') && this.__data__.type == "cosup"){
+	          d3.select(this).style("visibility", "visible").style("opacity", 0);
+	          d3.select(this).transition().duration(1000).style("opacity", 1);
 	        }
 	      }
 	    }
@@ -406,6 +464,7 @@ var PUBLICATIONS_MAP = (function () {
 	}
 	});
 
+	$( "#animateSliderYear" ).val( $( "#animateyearrange" ).slider( "values", 1 ));
 
 	$("#scopeSlider").slider({
 	  min: 2008,
@@ -550,23 +609,83 @@ var PUBLICATIONS_MAP = (function () {
 	//////////////////
 	$('#animateTime').click(function() {
 	  var currentYear = animatebegin;
-	  var int1 = setInterval(function(){
+	  //reset the network
+	  clearInterval(int1);
+	  //override the current transitions with new ones to stop the current transitions
+	  d3.selectAll("line.link").style("visibility", "visible").style("opacity", 0).attr("animViz", "true");
+	  d3.selectAll("circle.node").style("visibility", "visible").attr("r", 10);
+
+	  $('#animateYearPlaceholder').show('slow');
+	  function animatePerYear(){
+	  	if(currentYear > animateend) {
+	        clearInterval(int1);
+	        return ;
+	    }
 	    async.series(
 	      [
 	        function(callback){
-	          $('#animateYearPlaceholder').delay(3000).text(currentYear);
+	          $('#animateYearPlaceholder').text(currentYear);
 	          var t = d3.selectAll("line.link").each(function(){
-
-	            //if the link is currently visible and its year does not match currentYear
-	            if (this.style.visibility == "visible" && this.__data__.year != currentYear){
-	                d3.select(this).style("stroke", "#e6e6e6");
-	                d3.select(this).transition().duration(2500).style("opacity", 0);
-	                d3.select(this).transition().delay(2500).style("visibility", "hidden");
-	            }
-	            else {
-	                d3.select(this).style("visibility", "visible");        
-	                d3.select(this).transition().duration(2500).style("opacity", 1).style("stroke", "black");
-	            }
+	          	//co-supervision links do not have "year" attributes, change their visibility according to filter
+	          	if(this.__data__.type == "cosup") {
+	          		if($('input#filterCo_sups').is(':checked')) {
+	          			d3.select(this).attr("animViz", "true");
+	          			if(currentYear == animatebegin) {
+		          			d3.select(this).style("opacity", 1);
+				            d3.select(this).style("visibility", "visible");
+				        }
+				        else {
+				        	d3.select(this).style("opacity", 1);
+				            d3.select(this).style("visibility", "visible");
+				        }
+			        }
+			        else {
+			        	d3.select(this).attr("animViz", "false");
+			        	if(currentYear == animatebegin) {
+			        		d3.select(this).style("opacity", 0);
+				            d3.select(this).style("visibility", "hidden");
+				        }
+				        else {
+				        	d3.select(this).transition().duration(2000).style("opacity", 0);
+				            d3.select(this).transition().delay(2000).style("visibility", "hidden");
+				        }
+			        }
+	          	}
+	          	else {
+	          		//if the link is currently visible and its year does not match currentYear
+		            if (this.__data__.year != currentYear){
+		            	d3.select(this).attr("animViz", "false");
+		            	if(this.style.visibility == "visible") {
+		            		//no animation at the start
+			            	if(currentYear == animatebegin) {
+			            		//changing link color does not look good... 
+			            		d3.select(this)/*.style("stroke", "#e6e6e6")*/.style("opacity", 0);
+			                	d3.select(this).style("visibility", "hidden");
+			            	}
+			            	else {
+			            		d3.select(this).transition().duration(2000)/*.style("stroke", "#e6e6e6")*/.style("opacity", 0);
+				                //d3.select(this).transition().duration(2500).style("opacity", 0);
+				                d3.select(this).transition().delay(2000).style("visibility", "hidden");
+			            	}
+		            	}
+		            }
+		            else {
+		            	if($('input#filterCo_pubs').is(':checked')) {
+		            		d3.select(this).attr("animViz", "true");
+		            		if(this.style.visibility == "hidden") {
+		            			if(currentYear == animatebegin) {
+		            				console.log("ha");
+			            			d3.select(this).style("visibility", "visible");
+			                		d3.select(this).style("opacity", 1).style("stroke", "black");
+			            		}
+			            		else {
+			            			d3.select(this).style("visibility", "visible");
+			                		d3.select(this).transition().duration(2000).style("opacity", 1).style("stroke", "black");
+			            		}
+		            		}
+		            	}
+		            }
+	          	}
 	          });
 	          callback(null);
 	        },
@@ -575,21 +694,32 @@ var PUBLICATIONS_MAP = (function () {
 	          var t = d3.selectAll("circle.node").each( function () {
 	            var that = this;//because of the nested loop
 	            var match = false;
+	            //animViz is used here to identify matched links
 	            d3.selectAll("line.link").each( function() {
-	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && d3.select(this).attr("animViz") == "true") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && d3.select(this).attr("animViz") == "true"))){ //if there is a visible link to the current node set the boolean flag to true
 	                 match = true;
 	               }
 	            }); 
 	            if (match == false){
 	              //make the node invisible
-	              d3.select(this).style("stroke", "#e6e6e6");
-	              d3.select(this).transition().duration(700).style("opacity", 0).attr("r", 0);
-	              d3.select(this).transition().delay(700).style("visibility", "hidden");
+	              if(currentYear == animatebegin) {
+	              	d3.select(this).style("opacity", 0).attr("r", 0);
+	                d3.select(this).style("visibility", "hidden");
+	              }
+	              else {
+	              	//d3.select(this).style("stroke", "#e6e6e6");
+	                d3.select(this).transition().duration(2500).style("opacity", 0).attr("r", 0);
+	                d3.select(this).transition().delay(2500).style("visibility", "hidden");
+	              }
 	            }
 	            else {
 	              //if the current node is currently hidden
 	              if (this.style.visibility == "hidden"){
 	                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+	                if(currentYear == animatebegin) {
+	                	d3.select(this).style("visibility", "visible").style("opacity", 0);
+	                	d3.select(this).style("opacity", 1).attr("r", 10);
+	                }
 	                d3.select(this).style("visibility", "visible").style("opacity", 0);
 	                d3.select(this).transition().duration(1000).style("opacity", 1).attr("r", 10);
 	              }
@@ -601,15 +731,44 @@ var PUBLICATIONS_MAP = (function () {
 
 	      //callback
 	      function(err){
-	        if(currentYear == animateend && err == 2){
-	          setTimeout(function(){filterNodesWithoutLinks()}, 3000);
-	          clearInterval(int1);
+/*	        if(err == 2 && currentYear == animateend){
+	          //setTimeout(function(){filterNodesWithoutLinks()}, 3000);
+	          //if(currentYear == animateend) {
+	          	clearInterval(int1);
+	          //}
 	        }
 	        else 
-	          currentYear+=1;  
+	          currentYear+=1;  */
+	        if(err == 2) {
+	        	currentYear++;
 	        }
+	      }
 	    );
-	  }, 3000);
+	  }
+	  animatePerYear();
+	  int1 = setInterval(animatePerYear, 3000);
+	});
+
+	$('#animateReset').click(function() {
+		clearInterval(int1);
+		//override the current transitions with new ones to stop the current transitions
+		d3.selectAll("line.link").transition().duration(0).delay(0);
+		d3.selectAll("line.link")
+			.attr("animViz", "true")
+		  	.style("opacity", function(d) {
+			  	if(d.type != "cosup" || d.type == "cosup" && $('input#filterCo_sups').is(':checked'))
+			  		return 1;
+			  	else
+			  		return 0;
+		  	})
+		  	.style("visibility", function(d) {
+		  		if(d.type != "cosup" || d.type == "cosup" && $('input#filterCo_sups').is(':checked'))
+			  		return "visible";
+			  	else
+			  		return "hidden";
+		  	});
+		d3.selectAll("circle.node").transition().duration(0).delay(0).style("opacity", 1).style("visibility", "visible").attr("r", 10);
+		$('#animateYearPlaceholder').hide('slow');
 	});
 
 	$('#discardUnlinkedNodes').click(function() {
@@ -739,27 +898,13 @@ var PUBLICATIONS_MAP = (function () {
     $('#selectionClone').click(function() {
     	if(selectedNodes.length == 0)
     		return ;
-    	var cloningWidth = 300;
-    	var cloningHeight = 300;
-    	//zoom behavior
-    	var cloningZoom = d3.behavior.zoom()
-    								.scaleExtent([0.5, 5])
-    								.on("zoom", function() {
-    									trans=d3.event.translate;
-	  									scale=d3.event.scale;
 
-										cloningSvg.attr("transform",
-										    "translate(" + trans + ")"
-										    + " scale(" + scale + ")");
-									});
-
-    	$('#cloningArea').contents().filter('svg').remove();
-    	cloningSvg = d3.select('#cloningArea')
-    						.append('svg:svg')
-    						.attr('width', cloningWidth)
-    						.attr('height', cloningHeight)
-    						.append('svg:g')
-    						.call(cloningZoom)
+    	cloningSvg.selectAll('*').remove();
+    	cloningSvg.append('svg:rect')
+    		.attr('width', cloningWidth)
+    		.attr('height', cloningHeight)
+    		.style('fill', 'none')
+    		.style('opacity', '0');
 
     	$('#cloningArea').show('slow');
     	//clone selected data so that we can create a new layout
@@ -778,36 +923,36 @@ var PUBLICATIONS_MAP = (function () {
     	});
 
     	var cloningLink = cloningSvg.selectAll('line.link')
-    								.data(links)
-    								.enter().append('svg:line')
-    								.attr('class', 'link')
-    								.style("visibility", "visible")
-								    .style("stroke", "black")
-								    .style("stroke-dasharray", function (d) {
-								      if (d.type == "cosup")
-								        return "4, 4";
-								      else
-								        return "10, 0";
-								    });
+			.data(links)
+			.enter().append('svg:line')
+			.attr('class', 'link')
+			.style("visibility", "visible")
+		    .style("stroke", "black")
+		    .style("stroke-dasharray", function (d) {
+		      if (d.type == "cosup")
+		        return "4, 4";
+		      else
+		        return "10, 0";
+		    });
 
 		var cloningNode = cloningSvg.selectAll('circle.node')
-    								.data(nodes)
-    								.enter().append('svg:circle')
-    								.attr('class', 'node')
-    								.attr('r', 10)
-    								.style('visibility', 'visible')
-    								.style('fill', function(d) { return color20(d.Department); })
-    								.style("stroke", "gray")
-    								.style("stoke-width", "1px");
+			.data(nodes)
+			.enter().append('svg:circle')
+			.attr('class', 'node')
+			.attr('r', 10)
+			.style('visibility', 'visible')
+			.style('fill', function(d) { return color20(d.Department); })
+			.style("stroke", "gray")
+			.style("stoke-width", "1px");
 
     	var cloning_network_force = d3.layout.force()
-    							.size([cloningWidth, cloningHeight])
-    							.nodes(nodes)
-    							.links(links)
-	    						//.gravity(dgravity)
-	    						.friction(dfriction)
-	    						//.charge(dcharge)
-	    						.linkDistance(30)
+			.size([cloningWidth, cloningHeight])
+			.nodes(nodes)
+			.links(links)
+			//.gravity(dgravity)
+			.friction(dfriction)
+			//.charge(dcharge)
+			.linkDistance(30)
 
 	    function cloningAreaTick() {
 	    	cloningLink.attr("x1", function(d) { return d.source.x; })
@@ -820,48 +965,48 @@ var PUBLICATIONS_MAP = (function () {
 	    }
 
 	    var nodeDrag = d3.behavior.drag()
-    							.on("dragstart", function(d, i) {
-    								dragging = true;
-    								cloning_network_force.stop();
-    							})
-    							.on("drag", function(d, i) {
-    								d.px += d3.event.dx;
-	        						d.py += d3.event.dy;
-							        d.x += d3.event.dx;
-							        d.y += d3.event.dy;
-							        cloningAreaTick();
-    							})
-    							.on("dragend", function(d, i) {
-    								cloningAreaTick();
-    								cloning_network_force.resume();
-    								dragging = false;
-    							})
+			.on("dragstart", function(d, i) {
+				dragging = true;
+				cloning_network_force.stop();
+			})
+			.on("drag", function(d, i) {
+				d.px += d3.event.dx;
+				d.py += d3.event.dy;
+		        d.x += d3.event.dx;
+		        d.y += d3.event.dy;
+		        cloningAreaTick();
+			})
+			.on("dragend", function(d, i) {
+				cloningAreaTick();
+				cloning_network_force.resume();
+				dragging = false;
+			})
     	cloningNode.call(nodeDrag)
-    				.on("mouseover", function(d) {
-    					d3.select(this).attr("cursor", "pointer");
-					  	d3.select(this).style("stroke-width", "3px");
-					  	if (!dragging) {
-							nodeTooltip.transition()        
-				                .duration(200)      
-				                .style("opacity", .95);      
-				            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + d.Department + "<br>" + d.Rank)                
-				            	.style("left", (parseInt(d3.select(this).attr("cx")) + document.getElementById("networkviz").offsetLeft) + "px")     
-				                .style("top", d.y + "px");
+			.on("mouseover", function(d) {
+				d3.select(this).attr("cursor", "pointer");
+			  	d3.select(this).style("stroke-width", "3px");
+			  	if (!dragging) {
+					nodeTooltip.transition()        
+		                .duration(200)      
+		                .style("opacity", .95);      
+		            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + d.Department + "<br>" + d.Rank)                
+		            	.style("left", (parseInt(d3.select(this).attr("cx")) + document.getElementById("networkviz").offsetLeft) + "px")     
+		                .style("top", d.y + "px");
 
-				            //position the tooltip relative to the svg circle
-					  	    $('.nodeTooltip').position({
-				    			"my": "left+20 top+20",
-				    			"at": "right bottom",
-				    			"of": $(this)
-				    		});
-					  	}
-    				})
-    				.on("mouseout", function(d) {
-    					d3.select(this).style("stroke-width", "1px");	    
-					  	nodeTooltip.transition()        
-				        	.duration(500)      
-				            .style("opacity", 0);
-				    });
+		            //position the tooltip relative to the svg circle
+			  	    $('.nodeTooltip').position({
+		    			"my": "left+20 top+20",
+		    			"at": "right bottom",
+		    			"of": $(this)
+		    		});
+			  	}
+			})
+			.on("mouseout", function(d) {
+				d3.select(this).style("stroke-width", "1px");	    
+			  	nodeTooltip.transition()        
+		        	.duration(500)      
+		            .style("opacity", 0);
+		    });
 
 	    cloning_network_force.on("tick", cloningAreaTick);
 	    cloning_network_force.start();
@@ -873,30 +1018,30 @@ var PUBLICATIONS_MAP = (function () {
 	@params: none
 	@returns: none
 	*/
-	function filterNodesWithoutLinks() {
+/*	function filterNodesWithoutLinks() {
 	  d3.selectAll("circle.node").each( function () {
 	    var that = this;//because of the nested loop
 	    var match = false;
 	    d3.selectAll("line.link").each( function() {
-	        if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+	        if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.animViz == "true") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.animViz == "true"))){ //if there is a visible link to the current node set the boolean flag to true
 	         match = true;
 	       }
 	    }); 
 	    if (match == false){
 	      //make the node invisible
-	      d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
-	      d3.select(this).transition().delay(300).style("visibility", "hidden");
+	      d3.select(this).transition().duration(800).style("opacity", 0).attr("r", 0);
+	      d3.select(this).transition().delay(800).style("visibility", "hidden");
 	    }
 	    else {
 	      //if the current node is currently hidden
 	      if (this.style.visibility == "hidden"){
 	        //set it to visible, but with an opacity of 0 so that it can be gradually faded in
 	        d3.select(this).style("visibility", "visible").style("opacity", 0);
-	        d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+	        d3.select(this).transition().duration(800).style("opacity", 1).attr("r", 10);
 	      }
 	    }
 	  }); 
-	}
+	}*/
 
 
 	$('input#filterCo_pubs').on('ifChecked', function() {
@@ -905,7 +1050,7 @@ var PUBLICATIONS_MAP = (function () {
 	    [  
 	      function(callback){
 	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type != "cosup" && this.__data__.type != "grant") {
+	          if (this.__data__.type != "cosup" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
 	            d3.select(this).style("visibility", "visible");        
 	            d3.select(this).transition().duration(1000).style("opacity", 1);
 	          }
@@ -1007,7 +1152,7 @@ var PUBLICATIONS_MAP = (function () {
 	    [  
 	      function(callback){
 	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type == "cosup") {
+	          if (this.__data__.type == "cosup" && d3.select(this).attr("animViz") == "true") {
 	            d3.select(this).style("visibility", "visible");        
 	            d3.select(this).transition().duration(1000).style("opacity", 1);
 	          }
@@ -1381,8 +1526,15 @@ var PUBLICATIONS_MAP = (function () {
 	  $('input#gatherMode').iCheck('uncheck');
 	  $('input#selectNone').iCheck('check');
 
+	  $('input#gatheringMode').iCheck('uncheck');
+	  $('input#motionFreeze').iCheck('uncheck');
+	  $('input#freezeNodes').iCheck('uncheck');
+	  $('input#scopeNodes').iCheck('uncheck');
+
 	  $('#animateYearPlaceholder').text("");
 
+	  //clear animation timer
+	  clearInterval(int1);
 	});// end network reset
 
 	// $('#arrange').change(function() {
@@ -1394,18 +1546,24 @@ var PUBLICATIONS_MAP = (function () {
 	//   }
 	// });
 
+	//TODO: confliction with filter...
 	$('#granularity').change(function() {
 	  if(this.value == "individuals"){
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
-	    d3.selectAll("circle.dept").style("visibility", "hidden");
-	    d3.selectAll("circle.node").style("visibility", "visible");
+	    d3.selectAll("circle.dept").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 1).style("visibility", "visible");
+	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 1).style("visibility", "visible");
 	  }
 	  if(this.value == "departments"){
-	    d3.selectAll("circle.dept").style("visibility", "visible");
-	    d3.selectAll("circle.dept").transition().delay(1000).duration(1500).style("opacity", 1).attr("r", function(d){ 
-	     return departmentCounts[d[0]] * 2; 
+	    d3.selectAll("circle.dept").style("visibility", "visible").style("opacity", "0");
+	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 1).attr("r", function(d){ 
+	      //return departmentCounts[d[0]] * 2; 
+	      return d.count;
 	    })
-	    d3.selectAll("circle.node").transition().delay(2000).style("visibility", "hidden");    
+	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("circle.node").transition().delay(1500).style("visibility", "hidden");    
+	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("line.link").transition().delay(1500).style("visibility", "hidden");
 	  }
 	});
 
@@ -1474,6 +1632,53 @@ var PUBLICATIONS_MAP = (function () {
 	      network_force.start();
 	    $('#translatematrix').val('').trigger('liszt:updated'); 
 	  }
+	});
+
+	//for matrix
+	$('input#matrixFilterCo_pubs').on("ifChecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.z > 0) {
+				d3.select(this).style("visibility", "visible");
+				if(d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked'))
+					d3.select(this).style("fill", "purple")
+									.style("opacity", function(d) { return matrix_z(d.z + d.cosup); });
+			}
+		});
+	});
+
+	$('input#matrixFilterCo_pubs').on("ifUnchecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.z > 0) {
+				if(d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked'))
+					d3.select(this).style("fill", "blue")
+									.style("opacity", function(d) { return matrix_z(d.cosup); });
+				else
+					d3.select(this).style("visibility", "hidden");
+			}
+		});
+	});
+
+	$('input#matrixFilterCo_sups').on("ifChecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.cosup > 0) {
+				d3.select(this).style("visibility", "visible");
+				if(d.z > 0 && $('input#matrixFilterCo_pubs').is(':checked'))
+					d3.select(this).style("fill", "purple")
+									.style("opacity", function(d) { return matrix_z(d.z + d.cosup); });
+			}
+		});
+	});
+
+	$('input#matrixFilterCo_sups').on("ifUnchecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.cosup > 0) {
+				if(d.z > 0 && $('input#matrixFilterCo_pubs').is(':checked'))
+					d3.select(this).style("fill", "red")
+									.style("opacity", function(d) { return matrix_z(d.z); });
+				else
+					d3.select(this).style("visibility", "hidden");
+			}
+		});
 	});
 
 
@@ -1774,6 +1979,7 @@ var PUBLICATIONS_MAP = (function () {
 	      .data(links_combined) 
 	    .enter().append("svg:line")
 	      .attr("class", "link")
+	      .attr("animViz", "true")  //it declares whether the link should be visible after the animation
 	      .style("visibility", "visible")
 	      .style("stroke", "black")
 	      .style("stroke-dasharray", function (d) {
@@ -2120,9 +2326,18 @@ var PUBLICATIONS_MAP = (function () {
 				    var angle = slice * i;
 				    var newX = (centerx + radius * Math.cos(angle));
 				    var newY = (centery + radius * Math.sin(angle));
-				    networksvg.append("svg:circle").attr("class", "deptCircle").attr("cx", newX).attr("cy", newY).attr("r", 50).style("fill", "none").style("stroke-width", "2px").style("stroke", "gray").style("opacity", "0");
+				    //networksvg.append("svg:circle").attr("class", "dept").attr("cx", newX).attr("cy", newY).attr("r", 50).style("fill", "none").style("stroke-width", "2px").style("stroke", "gray").style("opacity", "0");
 				    deptCircles[i].focuscoords= [newX, newY];
 				}	
+				networksvg.selectAll("circle.dept")
+					.data(deptCircles).enter().append("svg:circle")
+					.attr("class", "dept")
+					.attr("cx", function(d) { return d.focuscoords[0]; }).attr("cy", function(d) { return d.focuscoords[1]; })
+					.attr("r", 50)
+					.style("fill", function(d) { return color20(d.name); })
+					.style("stroke-width", "2px")
+					.style("stroke", "gray")
+					.style("opacity", "0");
 				callback(null, 'done');			
 			}
 			],
@@ -2292,7 +2507,7 @@ var PUBLICATIONS_MAP = (function () {
 	  $('#vizloader').hide();  
 
 	  //construct the legend
-	  constructMatrixLegend(science_departments);
+	  constructMatrixLegend(science_departments, science_faculty_data);
 
 	  var matrix = [],
 	      nodes = science_faculty_data,
@@ -2302,17 +2517,29 @@ var PUBLICATIONS_MAP = (function () {
 	  nodes.forEach(function(node, i) {
 	    node.index = i;
 	    node.count = 0;
-	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0, cosup: 0}; });
 	  });
 
+	  //calculate the max publications to decide the domain of scale matrix_z
+	  var max_z = 0;
+	  var max_cosup = 0;
 	  // Convert links to matrix; count occurrences.
-	  links_for_matrix.forEach(function(link) {
-	    matrix[link.source][link.target].z += link.value;
-	    matrix[link.target][link.source].z += link.value;
-	    // matrix[link.source][link.source].z += link.value;
-	    // matrix[link.target][link.target].z += link.value;
-	    nodes[link.source].count += link.value;
-	    nodes[link.target].count += link.value;
+	  links_combined.forEach(function(link) {
+	  	if(link.type == "cosup") {
+	  		matrix[link.source][link.target].cosup += link.value;
+	    	matrix[link.target][link.source].cosup += link.value;
+	  	}
+	  	else {
+	  		matrix[link.source][link.target].z += 1;
+	    	matrix[link.target][link.source].z += 1;
+	  	}
+	    nodes[link.source].count += 1;
+	    nodes[link.target].count += 1;
+
+	    max_z = matrix[link.source][link.target].z > max_z ? matrix[link.source][link.target].z : max_z;
+	    max_z = matrix[link.target][link.source].z > max_z ? matrix[link.target][link.source].z : max_z;
+	    max_cosup = matrix[link.source][link.target].cosup > max_cosup ? matrix[link.source][link.target].cosup : max_cosup;
+	    max_cosup = matrix[link.target][link.source].cosup > max_cosup ? matrix[link.target][link.source].cosup : max_cosup;
 	  });
 
 	  // Precompute the orders.
@@ -2329,6 +2556,7 @@ var PUBLICATIONS_MAP = (function () {
 
 	  // The default sort order.
 	  matrix_x.domain(orders.name);
+	  matrix_z.domain([0, max_z + max_cosup]);
 
 	  matrixsvg.append("rect")
 	      .attr("class", "matrixbackground")
@@ -2374,16 +2602,23 @@ var PUBLICATIONS_MAP = (function () {
 
 
 	  //for the matrix
-	  function row(row) {
+	  function row(row, index) {
 	    var cell = d3.select(this).selectAll(".matrixcell")
-	        .data(row.filter(function(d) { return d.z; }))
+	        .data(row.filter(function(d) { return d.z || d.cosup; }))
 	      .enter().append("rect")
 	        .attr("class", "matrixcell")
 	        .attr("x", function(d) { return matrix_x(d.x); })
 	        .attr("width", matrix_x.rangeBand())
 	        .attr("height", matrix_x.rangeBand())
-	        .style("fill-opacity", function(d) { return matrix_z(d.z); })
-	        .style("fill", "red")
+	        .style("fill-opacity", function(d) { return matrix_z(d.z + d.cosup) })
+	        .style("fill", function(d) {
+	        	if(d.z > 0 && d.cosup == 0)
+	        		return "red";
+	        	if(d.z == 0 && d.cosup > 0)
+	        		return "blue";
+	        	if(d.z && d.cosup)
+	        		return "purple";
+	        })
 	        //.style("fill", function(d) { return nodes[d.x].Department == nodes[d.y].Department ? matrix_c(nodes[d.x].Department) : null; })
 	        .on("mouseover", mouseover)
 	        .on("mouseout", mouseout);
@@ -2391,6 +2626,7 @@ var PUBLICATIONS_MAP = (function () {
 	    cell.append("name1").text(function(d) { return "<b>" + nodes[d.x].Name + " & </b>" + "<br>"; });
 	    cell.append("name2").text(function(d) { return "<b>" + nodes[d.y].Name + "</b>" + "<br>" + "<hr>"; });
 	    cell.append("value").text(function(d) { return "publications: " + d.z + "<br>"; });
+	    cell.append("value2").text(function(d) {return "co_supervisions: " + d.cosup + "<br>"; });
 
 	  }
 
@@ -2415,7 +2651,7 @@ var PUBLICATIONS_MAP = (function () {
 	  }, 5000);
 
 	  //for the matrix
-	  d3.select("#order").on("change", function() {
+	  $("#order").change(function() {
 	    clearTimeout(timeout);
 	    order(this.value);
 
@@ -2549,7 +2785,7 @@ var PUBLICATIONS_MAP = (function () {
 						if (this.style.opacity == "0" && !label.selected)
 							d3.select(this).style("opacity", "1");
 					});	
-					label.selected = false;				
+					//label.selected = false;				
 				}
 				//if not currently selected, "select" it
 				else {
@@ -2579,15 +2815,116 @@ var PUBLICATIONS_MAP = (function () {
 			});
 	}
 
-	function constructMatrixLegend(science_departments) {
+	//since matrix rows and columns are not bound with department data, nodes(science_faculty_data) are needed here
+	function constructMatrixLegend(science_departments, nodes) {
+
+	  var selectedDepartments = [];
+
 	  var label = matrixlegend.selectAll(".label")
 	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")
-	    .text(function(d) { return d; })
-	    .append("div")
+	    .style("border", "1px dashed")
+	    .style("border-color", "rgba(255,255,255,0)")
+	    .text(function(d) { return d; });
+
+	    label.append("div")
 	    .attr("class", "labelcolor")
 	    .style("background-color", function(d){ return color20(d); });
+
+	    label.on("mouseover", function(d) {
+	    	var label = this;
+			d3.select(label)
+				.style("background-color", "rgb(36,137,197)")
+				.style("color", "white");
+			d3.selectAll(".matrixrow").each(function() {
+				if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+					d3.select(this).selectAll("rect.matrixcell").style("opacity", "0.05");
+					d3.select(this).selectAll("text").style("opacity", "0.05");
+				}
+				else {
+					d3.select(this).selectAll("rect.matrixcell").style("opacity", "1");
+					d3.select(this).selectAll("text").style("opacity", "1");
+				}
+			});
+			d3.selectAll(".matrixcolumn").each(function() {
+				if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+					d3.select(this).selectAll("text").style("opacity", "0.05");
+				}
+				else {
+					d3.select(this).selectAll("text").style("opacity", "1");
+				}
+			});
+	    })
+	    .on("mouseout", function(d) {
+	    	var label = this;
+			if (!_.contains(selectedDepartments, d)){
+				d3.select(label)
+					.style("background-color", "white")
+					.style("color", "black");
+
+				//if no departments are currently selected
+				if( _.isEmpty(selectedDepartments)){
+					d3.selectAll("rect.matrixcell").style("opacity", "1");
+					d3.selectAll("text").style("opacity", "1");
+				}
+				else {
+					d3.selectAll(".matrixrow").each(function() {
+						if(_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+							d3.select(this).selectAll("rect.matrixcell").style("opacity", "1");
+							d3.select(this).selectAll("text").style("opacity", "1");
+						}
+						else {
+							d3.select(this).selectAll("rect.matrixcell").style("opacity", "0.05");
+							d3.select(this).selectAll("text").style("opacity", "0.05");
+						}
+					});
+					d3.selectAll(".matrixcolumn").each(function() {
+						if(_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+							d3.select(this).selectAll("text").style("opacity", "1");
+						}
+						else {
+							d3.select(this).selectAll("text").style("opacity", "0.05");
+						}
+					});
+				}
+			}
+	    })
+	    .on("click", function(d) {
+	    	var label = this;
+			//if currently selected, "unselect" it
+			if (_.contains(selectedDepartments, d)){
+				selectedDepartments = _.without(selectedDepartments, d);
+				d3.select(label)
+				 	.style("border-color", "rgba(255,255,255,0)");
+			}
+			//if not currently selected, "select" it
+			else {
+				selectedDepartments.push(d);
+				d3.select(label)
+					.style("background-color", "rgb(36,137,197)")
+					.style("color", "white")
+					.style("border-color", "rgba(255,255,255,1)");
+				d3.selectAll(".matrixrow").each(function() {
+					if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+						d3.select(this).selectAll("rect.matrixcell").style("opacity", "0.05");
+						d3.select(this).selectAll("text").style("opacity", "0.05");
+					}
+					else {
+						d3.select(this).selectAll("rect.matrixcell").style("opacity", "1");
+						d3.select(this).selectAll("text").style("opacity", "1");
+					}
+				});
+				d3.selectAll(".matrixcolumn").each(function() {
+					if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+						d3.select(this).selectAll("text").style("opacity", "0.05");
+					}
+					else {
+						d3.select(this).selectAll("text").style("opacity", "1");
+					}
+				});
+			}
+	    })
 	}
 
 	function redrawNetwork() {
@@ -2655,9 +2992,23 @@ var PUBLICATIONS_MAP = (function () {
 
 	function sizeNodesByCopubs () {
 	  d3.selectAll("circle.node").each( function () {
-	    d3.select(this).transition().duration(1000).attr("r", function() { return 10 + parseInt($(this).attr("copubs"))*4; })
+	    d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return 10 + parseInt($(this).attr("copubs"))*4; })
 	  });
-	  network_force.charge(-200).start();
+//	  setTimeout(function() {
+	  	network_force.charge(function(d, i) {
+	  	  var radius = $("circle.node")[i].r.animVal.value;
+		  //return -Math.pow((radius - 10), 2) * 2;
+		  //return -radius * 35;
+		  return -Math.pow(radius, 2) / 1.5;
+		  //return -200;
+		})
+		.linkDistance(function(d, i) {
+			var r_source = $("circle.node")[d.source.index].r.animVal.value;
+			var r_target = $("circle.node")[d.target.index].r.animVal.value;
+			return 70 + r_source + r_target;
+		}).start();
+//	  }, 1000);
+	  
 	}
 
 	//takes an array of link objects and returns the same array with all duplicate links removed
@@ -2708,7 +3059,8 @@ var PUBLICATIONS_MAP = (function () {
 			//empty the selection area by removing div elements
 			//keeps the h3 element
 			$('#selectionList').contents().filter('li').remove();
-			$('#cloningArea').contents().filter('svg').remove();
+			//$('#cloningArea').contents().filter('svg').remove();
+			cloningSvg.selectAll('*').remove();
 		}
 		else {
 			var items = d3.select("#selectionList").selectAll(".item")

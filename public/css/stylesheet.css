@@ -467,7 +467,7 @@ for matrix
   right: 32%;
   top: 13%;
   font-family: 'Oswald', sans-serif;
-  font-size: 10em;
+  font-size: 8em;
   font-weight: bold;
   color: rgb(200,200,200);
 }
@@ -534,6 +534,15 @@ for matrix
   padding: 8px 5px;
   font-weight: bold;
   border-bottom: 1px solid #ebebeb;
+}
+
+#cloningArea h2 {
+  font-family: 'Fjalla One', sans-serif;
+  padding-bottom: 15px;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  text-align: center;  
+  color: black;
 }
 
 #matrixviz {
@@ -2170,6 +2179,7 @@ form.signin input::-webkit-input-placeholder {
   font-family: 'Helvetica Neue';
   font-size: 11px;
   margin-bottom: 5px;
+  cursor: default;
   }
 
 #treemaplegend {
