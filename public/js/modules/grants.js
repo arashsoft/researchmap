@@ -19,9 +19,9 @@ var GRANTS = (function () {
   var treemap_constructed = false;
   var bubble_constructed = false;
   var bubblezoom = d3.behavior.zoom();
-  var bubble = d3.layout.force().size([width,height]);
-  var bubblenode;
+  var bubble;
   var top20;
+
 
   //receive JSON from the server
   //var nested_by_sponsor = {{{nested_by_sponsor}}};
@@ -47,11 +47,17 @@ var GRANTS = (function () {
   var margin = {top: 5, right: 0, bottom: 5, left: 0},
       width = $('#vizcontainer').width() - margin.left - margin.right,
       height = $('#vizcontainer').height() - margin.top - margin.bottom; 
+ 
 
-  var normal_center = {
-    y: height/2,
-    x: width/2
-    };      
+  //get the width and height of the div containing the svg--this way the dimensions are specified dynamically
+  var svgwidth = $('#vizcontainer').width();
+  var svgheight = $('#vizcontainer').height();
+
+  //center of the svg area
+  var normal_center = { y: svgheight/2, x: svgwidth/2 }; 
+
+  //consructs the new force-directed layout
+  var bubble_force = d3.layout.force().size([svgwidth,svgheight]);      
 
   var treemap = d3.layout.treemap()
       .round(true)
@@ -109,6 +115,10 @@ var GRANTS = (function () {
   //this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the bubble diagram), it allows the visualization
   //to be panned
   var bubblesvgbackground = bubblesvg.append("svg:rect").attr("width", width).attr("height", height).style("fill", "aliceblue").style("opacity", 0);
+
+
+  //this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
+  var color20 = d3.scale.ordinal().range(["#D24B32","#73D74B","#7971D9","#75CCC1","#4F2A3F","#CA4477","#C78D38","#5D8737","#75A0D2","#C08074","#CD50CC","#D0D248","#CA8BC2","#BFC98D","#516875","#434E2F","#66D593","#713521","#644182","#C9C0C3"]);
 
 
   //load the lightbox option for VRchoice
@@ -649,33 +659,82 @@ var GRANTS = (function () {
 
   function constructBubble () {
 
-    bubble
-      .nodes([1,2,3,4,5]);
-    bubble
-      .charge(-120)
-      .start();
+    var xpos = $('#vizcontainer').width()/2 - $('#vizloader').width()/2;
+    var ypos = $('#vizcontainer').height()/2 - $('#vizloader').height()/2;
+    $('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
 
-   bubblenode = bubblesvg.selectAll("circle.node")    
-      .data([1,2,3,4,5])
-      .enter().append("svg:circle");
-    bubblenode  
-      .attr("class", "bubblenode")
-      .attr("r", function(d){ 
-        return 2;})
-      .style("visibility", "visible")
-      .style("fill", "blue")
-      //.style("fill", function(d){ return color10(d.Department); })
-      .call(bubble.drag);
+    getBubbleData(buildBubble);    
 
-    // node.transition().duration(2000).attr("r", function(d){
-    //   return 10;//d.Sponsor;
-    // });
+  }//end constructBubble
+
+  /*
+  gets the data for the bubbleviz (either from the sessionStorage or from the db on the server) and then builds the viz by passing the buildBubble function as a callback to getBubbleData
+  @params: callback: a callback function--in this case buildBubble--that builds the network visualization
+  @returns: none
+  */
+  function getBubbleData (callback) {
+    //hide the loading gif
+    $('#vizloader').hide();
+
+    var all_grants;
+
+    async.parallel(
+      [
+        function(callback){
+            if(store.session.has("all_grants")){
+              console.log("all_grants is already in sessionStorage...no need to fetch again");
+              all_grants = store.session("all_grants");
+              callback(null);
+            }
+            else {
+              console.log("fetching all_grants");
+              $.get('grants/all_grants', function(result){
+                all_grants = JSON.parse(result.all_grants);
+                //store.session("all_grants", all_grants);
+                callback(null);
+              });
+            }         
+          }
+      ],
+
+        function(err, results) {
+          if (err) throw new Error(err);
+          callback(all_grants);
+        }
+    );//end async.parallel
+  }//end getBubbleData
+
+  function buildBubble(all_grants) {
+    //group grants by the proposal number (i.e., group multiple records of the same grant)
+    grouped_grants = _.groupBy(all_grants, function(x) { return x.Proposal; });
+
+    _.each(grouped_grants, function(grantobj, key) { 
+      if (grantobj.length > 1) {
+        var temp = combineObjects(grantobj); 
+        grouped_grants[key] = temp;
+      } 
+      else
+        grouped_grants[key] = grantobj[0]; //remove the object from its array enclosure so that the resulting grouped_grants is consistent
+    });
+
+    bubble_force
+      .nodes(_.toArray(grouped_grants)); //d3 needs the data in the form of an array
+
+    bubble = bubblesvg.selectAll("circle.bubble")
+      .data(_.toArray(grouped_grants))
+      .enter().append("svg:circle")
+      .attr("class", "bubble")
+      .attr("r", 5)
+      .style("fill", "green");
 
     bubble_constructed = true;
 
-    bubble.on("tick", tick);
+    bubble_force
+      .gravity(0.6)
+      .on("tick", tick)
+      .start();
 
-  }//end constructBubble
+  }//end buildBubble
 
   function constructTreemap (nestedData) {
 
@@ -914,17 +973,23 @@ var GRANTS = (function () {
 
   function tick () {
 
-      //moves each node towards the normal_center
-      bubblenode
-        .attr("cx", function(d) { 
-          return d.x += (normal_center.x - d.x) * 0.12 * bubble.alpha();
-          })
-        .attr("cy", function(d) { 
-          return d.y += (normal_center.y - d.y) * 0.12 * bubble.alpha(); 
-          })
-        .style("stroke", "gray")
-        .style("stroke-width", "1px")
-        ;  
+    bubble
+        .each(function() { //moves each node towards the normal_center
+          d3.select(this).attr("cx", function(d) {
+          return d.x += (normal_center.x - d.x) * 0.12 * bubble_force.alpha();
+        });
+        d3.select(this).attr("cy", function(d) {
+          return d.y += (normal_center.y - d.y) * 0.12 * bubble_force.alpha();
+        });
+          d3.select(this).style("stroke", "gray");
+            d3.select(this).style("stroke-width", function(d) { 
+              if (d.fixed == true)
+                return "3px";
+              else
+                return "1px";
+            });         
+        });
+        //.each(collide(.5));    
   }
 
   function size(d) {
@@ -1099,6 +1164,77 @@ var GRANTS = (function () {
 
     return finallist;
   }
+
+  /* 
+  Resolve collisions between nodes
+  @params: alpha: 
+       nodes: nodes of the network (keep ??)
+  @returns: 
+  */
+  function collide(alpha) {
+    var quadtree = d3.geom.quadtree(node);
+    return function(d) {
+      var r = this.r.animVal.value + 10,
+          nx1 = d.x - r,
+          nx2 = d.x + r,
+          ny1 = d.y - r,
+          ny2 = d.y + r;
+      quadtree.visit(function(quad, x1, y1, x2, y2) {
+        if (quad.point && (quad.point !== d)) {
+          var x = d.x - quad.point.x,
+              y = d.y - quad.point.y,
+              l = Math.sqrt(x * x + y * y),
+              r = this.r.animVal.value + 10 + (d.color !== quad.point.color) * padding;
+          if (l < r) {
+            l = (l - r) / l * alpha;
+            d.x -= x *= l;
+            d.y -= y *= l;
+            quad.point.x += x;
+            quad.point.y += y;
+          }
+        }
+        return x1 > nx2
+            || x2 < nx1
+            || y1 > ny2
+            || y2 < ny1;
+      });
+    };
+  } 
+
+
+//similar to _.extend, but with the added feature of maintaining different properties (rather than overwriting them)
+//if properties are the same they will be merged/overwritten (same as with _.extend)
+//if properties are not the same, they will be combined in the form of an array and stored as multiple properties
+//@params: obj: objects to combine
+//@returns: obj: the combine object
+function combineObjects (obj) {
+  var slice = Array.prototype.slice;
+  var concat = Array.prototype.concat;
+  
+    _.each(obj.slice(1), function(source) {
+      
+      if (source) {
+        for (var prop in source) {
+          //if they properties are the same overwrite
+          if (obj[0][prop] === source[prop]) {
+              obj[0][prop] = source[prop];
+            }
+            else {
+              //concatenate the properties
+              //if the property is already an array
+              if (obj[0][prop].constructor === Array){
+                obj[0][prop] = obj[0][prop].concat(source[prop]); //concatenate
+              }
+              //if it is not already an array
+              else {
+                obj[0][prop] = [obj[0][prop]].concat(source[prop]); //turn it into an array and then concatenate
+              }
+            }
+        }
+      }
+    });
+    return obj[0];
+  };
 
   // function constructTreemapLegend() {
   //   var label = treemaplegend.selectAll(".label")

@@ -1788,7 +1788,7 @@ var PUBLICATIONS_MAP = (function () {
 	  getNetworkData(buildNetwork);
 	}//end constructNetwork
 
-	var all_grants;
+	//var all_grants; TODO: delete
 
 	/*
 	gets the data for the network (either from the sessionStorage or from the db on the server) and then builds the network by passing the buildNetwork function as a callback to getNetworkData
@@ -1807,7 +1807,7 @@ var PUBLICATIONS_MAP = (function () {
 			// console.log("yup");
    //        });
 
-	  var links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup;
+	  var all_grants, links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup;
 
 	  //retrieves the data either from sessionStorage or from the database
 	  async.parallel(
@@ -1957,27 +1957,27 @@ var PUBLICATIONS_MAP = (function () {
 	          });
 	        }         
 	      }
-	      //,
+	      ,
 
 		  /////testing/////
-	      // function(callback){
-	      // 	console.log("fetching grants...");
-	      // 	$.get('network/all_grants', function(result) {
-	      // 		all_grants = JSON.parse(result.all_grants);
-	      // 		callback(null);
-	      // 	});
-	      // }
+	      function(callback){
+	      	console.log("fetching grants...");
+	      	$.get('network/all_grants', function(result) {
+	      		all_grants = JSON.parse(result.all_grants);
+	      		callback(null);
+	      	});
+	      }
 	    ],
 
 	      function(err, results){
 	      	if (err) throw new Error(err);
-	        callback(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup);//, all_grants);
+	        callback(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup, all_grants);
 	      }
 	    );
 	}//end getNetworkData
 
 
-	function buildNetwork(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup){//, all_grants){
+	function buildNetwork(links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup, all_grants){
 
 	  	$('#vizloader').hide();
 

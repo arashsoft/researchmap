@@ -7,7 +7,7 @@ var async = require('async');
 
 exports.page = function(req, res){
 	var data = {
-		maintitle: 'publication explorer',
+		maintitle: 'collaboration explorer',
 		navpub: true,
 		scripts: [
 			'publications_map'
