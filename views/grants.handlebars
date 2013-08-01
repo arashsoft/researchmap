@@ -128,6 +128,33 @@
         </div>
       </div>
 
+        <h3>filter</h3><img src="img/info.png"></img><hr>
+        <div class="action">        
+
+          <p>grant status</p>
+          <ul class="actionlist"> 
+            <li>
+              <input type="checkbox" checked id="filterAccepted"></input> 
+              <label for="filterAccepted">accepted</label>
+            </li>
+            <li>
+              <input type="checkbox" id="filterDeclined"></input> 
+              <label for="filterDeclined">declined</label>
+            </li>     
+            <li>
+              <input type="checkbox" id="filterClosed"></input> 
+              <label for="filterClosed">closed</label>
+            </li>                    
+          </ul>
+
+          <p>years</p>
+          <label for="grantyear">range:</label>
+          <input type="text" id="grantyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="grantyearrange">
+          </div>      
+
+        </div>      
+
       <h3>translate</h3><img src="img/info.png"></img><hr>
       <div class="action">  
         <select id="bubbletranslate" data-placeholder="Translate to..." class="chzn-select" style="width:250px;" tabindex="4">

@@ -22,6 +22,9 @@ var GRANTS = (function () {
   var bubble;
   var top20;
 
+  var grouped_grants;
+  //log scale for the grant request amounts
+  var log_scale = d3.scale.log().domain([1,10000000]).range([5,40])
 
   //receive JSON from the server
   //var nested_by_sponsor = {{{nested_by_sponsor}}};
@@ -126,6 +129,14 @@ var GRANTS = (function () {
 
 
   $(document).ready(function() {
+
+    //for icheckbox
+    $('input').iCheck({
+      checkboxClass: 'icheckbox_square-blue',
+      radioClass: 'iradio_square-blue',
+      //increaseArea: '10%' // optional
+    });
+
     //for the sliding divs in the action panel
     //gets every div that is a child of sankeyactions and hides it
     $('#sankeyactions:eq(0)> div').hide();
@@ -171,6 +182,20 @@ var GRANTS = (function () {
     });  
 
   });
+
+
+  $( "#grantyearrange" ).slider({
+    range: true,
+    min: 2008,  //TODO: populate dynamically
+    max: 2013,  //TODO: populate dynamically
+    animate: true,
+    values: [ 2008, 2013 ],
+    slide: function( event, ui ) {
+      $( "#grantyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+    }
+  });
+  $( "#grantyear" ).val( $( "#grantyearrange" ).slider( "values", 0 ) +
+    " - " + $( "#grantyearrange" ).slider( "values", 1 ) );
 
   var grant_year_begin_min = 0;
   var grant_year_begin_max = 0;
@@ -299,6 +324,38 @@ var GRANTS = (function () {
     }
     $('#bubbletranslate').val('').trigger('liszt:updated'); 
   });
+
+
+
+
+
+///// for bubble interactions
+  $('input#filterAccepted').on('ifChecked', function() {
+
+    });
+  $('input#filterDeclined').on('ifChecked', function() {
+    var declined_grants = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Declined"; } );
+
+    bubble_force.nodes(declined_grants);
+
+    bubble = bubblesvg.selectAll("circle.bubble")
+      .data(declined_grants);
+
+    bubble.exit().remove(); //remove existing bubbles
+
+    bubble = bubblesvg.selectAll("circle.bubble")
+      .data(declined_grants)
+      .enter().append("svg:circle")
+      .attr("class", "bubble")
+      .attr("r", function(grant) { 
+        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
+        return log_scale(num); })
+      .style("fill", function(grant) { return color20(grant.Sponsor); });
+    });
+  $('input#filterClosed').on('ifChecked', function() {
+
+  });
+
 
 
 
@@ -673,8 +730,6 @@ var GRANTS = (function () {
   @returns: none
   */
   function getBubbleData (callback) {
-    //hide the loading gif
-    $('#vizloader').hide();
 
     var all_grants;
 
@@ -705,6 +760,9 @@ var GRANTS = (function () {
   }//end getBubbleData
 
   function buildBubble(all_grants) {
+    //hide the loading gif
+    $('#vizloader').hide();
+
     //group grants by the proposal number (i.e., group multiple records of the same grant)
     grouped_grants = _.groupBy(all_grants, function(x) { return x.Proposal; });
 
@@ -717,20 +775,28 @@ var GRANTS = (function () {
         grouped_grants[key] = grantobj[0]; //remove the object from its array enclosure so that the resulting grouped_grants is consistent
     });
 
+    var accepted_grants = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Accepted"; } );
+
     bubble_force
-      .nodes(_.toArray(grouped_grants)); //d3 needs the data in the form of an array
+      .nodes(accepted_grants); //d3 needs the data in the form of an array
 
     bubble = bubblesvg.selectAll("circle.bubble")
-      .data(_.toArray(grouped_grants))
+      .data(accepted_grants)
       .enter().append("svg:circle")
       .attr("class", "bubble")
-      .attr("r", 5)
-      .style("fill", "green");
+      .attr("r", function(grant) { 
+        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
+        return log_scale(num); })
+      .style("fill", function(grant) { return color20(grant.Sponsor); });
 
     bubble_constructed = true;
 
     bubble_force
-      .gravity(0.6)
+      .gravity(0.25)
+      .charge(function(d, i) {
+        var radius = $("circle.bubble")[i].r.animVal.value;
+        return -Math.pow(radius, 2) / 1.5;
+      })
       .on("tick", tick)
       .start();
 
