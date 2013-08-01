@@ -307,11 +307,11 @@ var PUBLICATIONS_MAP = (function () {
 		$('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
 
 		$('#gatheringArea').hide();
-		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false });
+		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false, drag: function() { network_force.start(); } });
 
 		$('#animateYearPlaceholder').hide();
 
-		$( "#gatheringArea" ).droppable({
+/*		$( "#gatheringArea" ).droppable({
       		accept: "#selectionArea",
       		activeClass: "ui-state-hover",
       		hoverClass: "ui-state-active",
@@ -322,7 +322,14 @@ var PUBLICATIONS_MAP = (function () {
           		.find( "p" )
             	.html( "Dropped!" );
      		}
-    	});
+    	});*/
+		
+		//to make sure that gatheringArea div can be dragged and nodes can be dragged out at the same time
+		$('#gatheringArea').css("background", "transparent").css("pointer-events", "none");
+		$('#gatheringArea h2').css("pointer-events", "auto");
+		$('gatheringArea h2')
+			.on("mouseover", function() { $('#gatheringArea').css("pointer-events", "auto"); })
+			.on("mouseout", function() { $('#gatheringArea').css("pointer-events", "none")});
 
 	  //to populate the search bar
 	  if(store.session.has("science_names")){
@@ -890,9 +897,12 @@ var PUBLICATIONS_MAP = (function () {
 
     $('input#gatheringMode').on('ifChecked', function() {
     	$('#gatheringArea').show('slow');
+    	network_force.gravity(0).linkStrength(0).charge(-100).start();
     })
     .on('ifUnchecked', function() {
     	$('#gatheringArea').hide('slow');
+    	network_force.gravity(dgravity).linkStrength(dlinkStrength).charge(dcharge).start();
+    	d3.selectAll("circle.node").attr("gathering", "false");
     });
 
     $('#selectionClone').click(function() {
@@ -1533,6 +1543,29 @@ var PUBLICATIONS_MAP = (function () {
 
 	  $('#animateYearPlaceholder').text("");
 
+	  //reset the sliders
+	  $('#animateyearrange').slider("option", "values", [2008, 2013]);
+	  $('#animateSlider').slider("option", "value", 2013);
+	  $('#networkyearrange').slider("option", "values", [2008, 2013]);
+
+	  $('#networkDensitySlider').slider("option", "value", dgravity);
+	  $('#networkChargeSlider').slider("option", "value", dcharge);
+	  $('#networkFrictionSlider').slider("option", "value", dfriction);
+	  $('#networkLinkDistanceSlider').slider("option", "value", dlinkDistance);
+	  $('#networkLinkStrengthSlider').slider("option", "value", dlinkStrength);
+	  $('#scopeSlider').slider("option", "value", 2013);
+
+	  $('input#animateyear').val('2008 - 2013');
+	  $('input#animateSliderYear').val('2013');
+	  $('input#networkyear').val('2008 - 2013');
+
+	  $('input#networkDensity').val('');
+	  $('input#networkCharge').val('');
+	  $('input#networkFriction').val('');
+	  $('input#networkLinkDistance').val('');
+	  $('input#networkLinkStrength').val('');
+	  $('input#scopeYear').val('2013');
+
 	  //clear animation timer
 	  clearInterval(int1);
 	});// end network reset
@@ -1998,6 +2031,7 @@ var PUBLICATIONS_MAP = (function () {
 		    .attr("class", "node")
 		    .attr("r", 1)
 		    .style("visibility", "visible")
+		    .attr("gathering", "false") //tell if a node is in an gathering area
 		    .attr("department", function (d) { 
 		      return d.Department; })
 		    //.attr("selectedIndividually", "false") //<-- for the selecting action
@@ -2040,6 +2074,16 @@ var PUBLICATIONS_MAP = (function () {
 	        d.py += d3.event.dy;
 	        d.x += d3.event.dx;
 	        d.y += d3.event.dy; 
+	        //90 is the height of the bar & legend. "$('networklegend').height()" does not get the value for legend is constructed dynamically
+	        //10 is the radius of node and 5 is the line-width of the gatheringArea
+	        var left = ($('#gatheringArea').position().left - networkzoom.translate()[0] + 10) / networkzoom.scale();
+			var right = ($('#gatheringArea').position().left - networkzoom.translate()[0] + $('#gatheringArea').width() + 10 + 5) / networkzoom.scale();
+			var top = ($('#gatheringArea').position().top - (networkzoom.translate()[1] + 90) + 10) / networkzoom.scale();
+			var bottom = ($('#gatheringArea').position().top - (networkzoom.translate()[1] + 90) + $('#gatheringArea').height() + 10 + 5) / networkzoom.scale();
+	        if(d.x > left && d.x < right && d.y > top && d.y < bottom)
+	        	d3.select(this).attr("gathering", "true");
+	        else
+	        	d3.select(this).attr("gathering", "false");
 	        tick(); // this is the key to make it work together with updating both px,py,x,y on d !
 	    }
 
@@ -2080,8 +2124,8 @@ var PUBLICATIONS_MAP = (function () {
 	  		//network_force.stop();
 	  	}
 	  	if (this.value == "random") {
-	  		network_force.gravity(0.6);
-	    	//network_force.linkStrength(dlinkStrength).charge(dcharge).gravity(dgravity).linkDistance(dlinkDistance).start();	  		
+	  		//network_force.gravity(0.6);
+	    	network_force.linkStrength(dlinkStrength).charge(dcharge).gravity(dgravity).linkDistance(dlinkDistance).start();	  		
 	  	}
 	});
 
@@ -2105,8 +2149,42 @@ var PUBLICATIONS_MAP = (function () {
 			network_force.stop();	
 		}
 
+		if($('input#gatheringMode').is(':checked')) {
+			var svgx = networkzoom.translate()[0];
+			var svgy = networkzoom.translate()[1] + 90;
+			var gatheringx = $('#gatheringArea').position().left + $('#gatheringArea').width() / 2;
+			var gatheringy = $('#gatheringArea').position().top + $('#gatheringArea').height() / 2;
+			var focusx = (gatheringx - svgx + 10) / networkzoom.scale();
+			var focusy = (gatheringy - svgy + 10) / networkzoom.scale();
+			node
+				.each(function(d) {
+					if(d3.select(this).attr("gathering") == "true") {
+						d3.select(this).attr("cx", function(d) {
+							return d.x += (focusx - d.x) * 0.2 * network_force.alpha();
+						});
+						d3.select(this).attr("cy", function(d) {
+							return d.y += (focusy - d.y) * 0.2 * network_force.alpha();
+						});
+					}
+					else {
+						d3.select(this).attr("cx", function(d) {
+							return d.x += (normal_center.x - d.x) * 0.2 * network_force.alpha();
+						});
+						d3.select(this).attr("cy", function(d) {
+							return d.y += (normal_center.y - d.y) * 0.2 * network_force.alpha();
+						});
+					}
+				})
+				.each(collide(.5));
+			link
+			    .attr("x1", function(d) { return d.source.x; })
+			    .attr("y1", function(d) { return d.source.y; })
+			    .attr("x2", function(d) { return d.target.x; })
+			    .attr("y2", function(d) { return d.target.y; });
+		}
+
 		//if the user has chosen to arrange the nodes according to their respective departments
-	  if($('#arrange').val( ) == "department") {
+	    if($('#arrange').val( ) == "department") {
 
 		node
 		    .each(function() {

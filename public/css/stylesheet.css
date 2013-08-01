@@ -515,7 +515,6 @@ for matrix
   background: white;
   opacity: 0.95;
   border-radius: 5px;
-  line-height: 300px;
   text-align: center;
 }
 
@@ -537,6 +536,15 @@ for matrix
 }
 
 #cloningArea h2 {
+  font-family: 'Fjalla One', sans-serif;
+  padding-bottom: 15px;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  text-align: center;  
+  color: black;
+}
+
+#gatheringArea h2 {
   font-family: 'Fjalla One', sans-serif;
   padding-bottom: 15px;
   font-size: 1.5em;
