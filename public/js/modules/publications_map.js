@@ -9,7 +9,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 SOFTWARE.
 */
 
-var PUBLICATIONS_MAP = (function () { 
+var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import them into the function
 	
 
 	/////////////////////////////////////////////////////////////////////
@@ -55,6 +55,7 @@ var PUBLICATIONS_MAP = (function () {
 	//var links_science_exclusive = []; //containing links where every node (author) is a member of the faculty of science
 	//var links_science_exclusive_unique = []; //containing links where every node (author) is a member of the faculty of science where duplicates are removed
 	//var links_for_network = []; //this is a copy of links_science_exclusive_unique. A copy is needed because without one links_science_exclusive_unique will be modified while constructing the network
+	var links_grants = [];
 	var network_constructed = false;
 	var matrix_constructed = false;
 	var copubscounted = false;//to keep track of whether copubs have been counted
@@ -1986,6 +1987,60 @@ var PUBLICATIONS_MAP = (function () {
 
 	  	//populate the filter area with departments
 	  	populateFilter(science_departments);
+
+
+
+
+
+	    //group grants by the proposal number (i.e., group multiple records of the same grant)
+	    var grouped_grants = _.groupBy(all_grants, function(x) { return x.Proposal; });
+
+	    _.each(grouped_grants, function(grantobj, key) { 
+	      if (grantobj.length > 1) {
+	        var temp = rm.combineObjects(grantobj); 
+	        grouped_grants[key] = temp;
+	      } 
+	      else
+	        grouped_grants[key] = grantobj[0]; //remove the object from its array enclosure so that the resulting grouped_grants is consistent
+	    });
+
+		var co_grants = _.filter(grouped_grants, function(grant) { return typeof grant.CoI == "object"; })
+
+		//loop through each grant 
+		_.each(co_grants, function(grant) {
+
+			var people = [];
+			people.push(grant.PI.substring(0, grant.PI.indexOf(',') + 2));
+			_.each(grant.CoI, function(x) {
+				people.push(x.substring(0, x.indexOf(',') + 2));
+			});
+			people = _.uniq(people); //remove duplicates
+
+			//loop through each Co Investigator of a grant
+			_.each(people, function (person) {
+
+				//if person is not the last in the collaboration
+				if (person != _.last(people)) {
+
+					//make him/her the source
+					var source = person;
+
+					var counter = 1;//use to keep track of the target index
+			        do {
+			          var target = people[counter];
+			          if (target != source) {
+			          	links_grants.push({"source":source, "target":target, "value":0, "sponsor":grant.Sponsor, "begin":grant.BeginDate, "end":grant.EndDate, "program":grant.PgmName, "type":"grant", "title":grant.Title, "status":grant.AwardStatus, "proposal":grant.Proposal, "PI":grant.PI });
+			          }
+
+			          counter += 1;
+			        } while (target != _.last(people)); //while target is not the last element 
+				 }
+			});
+		});
+
+
+
+
 
 	  	var filteryears = d3.select("#matrixviz")
 	    	.data(pub_years_uniq)
