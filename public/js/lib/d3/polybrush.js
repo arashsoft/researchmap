@@ -48,7 +48,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
       }
     };
     var drawPath = function() {
-      return d3.selectAll("g path").attr("d", function(d) {
+      return d3.selectAll("g path.extent").attr("d", function(d) {
         return line(d) + "Z";
       });
     };

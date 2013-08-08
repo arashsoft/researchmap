@@ -500,6 +500,11 @@ for matrix
   opacity: 0.95;
 }
 
+#bubbleviz #cloningArea {
+  height: 500px;
+  width: 500px;
+}
+
 #gatheringArea {
   position: absolute;
   font-family: 'Helvetica Neue', sans-serif;
@@ -1836,6 +1841,10 @@ div#VRchoice img {
   margin: 30px;
   display: inline;
   border: 1px solid white;
+}
+
+div#VRchoice.GrantVRchoice img {
+  height: 140px;
 }
 
 div#VRchoice img:hover {

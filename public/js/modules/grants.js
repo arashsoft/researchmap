@@ -109,7 +109,7 @@ var GRANTS = (function () {
       .nodePadding(10)
       .size([width, height]);
 
-  var path = sankey.link();
+  var sankeyPath = sankey.link();
 
   var bubblesvg = d3.select("#bubbleviz").append("svg:svg")
       .attr("width", width + margin.left + margin.right)
@@ -118,8 +118,35 @@ var GRANTS = (function () {
       .attr("pointer-events", "all")
      .append('svg:g')
       .call(bubblezoom.on("zoom", redrawBubble))
-      .call(d3.behavior.drag().on("drag", pan).on("dragend", function() { d3.event.stopPropagation(); }))
+      .on("dblclick.zoom", null)
+      .call(d3.behavior.drag().on("drag", pan))//.on("dragend", function() { d3.event.stopPropagation(); }))
      .append('svg:g');
+
+  //variables and initilizations for cloning
+  var cloningWidth = 480;
+  var cloningHeight = 450;
+
+  //zoom behavior
+  var cloningZoom = d3.behavior.zoom()
+    .scaleExtent([0.5, 5])
+    .on("zoom", function() {
+      trans=d3.event.translate;
+        scale=d3.event.scale;
+
+      cloningSvg.attr("transform",
+          "translate(" + trans + ")"
+          + " scale(" + scale + ")");
+    });
+
+  var cloningSvg = d3.select('#cloningArea')
+    .append('svg:svg')
+    .attr('width', cloningWidth)
+    .attr('height', cloningHeight)
+    .append('svg:g')
+      .attr("pointer-events", "all")
+    .append('svg:g')
+    .call(cloningZoom)
+    .append('svg:g');
 
   //this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the bubble diagram), it allows the visualization
   //to be panned
@@ -218,12 +245,21 @@ var GRANTS = (function () {
       constructSankey("faculty");
       $('#sankeyactions').delay(800).show(800);
     });
+    $('#bubblechoice').click(function() {
+      $.colorbox.close()
+      $('#bubbleviz').show();
+      constructBubble();
+      $('#bubbleactions').delay(800).show(800);
+    });
     $('#treemapchoice').click(function() {
       $.colorbox.close()
       $('#treemapviz').show();
       constructTreemap("department");
       $('#treemapactions').delay(800).show(800);
     });  
+
+    $('#cloningArea').hide();
+    $('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
 
   });
 
@@ -424,7 +460,7 @@ var GRANTS = (function () {
           // if the circle in the current iteration is within the brush's selected area
           if (brush.isWithinExtent(d.x, d.y)) {
             //adjust the style
-            d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
+            d3.select(this).classed("selected", true).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
             selectedBubbles.push(this.__data__);
             selectedBubbles = _.uniq(selectedBubbles, false, function(x){ return x.Proposal; });
           } 
@@ -434,7 +470,7 @@ var GRANTS = (function () {
             if(this.selectedIndividually == false){
               selectedBubbles = _.without(selectedBubbles, this.__data__);          
               //reset the style
-              d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Sponsor); });
+              d3.select(this).classed("selected", false).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Sponsor); });
             }
           }
         });
@@ -477,21 +513,75 @@ var GRANTS = (function () {
       $('#selectionArea').show('slow');
     }); 
 */
-    //if the user clicks the button to remove all selections
-    $('#selectionRemove').click(function() {
-      selectedBubbles = []; //empty the array
-      //updateSelectionArea("empty"); //update the selection area by emptying it
-      //hide the selectionArea div
-      //$('#selectionArea').hide('slow');
-      //$('#cloningArea').hide('slow');
-      //return to the defaul for the radios (i.e., check the 'none' option)
-      $('input#selectNone').iCheck('check');
-      //reset the style of the nodes
-      d3.selectAll("circle.bubble").each(function() {
-        d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
-      });
+  //if the user clicks the button to remove all selections
+  $('#selectionRemove').click(function() {
+    selectedBubbles = []; //empty the array
+    cloningSvg.selectAll('*').remove();
+    //hide the selectionArea div
+    //$('#selectionArea').hide('slow');
+    $('#cloningArea').hide('slow');
+    //return to the defaul for the radios (i.e., check the 'none' option)
+    $('input#selectNone').iCheck('check');
+    //reset the style of the nodes
+    d3.selectAll("circle.bubble").each(function() {
+      d3.select(this).classed("selected", false).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Sponsor); });
     });
+  });
 
+  $('#selectionClone').click(function() {
+    if(selectedBubbles.length == 0)
+      return ;
+
+    cloningSvg.selectAll('*').remove();
+    cloningSvg.append('svg:rect')
+      .attr('width', cloningWidth)
+      .attr('height', cloningHeight)
+      .style('fill', 'none')
+      .style('opacity', '0');
+
+    $('#cloningArea').show('slow');
+    //clone selected data so that we can create a new layout
+    var s = JSON.stringify(selectedBubbles);
+    var bubbles = JSON.parse(s);
+
+    var cloningBubble = cloningSvg.selectAll('circle.bubble')
+      .data(bubbles)
+      .enter().append('svg:circle')
+      .attr('class', 'bubble')
+      .attr("r", function(grant) { 
+        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
+        return (num ? log_scale(num) : 1) * 0.3; })
+      .style("fill", function(grant) { return color20(grant.Sponsor); })
+      .style("stroke", "gray")
+      .style("stoke-width", "1px");
+
+    var cloning_bubble_force = d3.layout.force()
+      .size([cloningWidth, cloningHeight])
+      .nodes(bubbles);
+      
+
+    function cloningAreaTick() {
+      cloningBubble.attr("cx", function(d) { return d.x; })
+          .attr("cy", function(d) { return d.y; });
+    }
+
+    cloningBubble
+      .on("mouseover", function(d) {
+        d3.select(this).attr("cursor", "pointer");
+        d3.select(this).style("stroke-width", "3px");
+      })
+      .on("mouseout", function(d) {
+        d3.select(this).style("stroke-width", "1px");
+      });
+
+    cloning_bubble_force.gravity(0.25)
+      .charge(function(d, i) {
+        var radius = $("circle.bubble")[i].r.animVal.value;
+        return -Math.pow(radius, 2) / 1.5;
+      })
+      .on("tick", cloningAreaTick)
+      .start();
+  }) //end of selectionClone click
 
   // $('#arrangetreemap').on("change", function() {
   //     console.log("select zoom(node)");
@@ -772,7 +862,7 @@ var GRANTS = (function () {
           .data(fragmentationLevel.links)
         .enter().append("path")
           .attr("class", "sankeylink")
-          .attr("d", path)
+          .attr("d", sankeyPath)
           .style("opacity", 0);
 
           //for the dummy values that were created in the processing stage
@@ -842,7 +932,7 @@ var GRANTS = (function () {
                 d.y = Math.max(0, Math.min(height - d.dy, d3.event.y))
             ) + ")");
         sankey.relayout();
-        link.attr("d", path);
+        link.attr("d", sankeyPath);
       }
 
       sankey_constructed = true;
@@ -922,6 +1012,35 @@ var GRANTS = (function () {
         var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
         return (num ? log_scale(num) : 1) * 0.3; })
       .style("fill", function(grant) { return color20(grant.Sponsor); });
+
+    bubble
+      .on("mouseover", function() {
+        d3.select(this).attr("cursor", "pointer");
+        if(!d3.select(this).classed("selected"))
+          d3.select(this).style("stroke-width", "3px");
+      })
+      .on("mouseout", function() {
+        if(!d3.select(this).classed("selected"))
+          d3.select(this).style("stroke-width", "1px");
+      })
+      .on("mouseup", function() {
+        if(individualSelect) {
+          //if this node is already selected
+          if (this.style.strokeWidth == "4px") {
+            selectedBubbles = _.without(selectedBubbles, this.__data__);
+            this.selectedIndividually = false;
+            d3.select(this).classed("selected", false).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color20(d.Sponsor); });         
+          }
+          else {
+            selectedBubbles.push(this.__data__);
+            this.selectedIndividually = true;
+            selectedBubbles = _.uniq(selectedBubbles, false, function(x){ return x.Proposal; });
+            d3.select(this).classed("selected", true).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
+          }
+          //update the div that lists the current selections
+          //updateSelectionArea();  
+        }
+      });
 
     //var max_grant_value = _.max(accepted_grants, function(d) { return parseFloat((d.RequestAmt.substring(1)).replace(/\,/g, '')); });
     //getCenter(parseFloat((max_grant_value.RequestAmt.substring(1)).replace(/\,/g, '')));
@@ -1210,6 +1329,7 @@ var GRANTS = (function () {
         d3.select(this).attr("cy", function(d) {
           return d.y += (normal_center.y - d.y) * 0.12 * bubble_force.alpha();
         });
+        if(!d3.select(this).classed("selected")) {
           d3.select(this).style("stroke", "gray");
             d3.select(this).style("stroke-width", function(d) { 
               if (d.fixed == true)
@@ -1217,36 +1337,10 @@ var GRANTS = (function () {
               else
                 return "1px";
             });         
+          }
         });
         //.each(collide(.5));  
     }
-
-    bubble
-      .on("mouseover", function() {
-        d3.select(this).attr("cursor", "pointer");
-        d3.select(this).style("stroke-width", "3px");
-      })
-      .on("mouseout", function() {
-        d3.select(this).style("stroke-width", "1px");
-      })
-      .on("mouseup", function() {
-        if(individualSelect) {
-          //if this node is already selected
-          if (this.style.strokeWidth == "4px") {
-            selectedBubbles = _.without(selectedBubbles, this.__data__);
-            this.selectedIndividually = false;
-            d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color20(d.Sponsor); });         
-          }
-          else {
-            selectedBubbles.push(this.__data__);
-            this.selectedIndividually = true;
-            selectedBubbles = _.uniq(selectedBubbles, false, function(x){ return x.Proposal; });
-            d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
-          }
-          //update the div that lists the current selections
-          //updateSelectionArea();  
-        }
-      });
   }
 
   /* 
