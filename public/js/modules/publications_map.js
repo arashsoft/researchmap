@@ -58,7 +58,12 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	var links_grants = [];
 	var network_constructed = false;
 	var matrix_constructed = false;
-	var copubscounted = false;//to keep track of whether copubs have been counted
+	 
+	// scales for the different node sizings
+  	var scale_grants = d3.scale.linear().domain([0,450]).range([10,50]);
+  	var scale_copubs = d3.scale.linear().domain([0,50]).range([10,50]);
+  	var scale_cosups = d3.scale.linear().domain([0,15]).range([10,50]);
+  	var scale_combined = d3.scale.linear().domain([0,500]).range([10,50]);
 
 	var dragging = false; //set to true when the user is dragging an element in the network
 
@@ -103,7 +108,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	var svgheight = $('#vizcontainer').height();
 
 	var networkzoom = d3.behavior.zoom()
-		.scaleExtent([0.5, 5])
+		.scaleExtent([0.1, 30])
 		.on("zoom", redrawNetwork);
 
 	var networkDrag = d3.behavior.drag()
@@ -1567,12 +1572,39 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	});
 
 	$('#sizeNodes').change(function() {
-	  if ($('#sizeNodes').val() == "copubs"){
-	    if(!copubscounted){
-	      countLinks();
-	    }
-	    sizeNodesByCopubs();
-	  }
+
+		switch ($('#sizeNodes').val()) {
+
+			case "combined":
+				countLinks("copub");
+				countLinks("cosup");
+				countLinks("grant");
+				sizeNodes("combined");
+				break;
+			case "publications":
+				countLinks("copub");
+				sizeNodes("copub");
+				break;			
+			case "supervisions":
+				countLinks("cosup");
+				sizeNodes("cosup");
+				break;			
+			case "grants":
+				countLinks("grant");
+				sizeNodes("grant");
+				break;			
+			default:
+				countLinks("copub");
+				sizeNodes("copub");
+				break;			
+		}
+
+	  // if ($('#sizeNodes').val() == "all"){
+	  //   if(!copubscounted){
+	  //     countLinks();
+	  //   }
+	  //   sizeNodesByCopubs();
+	  // }
 	});
 
 	$('#networkreset').click(function() {
@@ -2205,6 +2237,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		      return d.Department; })
 		    //.attr("selectedIndividually", "false") //<-- for the selecting action
 		    .attr("copubs", 0)
+		    .attr("cosups", 0)
+		    .attr("grants", 0)
 		    .attr("name", function (d) { return d.Name; })
 		    .attr("rank", function (d) { return d.Rank; })
 		    .attr("contract", function (d) { return d.Contract; })
@@ -2213,7 +2247,6 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 		//getDeptCenters(science_departments.length, circleOutline[0][0].r.animVal.value, circleOutline[0][0].cx.animVal.value, circleOutline[0][0].cy.animVal.value);
 		getCenter();
-
 
 	  	// deptCircle = networksvg.selectAll("circle.dept")
 		  //   .data(deptCircles)
@@ -3227,22 +3260,33 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	}//end highlightSelectedNode
 
-	function countLinks () {
+	function countLinks (type) {
 	  d3.selectAll("circle.node").each( function () {
 	    that=this;
 	    d3.selectAll("line.link").each( function () {
+	    	var a =1;
 	      //if the node is connected to the link AND the link has an opacity of 1
-	      if ((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value)){
-	        d3.select(that).attr("copubs", function(){return parseInt($(that).attr("copubs"))+1;})
+	      if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value)) && this.__data__.type == type) {
+	        d3.select(that).attr((type + "s"), function(){return parseInt($(that).attr(type + "s"))+1;})
 	      }
 	    });
 	  });
-	  copubscounted = true;//set this to true
 	}
 
-	function sizeNodesByCopubs () {
+	function sizeNodes (type) {
 	  d3.selectAll("circle.node").each( function () {
-	    d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return 10 + parseInt($(this).attr("copubs"))*4; })
+	  	if (type == "combined") {
+	  		d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_combined( parseInt($(this).attr("cosups")) + parseInt($(this).attr("grants")) + parseInt($(this).attr("copubs"))); });
+	  	}
+	  	else if (type == "grant") {
+	  		d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_grants( parseInt($(this).attr("grants"))); });
+	  	}
+	  	else if (type == "copub") {
+	    	d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_copubs( parseInt($(this).attr("copubs"))); });
+	    }
+	  	else if (type == "cosup") {
+	    	d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_cosups( parseInt($(this).attr("cosups"))); });
+	    }	    
 	  });
 //	  setTimeout(function() {
 	  	network_force.charge(function(d, i) {
