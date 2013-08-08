@@ -119,7 +119,7 @@ var GRANTS = (function () {
      .append('svg:g')
       .call(bubblezoom.on("zoom", redrawBubble))
       .on("dblclick.zoom", null)
-      .call(d3.behavior.drag().on("drag", pan))//.on("dragend", function() { d3.event.stopPropagation(); }))
+      .call(d3.behavior.drag().on("drag", pan).on("dragend", function() { d3.select(this).attr("cursor", "default"); }))
      .append('svg:g');
 
   //variables and initilizations for cloning
@@ -1383,6 +1383,7 @@ var GRANTS = (function () {
   }
 
   function pan() {
+    d3.select(this).attr("cursor", "move"); 
     bubblesvg.attr("x", d3.event.x).attr("y", d3.event.y);
   }
 

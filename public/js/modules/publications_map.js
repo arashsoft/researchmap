@@ -111,8 +111,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
         	d3.select(this).attr("cursor", "move"); 
         	networksvg.attr("x", d3.event.x).attr("y", d3.event.y); } )
         .on("dragend", function() {
-        	d3.select(this).attr("cursor", "default");
-        	d3.event.preventDefault() //for event bubbling--prevent other listeners from receiving the event         
+        	d3.select(this).attr("cursor", "default");   
         });	
 
 	var networksvg = d3.select("#networkviz").append("svg:svg").attr("width", svgwidth).attr("height", svgheight)
@@ -172,8 +171,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
     	d3.select(this).attr("cursor", "move");
     	networksvg.attr("x", d3.event.x).attr("y", d3.event.y); } )
     .on("dragend", function() {
-    	d3.select(this).attr("cursor", "default");
-    	//d3.event.preventDefault() //for event bubbling--prevent other listeners from receiving the event         
+    	d3.select(this).attr("cursor", "default");       
     });
 
 	var cloningSvg = d3.select('#cloningArea')
@@ -2297,6 +2295,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
         
 	    function dragstart(d, i) {
 	    	dragging = true;
+	    	d3.event.sourceEvent.stopPropagation();
 	        network_force.stop() // stops the force auto positioning before you start dragging
 	    }
 
