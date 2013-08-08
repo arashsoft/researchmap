@@ -125,6 +125,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    .attr("pointer-events", "all")
 	   .append('svg:g')
 	    .call(networkzoom)
+	    .on("dblclick.zoom", null)
 	    .call(networkDrag)
 	    //.call(d3.behavior.drag().on("drag", pan))
 	   .append('svg:g')
@@ -815,7 +816,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        // if the circle in the current iteration is within the brush's selected area
 	        if (brush.isWithinExtent(d.x, d.y)) {
 	        	//adjust the style
-	          	d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
+	          	d3.select(this).classed("selected", true).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
 	          	selectedNodes.push(this.__data__);
 	          	selectedNodes = _.uniq(selectedNodes, false, function(x){ return (x.Name + x.Department) });
 	        } 
@@ -825,7 +826,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        	if(this.selectedIndividually == false){
 	  	  			selectedNodes = _.without(selectedNodes, this.__data__);      		
 	        		//reset the style
-	          		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
+	          		d3.select(this).classed("selected", false).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
 	          	}
 	        }
 	      });
@@ -897,7 +898,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
     	$('input#selectNone').iCheck('check');
     	//reset the style of the nodes
     	d3.selectAll("circle.node").each(function() {
-    		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
+    		d3.select(this).classed("selected", false).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
     	});
     });
 
@@ -2245,6 +2246,71 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		    .style("fill", function(d){ return color20(d.Department); })
 		    .call(node_drag);
 
+		node.on("mouseover", function(d) {
+		  	d3.select(this).attr("cursor", "pointer");
+		  	if(!d3.select(this).classed("selected"))
+		  		d3.select(this).style("stroke-width", "3px");
+		  	if (!dragging) {
+				nodeTooltip.transition()        
+	                .duration(200)      
+	                .style("opacity", .95);      
+	            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + d.Department + "<br>" + d.Rank)                
+	            	.style("left", (parseInt(d3.select(this).attr("cx")) + document.getElementById("networkviz").offsetLeft) + "px")     
+	                .style("top", d.y + "px");
+
+	            //position the tooltip relative to the svg circle
+		  	    $('.nodeTooltip').position({
+	    			"my": "left+20 top+20",
+	    			"at": "right bottom",
+	    			"of": $(this)
+	    		});
+		  	}
+		  })
+	                
+		  .on("mouseout", function(d) {
+		  	if(!d3.select(this).classed("selected"))
+		  		d3.select(this).style("stroke-width", "1px");	    
+		  	nodeTooltip.transition()        
+	        	.duration(500)      
+	            .style("opacity", 0);
+		  })
+		  .on("mouseup", function(d) {
+		  	if(individualSelect) {
+		  		//if this node is already selected
+		  		if (this.style.strokeWidth == "4px") {
+		  			selectedNodes = _.without(selectedNodes, this.__data__);
+		  			networksvg.selectAll("line.link").each(function(link) {
+		  				if(link.source == d || link.target == d)
+		  					selectedLinks = _.without(selectedLinks, d);
+		  			});
+		  			this.selectedIndividually = false;
+			  		d3.select(this).classed("selected", false).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color20(d.Department); });	  			
+		  		}
+		  		else {
+			  		selectedNodes.push(this.__data__);
+			  		this.selectedIndividually = true;
+			  		selectedNodes = _.uniq(selectedNodes, false, function(x){ return (x.Name + x.Department) });
+			  		networksvg.selectAll("line.link").each(function(link) {
+		  				if(link.source == d || link.target == d) {
+		  					selectedNodes.forEach(function(node) {
+		  						if(node == ( (link.source == d) ? link.target: link.source ) )
+		  							selectedLinks.push(link);
+		  					});
+		  				}
+		  					
+		  			});
+			  		d3.select(this).classed("selected", true).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
+		  		}
+		  		//update the div that lists the current selections
+		  		updateSelectionArea();	
+			}
+		  })
+		  .on("contextmenu", function(d){
+		  	console.log("right click on node!");
+		  })
+		  .on("dblclick", function(d){
+		  	console.log("double click on node!");
+		  });
 		//getDeptCenters(science_departments.length, circleOutline[0][0].r.animVal.value, circleOutline[0][0].cx.animVal.value, circleOutline[0][0].cy.animVal.value);
 		getCenter();
 
@@ -2457,13 +2523,15 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.select(this).attr("cy", function(d) {
 					return d.y += (normal_center.y - d.y) * 0.12 * network_force.alpha();
 				});
-		   		d3.select(this).style("stroke", "gray");
-		      	d3.select(this).style("stroke-width", function(d) { 
-			      	if (d.fixed == true)
-			      		return "3px";
-			      	else
-			      		return "1px";
-		      	});		    	
+				if(!d3.select(this).classed("selected")) {
+			   		d3.select(this).style("stroke", "gray");
+			      	d3.select(this).style("stroke-width", function(d) { 
+				      	if (d.fixed == true)
+				      		return "3px";
+				      	else
+				      		return "1px";
+			      	});		    	
+			     }
 		    })
 		    .each(collide(.5));
 
@@ -2473,69 +2541,6 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      .attr("y2", function(d) { return d.target.y; });
 	  }
 
-	  node.on("mouseover", function(d) {
-	  	d3.select(this).attr("cursor", "pointer");
-	  	d3.select(this).style("stroke-width", "3px");
-	  	if (!dragging) {
-			nodeTooltip.transition()        
-                .duration(200)      
-                .style("opacity", .95);      
-            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + d.Department + "<br>" + d.Rank)                
-            	.style("left", (parseInt(d3.select(this).attr("cx")) + document.getElementById("networkviz").offsetLeft) + "px")     
-                .style("top", d.y + "px");
-
-            //position the tooltip relative to the svg circle
-	  	    $('.nodeTooltip').position({
-    			"my": "left+20 top+20",
-    			"at": "right bottom",
-    			"of": $(this)
-    		});
-	  	}
-	  })
-                
-	  .on("mouseout", function(d) {
-	  	d3.select(this).style("stroke-width", "1px");	    
-	  	nodeTooltip.transition()        
-        	.duration(500)      
-            .style("opacity", 0);
-	  })
-	  .on("mouseup", function(d) {
-	  	if(individualSelect) {
-	  		//if this node is already selected
-	  		if (this.style.strokeWidth == "4px") {
-	  			selectedNodes = _.without(selectedNodes, this.__data__);
-	  			networksvg.selectAll("line.link").each(function(link) {
-	  				if(link.source == d || link.target == d)
-	  					selectedLinks = _.without(selectedLinks, d);
-	  			});
-	  			this.selectedIndividually = false;
-		  		d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color20(d.Department); });	  			
-	  		}
-	  		else {
-		  		selectedNodes.push(this.__data__);
-		  		this.selectedIndividually = true;
-		  		selectedNodes = _.uniq(selectedNodes, false, function(x){ return (x.Name + x.Department) });
-		  		networksvg.selectAll("line.link").each(function(link) {
-	  				if(link.source == d || link.target == d) {
-	  					selectedNodes.forEach(function(node) {
-	  						if(node == ( (link.source == d) ? link.target: link.source ) )
-	  							selectedLinks.push(link);
-	  					});
-	  				}
-	  					
-	  			});
-		  		d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
-	  		}
-	  		//update the div that lists the current selections
-	  		updateSelectionArea();	
-		}
-	  })
-	  .on("contextmenu", function(d){
-	  	console.log("right click on node!");
-	  })
-	  .on("dblclick", function(d){
-	  	console.log("double click on node!");
-	  });
 	}//end tick
 
 
