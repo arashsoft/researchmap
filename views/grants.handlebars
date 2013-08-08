@@ -120,40 +120,61 @@
       <h3>arrange</h3><img src="img/info.png"></img><hr>
       <div class="action">        
         <div id="selectcontainer">
-          <select id="arrangetreemap" data-placeholder="Sort by..." class="chzn-select" style="width:250px;" tabindex="1"> 
+          <select id="arrangebubble" data-placeholder="Sort by..." class="chzn-select" style="width:250px;" tabindex="1"> 
             <option value=""></option>
+            <option value="random">Random</option>
             <option value="grantvalue">Grant Value</option>
-            <option value="numgrants">Number of Grants</option>
           </select>
         </div>
       </div>
 
-        <h3>filter</h3><img src="img/info.png"></img><hr>
-        <div class="action">        
+      <h3>filter</h3><img src="img/info.png"></img><hr>
+      <div class="action">        
 
-          <p>grant status</p>
-          <ul class="actionlist"> 
-            <li>
-              <input type="checkbox" checked id="filterAccepted"></input> 
-              <label for="filterAccepted">accepted</label>
-            </li>
-            <li>
-              <input type="checkbox" id="filterDeclined"></input> 
-              <label for="filterDeclined">declined</label>
-            </li>     
-            <li>
-              <input type="checkbox" id="filterClosed"></input> 
-              <label for="filterClosed">closed</label>
-            </li>                    
-          </ul>
+        <p>grant status</p>
+        <ul class="actionlist"> 
+          <li>
+            <input type="checkbox" checked id="filterAccepted"></input> 
+            <label for="filterAccepted">accepted</label>
+          </li>
+          <li>
+            <input type="checkbox" id="filterDeclined"></input> 
+            <label for="filterDeclined">declined</label>
+          </li>     
+          <li>
+            <input type="checkbox" id="filterClosed"></input> 
+            <label for="filterClosed">closed</label>
+          </li>                    
+        </ul>
 
-          <p>years</p>
-          <label for="grantyear">range:</label>
-          <input type="text" id="grantyear" style="border: 0; color: #f6931f; font-weight: bold;" />
-          <div id="grantyearrange">
-          </div>      
-
+        <p>years</p>
+        <label for="grantyear">range:</label>
+        <input type="text" id="grantyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="grantyearrange">
         </div>      
+
+      </div>  
+
+      <h3>select</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+        <ul class="actionlist"> 
+          <li>
+            <input type="radio" name="iCheck" id="selectNone" checked></input> 
+            <label for="selectNone">none</label>
+          </li>
+          <li>
+            <input type="radio" name="iCheck" id="selectLasso"></input>
+            <label for="selectLasso">group (lasso)</label>
+          </li>
+          <li>
+            <input type="radio" name="iCheck" id="selectIndividual"></input>
+            <label for="selectIndividual">individual</label>
+          </li>            
+        </ul>
+          <hr>
+          <button id="selectionClone" style="margin-top: 30px; position:relative; left:36%">clone selections</button>
+          <button id="selectionRemove" style="margin-top: 30px; position:relative; left:36%">remove all selections</button>      
+      </div>    
 
       <h3>translate</h3><img src="img/info.png"></img><hr>
       <div class="action">  

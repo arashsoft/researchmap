@@ -60,7 +60,7 @@ _.mixin({
     }
 
     return value;
-  };
+  },
 
   //pluck nested properties
   pluckDeep: function (obj, key) {

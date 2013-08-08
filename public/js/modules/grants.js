@@ -24,7 +24,12 @@ var GRANTS = (function () {
 
   var grouped_grants;
   //log scale for the grant request amounts
-  var log_scale = d3.scale.log().domain([1,10000000]).range([5,40])
+  var log_scale = d3.scale.log().domain([1,10000000]).range([5,40]);
+
+  var brush;
+  var selectedBubbles = [];
+  var grantValueCenters = [];
+  var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 
   //receive JSON from the server
   //var nested_by_sponsor = {{{nested_by_sponsor}}};
@@ -112,12 +117,14 @@ var GRANTS = (function () {
       .attr("pointer-events", "all")
      .append('svg:g')
       .call(bubblezoom.on("zoom", redrawBubble))
-      .call(d3.behavior.drag().on("drag", pan))
+      .call(d3.behavior.drag().on("drag", pan).on("dragend", function() { d3.event.stopPropagation(); }))
      .append('svg:g');
 
   //this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the bubble diagram), it allows the visualization
   //to be panned
   var bubblesvgbackground = bubblesvg.append("svg:rect").attr("width", width).attr("height", height).style("fill", "aliceblue").style("opacity", 0);
+    //this will be used to calculate the positions of the nodes when rearranged
+  var  circleOutline = bubblesvg.append("svg:circle").attr("cx", width/2-80).attr("cy", height/2-80).attr("r", width/3).style("stroke", "gray").style("stroke-width", "1px").style("fill", "none").style("opacity", 0);
 
 
   //this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
@@ -356,7 +363,97 @@ var GRANTS = (function () {
 
   });
 
+  $('#arrangebubble').chosen().change(function() {
+    if(this.value == "random") {
+      bubble_force.gravity(0.25).start();
+    }
+    if(this.value == "grantvalue") {
+      bubble_force.gravity(0.45).start();
+    }
+  })
 
+  $('input#selectLasso').on('ifChecked', function() {
+    brush = d3.svg.polybrush()
+      .x(d3.scale.linear().range([0, svgwidth]))
+      .y(d3.scale.linear().range([0, svgheight]))
+      .on("brushstart", function() {
+        bubblesvg.selectAll(".selected").classed("selected", false);
+      })
+      .on("brush", function() {
+        //update the div that lists the current selections
+        //updateSelectionArea();
+        // iterate through all circle.node
+        bubblesvg.selectAll("circle.bubble").each(function(d) {
+          // if the circle in the current iteration is within the brush's selected area
+          if (brush.isWithinExtent(d.x, d.y)) {
+            //adjust the style
+            d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
+            selectedBubbles.push(this.__data__);
+            selectedBubbles = _.uniq(selectedBubbles, false, function(x){ return x.Proposal; });
+          } 
+          // if the circle in the current iteration is not within the brush's selected area
+          else {
+            //if the current node was not selected with the individual selector (i.e., it was selected with the lasso)
+            if(this.selectedIndividually == false){
+              selectedBubbles = _.without(selectedBubbles, this.__data__);          
+              //reset the style
+              d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Sponsor); });
+            }
+          }
+        });
+      });
+      bubblesvg.append("svg:g")
+      .attr("class", "brush")
+      .call(brush);
+  })
+    .on('ifUnchecked', function() {
+      $('.brush').remove()
+    });
+
+  $('input#selectIndividual').on('ifChecked', function() {
+    individualSelect = true;  //set the individualSelect flag to true. this will be used in the tick function
+  })
+    .on('ifUnchecked', function() {
+      individualSelect = false;
+    }); 
+/*
+    //if the user turns off the select action
+    $('input#selectNone').on('ifChecked', function() {
+      var noneSelected = true;
+      // iterate through all circle.node
+        networksvg.selectAll("circle.node").each(function(d) {
+          // if the circle in the current iteration is within the brush's selected area
+          if (this.style.strokeWidth == "4px") {
+            noneSelected = false;
+        }
+         });
+
+        //if no nodes are selected
+        if (noneSelected == true){   
+          //hide the selectionArea div
+        $('#selectionArea').hide('slow'); 
+        $('#cloningArea').hide('slow');
+      }
+    })
+    .on('ifUnchecked', function() {
+      //show the selectionArea div
+      $('#selectionArea').show('slow');
+    }); 
+*/
+    //if the user clicks the button to remove all selections
+    $('#selectionRemove').click(function() {
+      selectedBubbles = []; //empty the array
+      //updateSelectionArea("empty"); //update the selection area by emptying it
+      //hide the selectionArea div
+      //$('#selectionArea').hide('slow');
+      //$('#cloningArea').hide('slow');
+      //return to the defaul for the radios (i.e., check the 'none' option)
+      $('input#selectNone').iCheck('check');
+      //reset the style of the nodes
+      d3.selectAll("circle.bubble").each(function() {
+        d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
+      });
+    });
 
 
   // $('#arrangetreemap').on("change", function() {
@@ -786,8 +883,17 @@ var GRANTS = (function () {
       .attr("class", "bubble")
       .attr("r", function(grant) { 
         var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
-        return log_scale(num); })
+        return (num ? log_scale(num) : 1) * 0.3; })
       .style("fill", function(grant) { return color20(grant.Sponsor); });
+
+    //var max_grant_value = _.max(accepted_grants, function(d) { return parseFloat((d.RequestAmt.substring(1)).replace(/\,/g, '')); });
+    //getCenter(parseFloat((max_grant_value.RequestAmt.substring(1)).replace(/\,/g, '')));
+    getCenter(null);
+
+    //keep track of whether a node has been selected individually
+    d3.selectAll("circle.bubble").each(function() {
+        this.selectedIndividually = false;
+      });
 
     bubble_constructed = true;
 
@@ -1039,7 +1145,27 @@ var GRANTS = (function () {
 
   function tick () {
 
-    bubble
+    if($('#arrangebubble').val() == "grantvalue") {
+      bubble
+        .each(function(d) {
+          var i = 0;
+          var amount = parseFloat((d.RequestAmt.substring(1)).replace(/\,/g, ''));
+          //find matched center index
+          while(i < grantValueCenters.length) {
+            if(grantValueCenters[i].amount >= amount)
+              break;
+            i++;
+          }
+          d3.select(this).attr("cx", function(d) {
+            return d.x += (grantValueCenters[i].focuscoords[0]) * 0.12 * bubble_force.alpha();
+          });
+          d3.select(this).attr("cy", function(d) {
+            return d.y += (grantValueCenters[i].focuscoords[1]) * 0.12 * bubble_force.alpha();
+          })
+        })
+    }
+    else {
+      bubble
         .each(function() { //moves each node towards the normal_center
           d3.select(this).attr("cx", function(d) {
           return d.x += (normal_center.x - d.x) * 0.12 * bubble_force.alpha();
@@ -1055,7 +1181,56 @@ var GRANTS = (function () {
                 return "1px";
             });         
         });
-        //.each(collide(.5));    
+        //.each(collide(.5));  
+    }
+
+    bubble
+      .on("mouseover", function() {
+        d3.select(this).attr("cursor", "pointer");
+        d3.select(this).style("stroke-width", "3px");
+      })
+      .on("mouseout", function() {
+        d3.select(this).style("stroke-width", "1px");
+      })
+      .on("mouseup", function() {
+        if(individualSelect) {
+          //if this node is already selected
+          if (this.style.strokeWidth == "4px") {
+            selectedBubbles = _.without(selectedBubbles, this.__data__);
+            this.selectedIndividually = false;
+            d3.select(this).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d) {return color20(d.Sponsor); });         
+          }
+          else {
+            selectedBubbles.push(this.__data__);
+            this.selectedIndividually = true;
+            selectedBubbles = _.uniq(selectedBubbles, false, function(x){ return x.Proposal; });
+            d3.select(this).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
+          }
+          //update the div that lists the current selections
+          //updateSelectionArea();  
+        }
+      });
+  }
+
+  /* 
+  calculate the center coordinates when arranging.
+  @params: max_grant_value: the max of grants values
+  @returns: 
+  */
+  function getCenter(max_grant_value) {
+    //calculate grant value centers.
+    //var numpoints = parseInt(Math.log(max_grant_value) / Math.LN10) + 2;
+    var numpoints = 9;
+    var slice = 2 * Math.PI / numpoints;
+    var radius = circleOutline[0][0].r.animVal.value;
+    var centerx = circleOutline[0][0].cx.animVal.value;
+    var centery = circleOutline[0][0].cy.animVal.value;
+    for(var i = 0; i < numpoints; i++) {
+      var angle = slice * i;
+      var newX = (centerx + radius * Math.cos(angle));
+      var newY = (centery + radius * Math.sin(angle));
+      grantValueCenters.push({"amount": Math.pow(10, i), "focuscoords": [newX, newY]});
+    }
   }
 
   function size(d) {
