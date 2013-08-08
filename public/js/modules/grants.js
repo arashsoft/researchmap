@@ -1,6 +1,7 @@
 var GRANTS = (function () { 
 
   //var grants = {};
+  var module = {}; //this will be exported (returned)
   //var sankey_data_faculty = {"nodes":[], "links": []};
   //var sankey_data_departments = {"nodes":[], "links": []};
   var grantDepartments = []; //array of unique departments
@@ -129,6 +130,42 @@ var GRANTS = (function () {
 
   //this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
   var color20 = d3.scale.ordinal().range(["#D24B32","#73D74B","#7971D9","#75CCC1","#4F2A3F","#CA4477","#C78D38","#5D8737","#75A0D2","#C08074","#CD50CC","#D0D248","#CA8BC2","#BFC98D","#516875","#434E2F","#66D593","#713521","#644182","#C9C0C3"]);
+
+
+
+// //similar to _.extend, but with the added feature of maintaining different properties (rather than overwriting them)
+// //if properties are the same they will be merged/overwritten (same as with _.extend)
+// //if properties are not the same, they will be combined in the form of an array and stored as multiple properties
+// //@params: obj: objects to combine
+// //@returns: obj: the combine object
+// function combineObjects (obj) {
+//   var slice = Array.prototype.slice;
+//   var concat = Array.prototype.concat;
+  
+//     _.each(obj.slice(1), function(source) {
+      
+//       if (source) {
+//         for (var prop in source) {
+//           //if they properties are the same overwrite
+//           if (obj[0][prop] === source[prop]) {
+//               obj[0][prop] = source[prop];
+//             }
+//             else {
+//               //concatenate the properties
+//               //if the property is already an array
+//               if (obj[0][prop].constructor === Array){
+//                 obj[0][prop] = obj[0][prop].concat(source[prop]); //concatenate
+//               }
+//               //if it is not already an array
+//               else {
+//                 obj[0][prop] = [obj[0][prop]].concat(source[prop]); //turn it into an array and then concatenate
+//               }
+//             }
+//         }
+//       }
+//     });
+//     return obj[0];
+//   };
 
 
   //load the lightbox option for VRchoice
@@ -865,7 +902,7 @@ var GRANTS = (function () {
 
     _.each(grouped_grants, function(grantobj, key) { 
       if (grantobj.length > 1) {
-        var temp = combineObjects(grantobj); 
+        var temp = rm.combineObjects(grantobj); 
         grouped_grants[key] = temp;
       } 
       else
@@ -1443,40 +1480,6 @@ var GRANTS = (function () {
   } 
 
 
-//similar to _.extend, but with the added feature of maintaining different properties (rather than overwriting them)
-//if properties are the same they will be merged/overwritten (same as with _.extend)
-//if properties are not the same, they will be combined in the form of an array and stored as multiple properties
-//@params: obj: objects to combine
-//@returns: obj: the combine object
-function combineObjects (obj) {
-  var slice = Array.prototype.slice;
-  var concat = Array.prototype.concat;
-  
-    _.each(obj.slice(1), function(source) {
-      
-      if (source) {
-        for (var prop in source) {
-          //if they properties are the same overwrite
-          if (obj[0][prop] === source[prop]) {
-              obj[0][prop] = source[prop];
-            }
-            else {
-              //concatenate the properties
-              //if the property is already an array
-              if (obj[0][prop].constructor === Array){
-                obj[0][prop] = obj[0][prop].concat(source[prop]); //concatenate
-              }
-              //if it is not already an array
-              else {
-                obj[0][prop] = [obj[0][prop]].concat(source[prop]); //turn it into an array and then concatenate
-              }
-            }
-        }
-      }
-    });
-    return obj[0];
-  };
-
   // function constructTreemapLegend() {
   //   var label = treemaplegend.selectAll(".label")
   //     .data(grantSponsors)
@@ -1555,5 +1558,7 @@ function combineObjects (obj) {
   //     d3.event.stopPropagation();
   //   }
   // }
+
+  return module;
 
 }());

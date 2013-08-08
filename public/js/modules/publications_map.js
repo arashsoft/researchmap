@@ -9,7 +9,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 SOFTWARE.
 */
 
-var PUBLICATIONS_MAP = (function () { 
+var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import them into the function
 	
 
 	/////////////////////////////////////////////////////////////////////
@@ -55,6 +55,7 @@ var PUBLICATIONS_MAP = (function () {
 	//var links_science_exclusive = []; //containing links where every node (author) is a member of the faculty of science
 	//var links_science_exclusive_unique = []; //containing links where every node (author) is a member of the faculty of science where duplicates are removed
 	//var links_for_network = []; //this is a copy of links_science_exclusive_unique. A copy is needed because without one links_science_exclusive_unique will be modified while constructing the network
+	var links_grants = [];
 	var network_constructed = false;
 	var matrix_constructed = false;
 	var copubscounted = false;//to keep track of whether copubs have been counted
@@ -1257,6 +1258,107 @@ var PUBLICATIONS_MAP = (function () {
 	  ); 
 	});
 
+	$('input#filterCo_grants').on('ifChecked', function(){
+
+	  async.series (
+	    [  
+	      function(callback){
+	        d3.selectAll("line.link").each( function () {
+	          if (this.__data__.type == "grant" && d3.select(this).attr("animViz") == "true") {
+	            d3.select(this).style("visibility", "visible");        
+	            d3.select(this).transition().duration(1000).style("opacity", 1);
+	          }
+	        });
+	        //wait 2000 because of the duration and delay above
+	        //otherwise the next function in the series will execute too early
+	        setTimeout(function(){callback(null)}, 2000);
+	      },  
+
+	      function(callback){
+	        //if the user has already specified that only  nodes with links should be displayed
+	        if ($('input#filterNodesLinks').is(':checked')){
+	          d3.selectAll("circle.node").each( function () {
+	          var that = this;//because of the nested loop
+	            var match = false;
+	            d3.selectAll("line.link").each( function() {
+	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+	                 match = true;
+	               }
+	            }); 
+	            if (match == false){
+	              //make the node invisible
+	              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+	              d3.select(this).transition().delay(300).style("visibility", "hidden");
+	            }
+	            else {
+	              //if the current node is currently hidden
+	              if (this.style.visibility == "hidden"){
+	                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+	                d3.select(this).style("visibility", "visible").style("opacity", 0);
+	                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+	              }
+	            }
+	          });
+	        }
+	      }
+	    ],
+
+	    //callback
+	    function(err){
+	      network_force.start();
+	    }
+	  );       
+	});
+	$('input#filterCo_grants').on('ifUnchecked', function(){
+
+	  async.series (
+	    [
+	      function(callback){
+	        d3.selectAll("line.link").each( function () {
+	          if (this.__data__.type == "grant") {
+	            d3.select(this).transition().duration(1000).style("opacity", 0);
+	            d3.select(this).transition().delay(1000).style("visibility", "hidden");
+	          }
+	        });
+	        //wait 2000 because of the duration and delay above 
+	        //otherwise the next function in the series will execute too early
+	        setTimeout(function(){callback(null)}, 2000);
+	      },
+
+	      function(callback){
+	        //if the user has already specified that only  nodes with links should be displayed
+	        if ($('input#filterNodesLinks').is(':checked')){
+	          d3.selectAll("circle.node").each( function () {
+	          var that = this;//because of the nested loop
+	            var match = false;
+	            d3.selectAll("line.link").each( function() {
+	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+	                 match = true;
+	               }
+	            }); 
+	            if (match == false){
+	              //make the node invisible
+	              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+	              d3.select(this).transition().delay(300).style("visibility", "hidden");
+	              
+	            }
+	            else {
+	              //make the node visible
+	              d3.select(this).style("visibility", "visible").style("opacity", 1);
+	              // d3.select(this).transition().duration(2000).style("opacity", 1);
+	            }
+	          });
+	        }
+	      }
+	    ],
+
+	    //callback
+	    function(err){
+	      network_force.start();
+	    }
+	  ); 
+	});
+
 	$('input#filterNodesAll').on('ifChecked', function(){
 	    d3.selectAll("circle.node").each( function () {
 	      //if the current node is currently hidden
@@ -1987,6 +2089,71 @@ var PUBLICATIONS_MAP = (function () {
 	  	//populate the filter area with departments
 	  	populateFilter(science_departments);
 
+
+
+
+
+	    //group grants by the proposal number (i.e., group multiple records of the same grant)
+	    var grouped_grants = _.groupBy(all_grants, function(x) { return x.Proposal; });
+
+	    _.each(grouped_grants, function(grantobj, key) { 
+	      if (grantobj.length > 1) {
+	        var temp = rm.combineObjects(grantobj); 
+	        grouped_grants[key] = temp;
+	      } 
+	      else
+	        grouped_grants[key] = grantobj[0]; //remove the object from its array enclosure so that the resulting grouped_grants is consistent
+	    });
+
+		var co_grants = _.filter(grouped_grants, function(grant) { return typeof grant.CoI == "object"; })
+
+		//loop through each grant 
+		_.each(co_grants, function(grant) {
+
+			var people = [];
+			people.push(grant.PI.substring(0, grant.PI.indexOf(',') + 2));
+			_.each(grant.CoI, function(x) {
+				people.push(x.substring(0, x.indexOf(',') + 2));
+			});
+			people = _.uniq(people); //remove duplicates
+
+			//loop through each Co Investigator of a grant
+			_.each(people, function (person) {
+
+				//if person is not the last in the collaboration
+				if (person != _.last(people)) {
+
+					//make him/her the source
+					var source = person;
+
+					var counter = 1;//use to keep track of the target index
+			        do {
+			          var target = people[counter];
+			          if (target != source) {
+			          	links_grants.push({"source":source, "target":target, "value":0, "sponsor":grant.Sponsor, "begin":grant.BeginDate, "end":grant.EndDate, "program":grant.PgmName, "type":"grant", "title":grant.Title, "status":grant.AwardStatus, "proposal":grant.Proposal, "PI":grant.PI });
+			          }
+
+			          counter += 1;
+			        } while (target != _.last(people)); //while target is not the last element 
+				 }
+			});
+		});
+
+		_.each (links_grants, function(grant){
+			_.each(science_faculty_data, function(person, index, list){
+				if (grant.source == person.Name.substring(0,person.Name.indexOf(',')+2))
+					grant.source = parseInt(index);
+				if (grant.target == person.Name.substring(0,person.Name.indexOf(',')+2))
+					grant.target = parseInt(index);
+			});
+		});
+
+		var links_grants_exclusive = _.filter(links_grants, function(grant) { return (typeof grant.source == "number" && typeof grant.target == "number"); })
+
+
+
+
+
 	  	var filteryears = d3.select("#matrixviz")
 	    	.data(pub_years_uniq)
 	    	.enter().append("p")
@@ -1994,7 +2161,7 @@ var PUBLICATIONS_MAP = (function () {
 	    	.text(function(d){ return d; });
 
 	  	//var links_combined = links_science_exclusive.concat(links_co_sup);
-	  	var links_combined = links_science_exclusive.concat(links_co_sup);
+	  	var links_combined = links_science_exclusive.concat(links_co_sup, links_grants_exclusive);
 
 	  	network_force
 		    .nodes(science_faculty_data)
@@ -2018,6 +2185,8 @@ var PUBLICATIONS_MAP = (function () {
 	      .style("stroke-dasharray", function (d) {
 	        if (d.type == "cosup")
 	          return "4, 2";
+	      	else if (d.type =="grant")
+	      		return "6,4";
 	        else
 	          return "10, 0";
 	           })
@@ -2607,6 +2776,9 @@ var PUBLICATIONS_MAP = (function () {
 	  		matrix[link.source][link.target].cosup += link.value;
 	    	matrix[link.target][link.source].cosup += link.value;
 	  	}
+	  	//else if (link.type == "grant") {
+	  		//TODO: finish this
+	  	//}
 	  	else {
 	  		matrix[link.source][link.target].z += 1;
 	    	matrix[link.target][link.source].z += 1;
