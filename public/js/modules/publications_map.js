@@ -187,6 +187,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    .attr("pointer-events", "all")
 		.append('svg:g')
 		.call(cloningZoom)
+		.on("dblclick.zoom", null)
 		.call(cloningDrag)
 		.append('svg:g');
 

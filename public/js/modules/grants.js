@@ -143,9 +143,10 @@ var GRANTS = (function () {
     .attr('width', cloningWidth)
     .attr('height', cloningHeight)
     .append('svg:g')
-      .attr("pointer-events", "all")
+    .attr("pointer-events", "all")
     .append('svg:g')
     .call(cloningZoom)
+    .on("dblclick.zoom", null)
     .append('svg:g');
 
   //this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the bubble diagram), it allows the visualization
