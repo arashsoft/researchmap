@@ -30,6 +30,7 @@ var GRANTS = (function () {
   var brush;
   var selectedBubbles = [];
   var grantValueCenters = [];
+  var departmentCenters = [];
   var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 
   //receive JSON from the server
@@ -119,7 +120,7 @@ var GRANTS = (function () {
      .append('svg:g')
       .call(bubblezoom.on("zoom", redrawBubble))
       .on("dblclick.zoom", null)
-      .call(d3.behavior.drag().on("drag", pan).on("dragend", function() { d3.select(this).attr("cursor", "default"); }))
+      //.call(d3.behavior.drag().on("drag", pan).on("dragend", function() { d3.select(this).attr("cursor", "default"); }))
      .append('svg:g');
 
   //variables and initilizations for cloning
@@ -144,7 +145,7 @@ var GRANTS = (function () {
     .attr('height', cloningHeight)
     .append('svg:g')
     .attr("pointer-events", "all")
-    .append('svg:g')
+    //.append('svg:g')
     .call(cloningZoom)
     .on("dblclick.zoom", null)
     .append('svg:g');
@@ -260,7 +261,7 @@ var GRANTS = (function () {
     });  
 
     $('#cloningArea').hide();
-    $('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
+    $('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false, handle: "h2" });
 
   });
 
@@ -440,6 +441,9 @@ var GRANTS = (function () {
   $('#arrangebubble').chosen().change(function() {
     if(this.value == "random") {
       bubble_force.gravity(0.25).start();
+    }
+    if(this.value == "department") {
+      bubble_force.gravity(0.45).start();
     }
     if(this.value == "grantvalue") {
       bubble_force.gravity(0.45).start();
@@ -1318,10 +1322,31 @@ var GRANTS = (function () {
           });
           d3.select(this).attr("cy", function(d) {
             return d.y += (grantValueCenters[i].focuscoords[1]) * 0.12 * bubble_force.alpha();
-          })
-        })
-    }
-    else {
+          });
+        });
+    } else if($('#arrangebubble').val() == "department") {
+      bubble
+        .each(function(d) {
+          var i = 0;
+          //there are only 8 grants that have a nested department object, it does not matter how to put these bubbles
+          //the random center at each tick allows thses bubbles to stay in between department areas they belong to
+          var dept = ($.isArray(d.Department) ? d.Department[parseInt(Math.random()*d.Department.length)] : d.Department).substring(0, 4);
+          //find matched center index
+          while(i < departmentCenters.length) {
+            if(departmentCenters[i].name.substring(0, 4) == dept)
+              break;
+            i++;
+          }
+          if(i == departmentCenters.length)
+            i--;
+          d3.select(this).attr("cx", function(d) {
+            return d.x += (departmentCenters[i].focuscoords[0]) * 0.12 * bubble_force.alpha();
+          });
+          d3.select(this).attr("cy", function(d) {
+            return d.y += (departmentCenters[i].focuscoords[1]) * 0.12 * bubble_force.alpha();
+          });
+        });
+    } else {
       bubble
         .each(function() { //moves each node towards the normal_center
           d3.select(this).attr("cx", function(d) {
@@ -1362,6 +1387,33 @@ var GRANTS = (function () {
       var newX = (centerx + radius * Math.cos(angle));
       var newY = (centery + radius * Math.sin(angle));
       grantValueCenters.push({"amount": Math.pow(10, i), "focuscoords": [newX, newY]});
+    }
+
+    //calculate department centers.
+    if(store.session.has("science_departments")) {
+          console.log("science_departments is already in sessionStorage...no need to fetch again");
+    } else {
+      console.log("fetching science_departments...");
+      $.get('/network/science_departments', function(result) {
+        var science_departments = JSON.parse(result.science_departments);
+        store.session("science_departments", science_departments);
+      });
+    }
+
+    var temp = store.session("science_departments").forEach(function (d) {
+      departmentCenters.push({"name": d, "focuscoords": []});
+    });
+    departmentCenters.push({"name": "others", "focuscoords": []});
+
+    slice = 2 * Math.PI / departmentCenters.length;
+    radius = circleOutline[0][0].r.animVal.value;
+    centerx = circleOutline[0][0].cx.animVal.value;
+    centery = circleOutline[0][0].cy.animVal.value;
+    for(var i = 0; i < departmentCenters.length; i++) {
+      var angle = slice * i;
+      var newX = (centerx + radius * Math.cos(angle));
+      var newY = (centery + radius * Math.sin(angle));
+      departmentCenters[i].focuscoords = [newX, newY];
     }
   }
 

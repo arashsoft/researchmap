@@ -58,6 +58,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	var links_grants = [];
 	var network_constructed = false;
 	var matrix_constructed = false;
+
+	var chord_constructed = false;
 	 
 	// scales for the different node sizings
   	var scale_grants = d3.scale.linear().domain([0,450]).range([10,50]);
@@ -125,7 +127,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	   .append('svg:g')
 	    .call(networkzoom)
 	    .on("dblclick.zoom", null)
-	    .call(networkDrag)
+	    //the svg is naturally draggable
+	    //.call(networkDrag)
 	    //.call(d3.behavior.drag().on("drag", pan))
 	   .append('svg:g')
 	   	  /*.on("dblclick", function() {
@@ -188,7 +191,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		.append('svg:g')
 		.call(cloningZoom)
 		.on("dblclick.zoom", null)
-		.call(cloningDrag)
+		//.call(cloningDrag)
 		.append('svg:g');
 
 	//this is a rectangle that goes "behind" the visualization. Because there is no drag behavior attached to it (in contrast to the nodes of the network), it allows the visualization
@@ -310,7 +313,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		//$('#selectionList').sortable();
 
 		$('#cloningArea').hide();
-		$('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
+		$('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false, handle: "h2" });
 
 		$('#gatheringArea').hide();
 		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false, drag: function() { network_force.start(); } });
@@ -1062,57 +1065,67 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	$('input#filterCo_pubs').on('ifChecked', function() {
 
-	  async.series (
-	    [  
-	      function(callback){
-	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type != "cosup" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
-	            d3.select(this).style("visibility", "visible");        
-	            d3.select(this).transition().duration(1000).style("opacity", 1);
-	          }
-	        });
-	        //wait 2000 because of the duration and delay above
-	        //otherwise the next function in the series will execute too early
-	        setTimeout(function(){callback(null)}, 2000);
-	      },  
+	  if($('#granularity').val() == "individuals") {
+		  async.series (
+		    [  
+		      function(callback){
+		        d3.selectAll("line.link").each( function () {
+		          if (this.__data__.type != "cosup" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
+		            d3.select(this).style("visibility", "visible");        
+		            d3.select(this).transition().duration(1000).style("opacity", 1);
+		          }
+		        });
+		        //wait 2000 because of the duration and delay above
+		        //otherwise the next function in the series will execute too early
+		        setTimeout(function(){callback(null)}, 2000);
+		      },  
 
-	      function(callback){
-	        //if the user has already specified that only  nodes with links should be displayed
-	        if ($('input#filterNodesLinks').is(':checked')){
-	          d3.selectAll("circle.node").each( function () {
-	          var that = this;//because of the nested loop
-	            var match = false;
-	            d3.selectAll("line.link").each( function() {
-	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
-	                 match = true;
-	               }
-	            }); 
-	            if (match == false){
-	              //make the node invisible
-	              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
-	              d3.select(this).transition().delay(300).style("visibility", "hidden");
-	            }
-	            else {
-	              //if the current node is currently hidden
-	              if (this.style.visibility == "hidden"){
-	                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
-	                d3.select(this).style("visibility", "visible").style("opacity", 0);
-	                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
-	              }
-	            }
-	          });
-	        }
-	      }
-	    ],
+		      function(callback){
+		        //if the user has already specified that only  nodes with links should be displayed
+		        if ($('input#filterNodesLinks').is(':checked')){
+		          d3.selectAll("circle.node").each( function () {
+		          var that = this;//because of the nested loop
+		            var match = false;
+		            d3.selectAll("line.link").each( function() {
+		                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+		                 match = true;
+		               }
+		            }); 
+		            if (match == false){
+		              //make the node invisible
+		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().delay(300).style("visibility", "hidden");
+		            }
+		            else {
+		              //if the current node is currently hidden
+		              if (this.style.visibility == "hidden"){
+		                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+		                d3.select(this).style("visibility", "visible").style("opacity", 0);
+		                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+		              }
+		            }
+		          });
+		        }
+		      }
+		    ],
 
-	    //callback
-	    function(err){
-	      network_force.start();
-	    }
-	  );
+		    //callback
+		    function(err){
+		      network_force.start();
+		    }
+		  );
+	  } else if($('#granularity').val() == "departmentsChord") {
+	  	d3.selectAll("path.chord").each(function(d) {
+	  		if(d.type == "copub" && this.style.opacity == 0) {
+	  			d3.select(this).style("visibility", "visible").style("opacity", 0);
+	  			d3.select(this).transition().duration(1500).style("opacity", 0.8);
+	  		}
+	  	});
+	  }
 	});
 	$('input#filterCo_pubs').on('ifUnchecked', function() {
 
+	  if($('#granularity').val() == "individuals") {
 		async.series (
 		    [
 		      function(callback){
@@ -1158,210 +1171,250 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		    function(err){
 		      network_force.start();
 		    }
-	  );
+	  	);
+	  } else if($('#granularity').val() == "departmentsChord") {
+	  	d3.selectAll("path.chord").each(function(d) {
+	  		if(d.type == "copub" && this.style.opacity == 0.8) {
+	  			d3.select(this).transition().delay(1500).style("visibility", "hidden");
+	  			d3.select(this).transition().duration(1500).style("opacity", 0);
+	  		}
+	  	});
+	  }
 	});
 
 
 	$('input#filterCo_sups').on('ifChecked', function(){
+	  if($('#granularity').val() == "individuals") {
+		  async.series (
+		    [  
+		      function(callback){
+		        d3.selectAll("line.link").each( function () {
+		          if (this.__data__.type == "cosup" && d3.select(this).attr("animViz") == "true") {
+		            d3.select(this).style("visibility", "visible");        
+		            d3.select(this).transition().duration(1000).style("opacity", 1);
+		          }
+		        });
+		        //wait 2000 because of the duration and delay above
+		        //otherwise the next function in the series will execute too early
+		        setTimeout(function(){callback(null)}, 2000);
+		      },  
 
-	  async.series (
-	    [  
-	      function(callback){
-	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type == "cosup" && d3.select(this).attr("animViz") == "true") {
-	            d3.select(this).style("visibility", "visible");        
-	            d3.select(this).transition().duration(1000).style("opacity", 1);
-	          }
-	        });
-	        //wait 2000 because of the duration and delay above
-	        //otherwise the next function in the series will execute too early
-	        setTimeout(function(){callback(null)}, 2000);
-	      },  
+		      function(callback){
+		        //if the user has already specified that only  nodes with links should be displayed
+		        if ($('input#filterNodesLinks').is(':checked')){
+		          d3.selectAll("circle.node").each( function () {
+		          var that = this;//because of the nested loop
+		            var match = false;
+		            d3.selectAll("line.link").each( function() {
+		                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+		                 match = true;
+		               }
+		            }); 
+		            if (match == false){
+		              //make the node invisible
+		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().delay(300).style("visibility", "hidden");
+		            }
+		            else {
+		              //if the current node is currently hidden
+		              if (this.style.visibility == "hidden"){
+		                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+		                d3.select(this).style("visibility", "visible").style("opacity", 0);
+		                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+		              }
+		            }
+		          });
+		        }
+		      }
+		    ],
 
-	      function(callback){
-	        //if the user has already specified that only  nodes with links should be displayed
-	        if ($('input#filterNodesLinks').is(':checked')){
-	          d3.selectAll("circle.node").each( function () {
-	          var that = this;//because of the nested loop
-	            var match = false;
-	            d3.selectAll("line.link").each( function() {
-	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
-	                 match = true;
-	               }
-	            }); 
-	            if (match == false){
-	              //make the node invisible
-	              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
-	              d3.select(this).transition().delay(300).style("visibility", "hidden");
-	            }
-	            else {
-	              //if the current node is currently hidden
-	              if (this.style.visibility == "hidden"){
-	                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
-	                d3.select(this).style("visibility", "visible").style("opacity", 0);
-	                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
-	              }
-	            }
-	          });
-	        }
-	      }
-	    ],
-
-	    //callback
-	    function(err){
-	      network_force.start();
-	    }
-	  );       
+		    //callback
+		    function(err){
+		      network_force.start();
+		    }
+		  );       
+	  } else if($('#granularity').val() == "departmentsChord") {
+	  	d3.selectAll("path.chord").each(function(d) {
+	  		if(d.type == "cosup" && this.style.opacity == 0) {
+	  			d3.select(this).style("visibility", "visible").style("opacity", 0);
+	  			d3.select(this).transition().duration(1500).style("opacity", 0.8);
+	  		}
+	  	});
+	  }
 	});
 	$('input#filterCo_sups').on('ifUnchecked', function(){
+	  if($('#granularity').val() == "individuals") {
+		  async.series (
+		    [
+		      function(callback){
+		        d3.selectAll("line.link").each( function () {
+		          if (this.__data__.type == "cosup") {
+		            d3.select(this).transition().duration(1000).style("opacity", 0);
+		            d3.select(this).transition().delay(1000).style("visibility", "hidden");
+		          }
+		        });
+		        //wait 2000 because of the duration and delay above 
+		        //otherwise the next function in the series will execute too early
+		        setTimeout(function(){callback(null)}, 2000);
+		      },
 
-	  async.series (
-	    [
-	      function(callback){
-	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type == "cosup") {
-	            d3.select(this).transition().duration(1000).style("opacity", 0);
-	            d3.select(this).transition().delay(1000).style("visibility", "hidden");
-	          }
-	        });
-	        //wait 2000 because of the duration and delay above 
-	        //otherwise the next function in the series will execute too early
-	        setTimeout(function(){callback(null)}, 2000);
-	      },
+		      function(callback){
+		        //if the user has already specified that only  nodes with links should be displayed
+		        if ($('input#filterNodesLinks').is(':checked')){
+		          d3.selectAll("circle.node").each( function () {
+		          var that = this;//because of the nested loop
+		            var match = false;
+		            d3.selectAll("line.link").each( function() {
+		                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+		                 match = true;
+		               }
+		            }); 
+		            if (match == false){
+		              //make the node invisible
+		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().delay(300).style("visibility", "hidden");
+		              
+		            }
+		            else {
+		              //make the node visible
+		              d3.select(this).style("visibility", "visible").style("opacity", 1);
+		              // d3.select(this).transition().duration(2000).style("opacity", 1);
+		            }
+		          });
+		        }
+		      }
+		    ],
 
-	      function(callback){
-	        //if the user has already specified that only  nodes with links should be displayed
-	        if ($('input#filterNodesLinks').is(':checked')){
-	          d3.selectAll("circle.node").each( function () {
-	          var that = this;//because of the nested loop
-	            var match = false;
-	            d3.selectAll("line.link").each( function() {
-	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
-	                 match = true;
-	               }
-	            }); 
-	            if (match == false){
-	              //make the node invisible
-	              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
-	              d3.select(this).transition().delay(300).style("visibility", "hidden");
-	              
-	            }
-	            else {
-	              //make the node visible
-	              d3.select(this).style("visibility", "visible").style("opacity", 1);
-	              // d3.select(this).transition().duration(2000).style("opacity", 1);
-	            }
-	          });
-	        }
-	      }
-	    ],
-
-	    //callback
-	    function(err){
-	      network_force.start();
-	    }
-	  ); 
+		    //callback
+		    function(err){
+		      network_force.start();
+		    }
+		  ); 
+	  } else if($('#granularity').val() == "departmentsChord") {
+	  	d3.selectAll("path.chord").each(function(d) {
+	  		if(d.type == "cosup" && this.style.opacity == 0.8) {
+	  			d3.select(this).transition().delay(1500).style("visibility", "hidden");
+	  			d3.select(this).transition().duration(1500).style("opacity", 0);
+	  		}
+	  	});
+	  }
 	});
 
 	$('input#filterCo_grants').on('ifChecked', function(){
+	  if($('#granularity').val() == "individuals") {
+		  async.series (
+		    [  
+		      function(callback){
+		        d3.selectAll("line.link").each( function () {
+		          if (this.__data__.type == "grant" && d3.select(this).attr("animViz") == "true") {
+		            d3.select(this).style("visibility", "visible");        
+		            d3.select(this).transition().duration(1000).style("opacity", 1);
+		          }
+		        });
+		        //wait 2000 because of the duration and delay above
+		        //otherwise the next function in the series will execute too early
+		        setTimeout(function(){callback(null)}, 2000);
+		      },  
 
-	  async.series (
-	    [  
-	      function(callback){
-	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type == "grant" && d3.select(this).attr("animViz") == "true") {
-	            d3.select(this).style("visibility", "visible");        
-	            d3.select(this).transition().duration(1000).style("opacity", 1);
-	          }
-	        });
-	        //wait 2000 because of the duration and delay above
-	        //otherwise the next function in the series will execute too early
-	        setTimeout(function(){callback(null)}, 2000);
-	      },  
+		      function(callback){
+		        //if the user has already specified that only  nodes with links should be displayed
+		        if ($('input#filterNodesLinks').is(':checked')){
+		          d3.selectAll("circle.node").each( function () {
+		          var that = this;//because of the nested loop
+		            var match = false;
+		            d3.selectAll("line.link").each( function() {
+		                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+		                 match = true;
+		               }
+		            }); 
+		            if (match == false){
+		              //make the node invisible
+		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().delay(300).style("visibility", "hidden");
+		            }
+		            else {
+		              //if the current node is currently hidden
+		              if (this.style.visibility == "hidden"){
+		                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
+		                d3.select(this).style("visibility", "visible").style("opacity", 0);
+		                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+		              }
+		            }
+		          });
+		        }
+		      }
+		    ],
 
-	      function(callback){
-	        //if the user has already specified that only  nodes with links should be displayed
-	        if ($('input#filterNodesLinks').is(':checked')){
-	          d3.selectAll("circle.node").each( function () {
-	          var that = this;//because of the nested loop
-	            var match = false;
-	            d3.selectAll("line.link").each( function() {
-	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
-	                 match = true;
-	               }
-	            }); 
-	            if (match == false){
-	              //make the node invisible
-	              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
-	              d3.select(this).transition().delay(300).style("visibility", "hidden");
-	            }
-	            else {
-	              //if the current node is currently hidden
-	              if (this.style.visibility == "hidden"){
-	                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
-	                d3.select(this).style("visibility", "visible").style("opacity", 0);
-	                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
-	              }
-	            }
-	          });
-	        }
-	      }
-	    ],
-
-	    //callback
-	    function(err){
-	      network_force.start();
-	    }
-	  );       
+		    //callback
+		    function(err){
+		      network_force.start();
+		    }
+		  );       
+	  } else if($('#granularity').val() == "departmentsChord") {
+	  	d3.selectAll("path.chord").each(function(d) {
+	  		if(d.type == "grant" && this.style.opacity == 0) {
+	  			d3.select(this).style("visibility", "visible").style("opacity", 0);
+	  			d3.select(this).transition().duration(1500).style("opacity", 0.8);
+	  		}
+	  	});
+	  }
 	});
 	$('input#filterCo_grants').on('ifUnchecked', function(){
+	  if($('#granularity').val() == "individuals") {
+		  async.series (
+		    [
+		      function(callback){
+		        d3.selectAll("line.link").each( function () {
+		          if (this.__data__.type == "grant") {
+		            d3.select(this).transition().duration(1000).style("opacity", 0);
+		            d3.select(this).transition().delay(1000).style("visibility", "hidden");
+		          }
+		        });
+		        //wait 2000 because of the duration and delay above 
+		        //otherwise the next function in the series will execute too early
+		        setTimeout(function(){callback(null)}, 2000);
+		      },
 
-	  async.series (
-	    [
-	      function(callback){
-	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type == "grant") {
-	            d3.select(this).transition().duration(1000).style("opacity", 0);
-	            d3.select(this).transition().delay(1000).style("visibility", "hidden");
-	          }
-	        });
-	        //wait 2000 because of the duration and delay above 
-	        //otherwise the next function in the series will execute too early
-	        setTimeout(function(){callback(null)}, 2000);
-	      },
+		      function(callback){
+		        //if the user has already specified that only  nodes with links should be displayed
+		        if ($('input#filterNodesLinks').is(':checked')){
+		          d3.selectAll("circle.node").each( function () {
+		          var that = this;//because of the nested loop
+		            var match = false;
+		            d3.selectAll("line.link").each( function() {
+		                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
+		                 match = true;
+		               }
+		            }); 
+		            if (match == false){
+		              //make the node invisible
+		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().delay(300).style("visibility", "hidden");
+		              
+		            }
+		            else {
+		              //make the node visible
+		              d3.select(this).style("visibility", "visible").style("opacity", 1);
+		              // d3.select(this).transition().duration(2000).style("opacity", 1);
+		            }
+		          });
+		        }
+		      }
+		    ],
 
-	      function(callback){
-	        //if the user has already specified that only  nodes with links should be displayed
-	        if ($('input#filterNodesLinks').is(':checked')){
-	          d3.selectAll("circle.node").each( function () {
-	          var that = this;//because of the nested loop
-	            var match = false;
-	            d3.selectAll("line.link").each( function() {
-	                if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible") || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value && this.style.visibility == "visible"))){ //if there is a visible link to the current node set the boolean flag to true
-	                 match = true;
-	               }
-	            }); 
-	            if (match == false){
-	              //make the node invisible
-	              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
-	              d3.select(this).transition().delay(300).style("visibility", "hidden");
-	              
-	            }
-	            else {
-	              //make the node visible
-	              d3.select(this).style("visibility", "visible").style("opacity", 1);
-	              // d3.select(this).transition().duration(2000).style("opacity", 1);
-	            }
-	          });
-	        }
-	      }
-	    ],
-
-	    //callback
-	    function(err){
-	      network_force.start();
-	    }
-	  ); 
+		    //callback
+		    function(err){
+		      network_force.start();
+		    }
+		  ); 
+	  } else if($('#granularity').val() == "departmentsChord") {
+	  	d3.selectAll("path.chord").each(function(d) {
+	  		if(d.type == "grant" && this.style.opacity == 0.8) {
+	  			d3.select(this).transition().delay(1500).style("visibility", "hidden");
+	  			d3.select(this).transition().duration(1500).style("opacity", 0);
+	  		}
+	  	});
+	  }
 	});
 
 	$('input#filterNodesAll').on('ifChecked', function(){
@@ -1716,21 +1769,53 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	//TODO: confliction with filter...
 	$('#granularity').change(function() {
 	  if(this.value == "individuals"){
+	  	//hide the department nodes
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
 	    d3.selectAll("circle.dept").transition().delay(1500).style("visibility", "hidden");
+	    //hide the chord diagram
+	    d3.selectAll("path.group").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.group").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.chord").transition().delay(1500).style("visibility", "hidden");
+	    //show the individual nodes
 	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 1).style("visibility", "visible");
 	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 1).style("visibility", "visible");
 	  }
 	  if(this.value == "departments"){
+	  	//hide the individual nodes
+	  	d3.selectAll("circle.node").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("circle.node").transition().delay(1500).style("visibility", "hidden");    
+	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("line.link").transition().delay(1500).style("visibility", "hidden");
+	    //hide the chord diagram
+	    d3.selectAll("path.group").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.group").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.chord").transition().delay(1500).style("visibility", "hidden");
+	    //show the department nodes
 	    d3.selectAll("circle.dept").style("visibility", "visible").style("opacity", "0");
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 1).attr("r", function(d){ 
 	      //return departmentCounts[d[0]] * 2; 
 	      return d.count;
 	    })
-	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 0);
+	    
+	  }
+	  if(this.value == "departmentsChord") {
+	  	//hide the individual nodes
+	  	d3.selectAll("circle.node").transition().duration(1500).style("opacity", 0);
 	    d3.selectAll("circle.node").transition().delay(1500).style("visibility", "hidden");    
 	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 0);
 	    d3.selectAll("line.link").transition().delay(1500).style("visibility", "hidden");
+	    //hide the department nodes
+	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
+	    d3.selectAll("circle.dept").transition().delay(1500).style("visibility", "hidden");
+	    //build chord diagram
+	    if(!chord_constructed)
+	    	constructChord();
+	    d3.selectAll("path.group").style("visibility", "visible").style("opacity", 0);
+	    d3.selectAll("path.group").transition().duration(1500).style("opacity", 1);
+	    d3.selectAll("path.chord").style("visibility", "visible").style("opacity", 0);
+	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0.8);
 	  }
 	});
 
@@ -2195,6 +2280,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  	//var links_combined = links_science_exclusive.concat(links_co_sup);
 	  	var links_combined = links_science_exclusive.concat(links_co_sup, links_grants_exclusive);
 
+	  	store.session("links_combined", links_combined);
+	  	console.log("links_combined has been processed and is in sessionStorage now");
+
 	  	network_force
 		    .nodes(science_faculty_data)
 		    //.links(links_for_network);
@@ -2388,7 +2476,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	$('#arrange').chosen().change(function() {
 		if (this.value == "department") {
-			network_force.gravity(0).linkStrength(0).charge(-100).start(); //set the network paramaters
+			network_force.gravity(0).linkStrength(0).start(); //set the network paramaters
 	  		//network_force.stop();
 	  	}
 	  	if (this.value == "random") {
@@ -3213,6 +3301,199 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				});
 			}
 	    })
+	}
+
+	function constructChord() {
+		getChordData(buildChord);
+	}
+
+	function getChordData(callback) {
+		var links_combined, science_faculty_data, science_departments;
+		async.parallel(
+	    [
+
+	      function(callback){
+	        if(store.session.has("links_combined")){
+	          console.log("links_combined is already in sessionStorage...no need to fetch again");
+	          links_combined = store.session("links_combined");
+	          callback(null);
+	        }
+	        else {
+	          console.log("fetching links_combined...");
+	          //...
+	        }
+	      },
+
+	      function(callback){
+	        if(store.session.has("science_faculty_data")){
+	          console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
+	          science_faculty_data = store.session("science_faculty_data");
+	          callback(null);          
+	        }
+	        else {
+	          console.log("fetching science_faculty_data...");
+	          $.get('/network/science_faculty_data', function(result){
+	            science_faculty_data = JSON.parse(result.science_faculty_data);
+	            store.session("science_faculty_data", science_faculty_data);
+	            callback(null);            
+	          });
+	        } 
+	      },
+
+	      function(callback){
+	        if(store.session.has("science_departments")){
+	          console.log("science_departments is already in sessionStorage...no need to fetch again");
+	          science_departments = store.session("science_departments");
+	          callback(null);          
+	        }
+	        else {
+	          console.log("fetching science_departments...");
+	          $.get('network/science_departments', function(result){
+	            science_departments = JSON.parse(result.science_departments);
+	            store.session("science_departments", science_departments);
+	            callback(null);            
+	          });
+	        }
+	      }
+
+	    ],
+
+	      function(err, results){
+	      	if (err) throw new Error(err);
+	        callback(links_combined, science_faculty_data, science_departments);
+	      }
+	    );
+	}
+
+	function buildChord(links_combined, science_faculty_data, science_departments) {
+		var chordMatrix = [];
+		var chordDetailsMatrix = [];
+		var groupNum = science_departments.length;
+
+		//initilization of matrix...not an elegant way:(
+		for(var i = 0; i < groupNum; i++) {
+			chordMatrix[i] = new Array();
+			chordDetailsMatrix[i] = new Array();
+			for(var j = 0; j < groupNum; j++) {
+				chordMatrix[i][j] = 0;
+				chordDetailsMatrix[i][j] = {pub: 0, sup: 0, grant: 0};
+			}
+		}
+		links_combined.forEach(function(link) {
+			var source, target;
+			science_departments.forEach(function(dept, index) {
+				if(science_faculty_data[link.source].Department == dept)
+					source = index;
+				if(science_faculty_data[link.target].Department == dept)
+					target = index;
+			})
+			chordMatrix[source][target]++;
+			chordMatrix[target][source]++;
+			if(link.type == "cosup")
+				chordDetailsMatrix[source][target].sup++, chordDetailsMatrix[target][source].sup++;
+			else if(link.type == "grant")
+				chordDetailsMatrix[source][target].grant++, chordDetailsMatrix[target][source].grant++;
+			else
+				chordDetailsMatrix[source][target].pub++, chordDetailsMatrix[target][source].pub++;
+		})
+
+		var chord = d3.layout.chord()
+			.padding(0.05)
+			.matrix(chordMatrix);
+		var innerRadius = Math.min(svgwidth, svgheight) * .41,
+			outerRadius = innerRadius * 1.1;
+
+		//process the chord to separate the co-pubs, co-sups and co-grants
+		var processedChords = [];
+		(chord.chords()).forEach(function(d) {
+			var source = d.source.index;
+			var target = d.target.index;
+			var pubPercent = chordDetailsMatrix[source][target].pub / chordMatrix[source][target];
+			var supPercent = chordDetailsMatrix[source][target].sup / chordMatrix[source][target];
+			var grantPercent = chordDetailsMatrix[source][target].grant / chordMatrix[source][target];
+			//build new chord object
+			var pubchord = new Object();
+			var supchord = new Object();
+			var grantchord = new Object();
+
+			pubchord.source = new Object();
+			supchord.source = new Object();
+			grantchord.source = new Object();
+
+			pubchord.target = new Object();
+			supchord.target = new Object();
+			grantchord.target = new Object();
+
+			pubchord.type = "copub";
+			supchord.type = "cosup";
+			grantchord.type = "grant";
+
+			pubchord.source.index = supchord.source.index = grantchord.source.index = source;
+			pubchord.source.subindex = supchord.source.subindex = grantchord.source.subindex = d.source.subindex;
+			pubchord.target.index = supchord.target.index = grantchord.target.index = target;
+			pubchord.target.subindex = supchord.target.subindex = grantchord.target.subindex = d.target.subindex;
+
+			pubchord.source.value = pubchord.target.value = chordDetailsMatrix[source][target].pub;
+			supchord.source.value = supchord.target.value = chordDetailsMatrix[source][target].sup;
+			grantchord.source.value = grantchord.target.value = chordDetailsMatrix[source][target].grant;
+
+			var startSource, endSource, startTarget, endTarget;
+			if(source == target) {
+				startSource = d.source.startAngle;
+				startTarget = d.target.endAngle;
+				endSource = endTarget = startSource + (startTarget - startSource) / 2;
+			} else {
+				startSource = d.source.startAngle;
+				endSource = d.source.endAngle;
+				startTarget = d.target.startAngle;
+				endTarget = d.target.endAngle;
+			}
+
+			pubchord.source.startAngle = startSource;
+			pubchord.source.endAngle = supchord.source.startAngle = startSource + (endSource - startSource) * pubPercent;
+			supchord.source.endAngle = grantchord.source.startAngle = supchord.source.startAngle + (endSource - startSource) * supPercent;
+			grantchord.source.endAngle = endSource;
+
+			pubchord.target.startAngle = startTarget;
+			pubchord.target.endAngle = supchord.target.startAngle = startTarget + (endTarget - startTarget) * pubPercent;
+			supchord.target.endAngle = grantchord.target.startAngle = supchord.target.startAngle + (endTarget - startTarget) * supPercent;
+			grantchord.target.endAngle = endTarget;
+			
+			if(source == target) {
+				var tmp = pubchord.target.startAngle;
+				pubchord.target.startAngle = pubchord.target.endAngle;
+				pubchord.target.endAngle = tmp;
+				tmp = supchord.target.startAngle;
+				supchord.target.startAngle = supchord.target.endAngle;
+				supchord.target.endAngle = tmp;
+				var tmp = grantchord.target.startAngle;
+				grantchord.target.startAngle = grantchord.target.endAngle;
+				grantchord.target.endAngle = tmp;
+			}
+
+			processedChords.push(pubchord);
+			processedChords.push(supchord);
+			processedChords.push(grantchord);
+		})
+
+		var chordsvg = networksvg.append("g").attr("transform", "translate(" + svgwidth / 2 + "," + svgheight / 2 + ")");
+		chordsvg.append("g").selectAll("path.group")
+			.data(chord.groups)
+			.enter().append("path")
+			.attr("class", "group")
+			.style("fill", function(d, i) { return color20(science_departments[i]); })
+			.style("stroke", "#000")
+			.attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
+			.style("opacity", 1)
+			.style("visibility", "hidden");
+		chordsvg.append("g").selectAll("path.chord")
+			.data(processedChords)
+			.enter().append("path")
+			.attr("class", "chord")
+			.attr("d", d3.svg.chord().radius(innerRadius))
+		    .style("fill", function(d, i) { return color20(science_departments[d.source.index]); })
+		    .style("opacity", 0.8)
+		    .style("visibility", "hidden");
 	}
 
 	function redrawNetwork() {
