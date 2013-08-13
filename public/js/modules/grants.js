@@ -1390,31 +1390,38 @@ var GRANTS = (function () {
     }
 
     //calculate department centers.
+    var science_departments;
     if(store.session.has("science_departments")) {
-          console.log("science_departments is already in sessionStorage...no need to fetch again");
+        console.log("science_departments is already in sessionStorage...no need to fetch again");
+        science_departments = store.session("science_departments");
+        buildDepartmentCenter();
     } else {
       console.log("fetching science_departments...");
       $.get('/network/science_departments', function(result) {
-        var science_departments = JSON.parse(result.science_departments);
+        science_departments = JSON.parse(result.science_departments);
         store.session("science_departments", science_departments);
+        buildDepartmentCenter();
       });
     }
 
-    var temp = store.session("science_departments").forEach(function (d) {
-      departmentCenters.push({"name": d, "focuscoords": []});
-    });
-    departmentCenters.push({"name": "others", "focuscoords": []});
+    function buildDepartmentCenter() {
+      science_departments.forEach(function (d) {
+        departmentCenters.push({"name": d, "focuscoords": []});
+      });
+      departmentCenters.push({"name": "others", "focuscoords": []});
 
-    slice = 2 * Math.PI / departmentCenters.length;
-    radius = circleOutline[0][0].r.animVal.value;
-    centerx = circleOutline[0][0].cx.animVal.value;
-    centery = circleOutline[0][0].cy.animVal.value;
-    for(var i = 0; i < departmentCenters.length; i++) {
-      var angle = slice * i;
-      var newX = (centerx + radius * Math.cos(angle));
-      var newY = (centery + radius * Math.sin(angle));
-      departmentCenters[i].focuscoords = [newX, newY];
+      slice = 2 * Math.PI / departmentCenters.length;
+      radius = circleOutline[0][0].r.animVal.value;
+      centerx = circleOutline[0][0].cx.animVal.value;
+      centery = circleOutline[0][0].cy.animVal.value;
+      for(var i = 0; i < departmentCenters.length; i++) {
+        var angle = slice * i;
+        var newX = (centerx + radius * Math.cos(angle));
+        var newY = (centery + radius * Math.sin(angle));
+        departmentCenters[i].focuscoords = [newX, newY];
+      }
     }
+    
   }
 
   function size(d) {
