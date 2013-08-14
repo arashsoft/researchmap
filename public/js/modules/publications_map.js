@@ -3011,7 +3011,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        .attr("x", function(d) { return matrix_x(d.x); })
 	        .attr("width", matrix_x.rangeBand())
 	        .attr("height", matrix_x.rangeBand())
-	        .style("fill-opacity", function(d) { return matrix_z(d.copub + d.cosup + d.grant) })
+	        .style("opacity", function(d) { return matrix_z(d.copub + d.cosup + d.grant) })
 	        .style("fill", function(d) {
 	        	//the colors used here have been selected to be optimally distinct from one another based on their hue
 	        	if (d.copub > 0 && d.cosup == 0 && d.grant == 0)
