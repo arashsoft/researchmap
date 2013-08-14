@@ -60,10 +60,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	var matrix_constructed = false;
 	 
 	// scales for the different node sizings
-  	var scale_grants = d3.scale.linear().domain([0,450]).range([10,50]);
-  	var scale_copubs = d3.scale.linear().domain([0,50]).range([10,50]);
-  	var scale_cosups = d3.scale.linear().domain([0,15]).range([10,50]);
-  	var scale_combined = d3.scale.linear().domain([0,500]).range([10,50]);
+  	var scale_grants = d3.scale.linear().domain([0,450]).range([3,150]);
+  	var scale_copubs = d3.scale.linear().domain([0,50]).range([3,150]);
+  	var scale_cosups = d3.scale.linear().domain([0,15]).range([3,150]);
+  	var scale_combined = d3.scale.linear().domain([0,450]).range([3,150]);
 
 	var dragging = false; //set to true when the user is dragging an element in the network
 
@@ -84,7 +84,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    matrix_width = 1800;
 
 	var matrix_x = d3.scale.ordinal().rangeBands([0, matrix_width]),
-	    matrix_z = d3.scale.linear()/*.domain([0, 21])*/.range([0,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
+	    matrix_z = d3.scale.linear()/*.domain([0, 21])*/.range([0.2,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
 	    matrix_c = d3.scale.category10().domain(d3.range(10));
 
 	var matrixsvg = d3.select("#matrixviz").append("svg:svg")
@@ -207,9 +207,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	//default values for the network
 	var dcharge = -100;
 	var dlinkDistance = 70;
-	var dgravity = 0.2;
+	var dgravity = 0.05;
 	var dfriction = 0.9;
-	var dlinkStrength = 1;
+	var dlinkStrength = 0;
 
 	//consructs the new force-directed layout
 	var network_force = d3.layout.force().size([svgwidth,svgheight]);
@@ -462,12 +462,12 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    else {
 	      //only want to set opacity to 0 and then fade it in if it is not currently visible
 	      if (this.style.visibility == "hidden"){
-	        if ($('input#filterCo_pubs').is(':checked') && this.__data__.type != "cosup"){
+	        if ($('input#filterCo_pubs').is(':checked') && this.__data__.type != "supervision"){
 	          d3.select(this).style("visibility", "visible").style("opacity", 0);
 	          d3.select(this).transition().duration(1000).style("opacity", 1);
 	        }
 	        //if the user doesn't want to see co-supervision links
-	        else if($('input#filterCo_sups').is(':checked') && this.__data__.type == "cosup"){
+	        else if($('input#filterCo_sups').is(':checked') && this.__data__.type == "supervision"){
 	          d3.select(this).style("visibility", "visible").style("opacity", 0);
 	          d3.select(this).transition().duration(1000).style("opacity", 1);
 	        }
@@ -503,7 +503,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        }
 	        //if the user doesn't want to see co-supervision links
 	        else {
-	          if(this.__data__.type != "cosup"){
+	          if(this.__data__.type != "supervision"){
 	            d3.select(this).style("visibility", "visible").style("opacity", 0);
 	            d3.select(this).style("opacity", 1);
 	          }
@@ -640,7 +640,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	          $('#animateYearPlaceholder').text(currentYear);
 	          var t = d3.selectAll("line.link").each(function(){
 	          	//co-supervision links do not have "year" attributes, change their visibility according to filter
-	          	if(this.__data__.type == "cosup") {
+	          	if(this.__data__.type == "supervision") {
 	          		if($('input#filterCo_sups').is(':checked')) {
 	          			d3.select(this).attr("animViz", "true");
 	          			if(currentYear == animatebegin) {
@@ -769,13 +769,13 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		d3.selectAll("line.link")
 			.attr("animViz", "true")
 		  	.style("opacity", function(d) {
-			  	if(d.type != "cosup" || d.type == "cosup" && $('input#filterCo_sups').is(':checked'))
+			  	if(d.type != "supervision" || d.type == "supervision" && $('input#filterCo_sups').is(':checked'))
 			  		return 1;
 			  	else
 			  		return 0;
 		  	})
 		  	.style("visibility", function(d) {
-		  		if(d.type != "cosup" || d.type == "cosup" && $('input#filterCo_sups').is(':checked'))
+		  		if(d.type != "supervision" || d.type == "supervision" && $('input#filterCo_sups').is(':checked'))
 			  		return "visible";
 			  	else
 			  		return "hidden";
@@ -945,7 +945,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			.style("visibility", "visible")
 		    .style("stroke", "black")
 		    .style("stroke-dasharray", function (d) {
-		      if (d.type == "cosup")
+		      if (d.type == "supervision")
 		        return "4, 4";
 		      else
 		        return "10, 0";
@@ -1066,7 +1066,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    [  
 	      function(callback){
 	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type != "cosup" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
+	          if (this.__data__.type != "supervision" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
 	            d3.select(this).style("visibility", "visible");        
 	            d3.select(this).transition().duration(1000).style("opacity", 1);
 	          }
@@ -1117,7 +1117,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		    [
 		      function(callback){
 		        d3.selectAll("line.link").each( function () {
-		          if (this.__data__.type != "cosup" && this.__data__.type != "grant") {
+		          if (this.__data__.type != "supervision" && this.__data__.type != "grant") {
 		            d3.select(this).transition().duration(1000).style("opacity", 0);
 		            d3.select(this).transition().delay(1000).style("visibility", "hidden");
 		          }
@@ -1168,7 +1168,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    [  
 	      function(callback){
 	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type == "cosup" && d3.select(this).attr("animViz") == "true") {
+	          if (this.__data__.type == "supervision" && d3.select(this).attr("animViz") == "true") {
 	            d3.select(this).style("visibility", "visible");        
 	            d3.select(this).transition().duration(1000).style("opacity", 1);
 	          }
@@ -1219,7 +1219,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    [
 	      function(callback){
 	        d3.selectAll("line.link").each( function () {
-	          if (this.__data__.type == "cosup") {
+	          if (this.__data__.type == "supervision") {
 	            d3.select(this).transition().duration(1000).style("opacity", 0);
 	            d3.select(this).transition().delay(1000).style("visibility", "hidden");
 	          }
@@ -1576,35 +1576,30 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		switch ($('#sizeNodes').val()) {
 
 			case "combined":
-				countLinks("copub");
-				countLinks("cosup");
+				countLinks("publication");
+				countLinks("supervision");
 				countLinks("grant");
 				sizeNodes("combined");
 				break;
 			case "publications":
-				countLinks("copub");
-				sizeNodes("copub");
+				countLinks("publication");
+				sizeNodes("publication");
 				break;			
 			case "supervisions":
-				countLinks("cosup");
-				sizeNodes("cosup");
+				countLinks("supervision");
+				sizeNodes("supervision");
 				break;			
 			case "grants":
 				countLinks("grant");
 				sizeNodes("grant");
-				break;			
+				break;	
+			case "uniform":
+				sizeNodes("uniform");		
 			default:
-				countLinks("copub");
-				sizeNodes("copub");
+				countLinks("publication");
+				sizeNodes("publication");
 				break;			
 		}
-
-	  // if ($('#sizeNodes').val() == "all"){
-	  //   if(!copubscounted){
-	  //     countLinks();
-	  //   }
-	  //   sizeNodesByCopubs();
-	  // }
 	});
 
 	$('#networkreset').click(function() {
@@ -1767,7 +1762,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	  }
 	})
-
+	
 
 	$('#translate').change(function () {
 
@@ -1801,24 +1796,47 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  }
 	});
 
-	//for matrix
+	//for matrix filtering
 	$('input#matrixFilterCo_pubs').on("ifChecked", function() {
 		d3.selectAll("rect.matrixcell").each(function(d) {
-			if(d.z > 0) {
+			if(d.copub > 0) {
 				d3.select(this).style("visibility", "visible");
-				if(d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked'))
-					d3.select(this).style("fill", "purple")
-									.style("opacity", function(d) { return matrix_z(d.z + d.cosup); });
+				//if copubs and not supervisions and not grants
+				if ((d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
+					d3.select(this).style("fill", "#E1B2D7")
+									.style("opacity", function(d) { return matrix_z(d.copub); });
+				//if copubs and not supervisions and grants
+				else if ((d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+					d3.select(this).style("fill", "#F0A487")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.grant); });													
+				//if copubs and supervisions and not grants
+				else if ((d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
+					d3.select(this).style("fill", "#9BD0E3")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.cosup); });
+				//if copubs and supervisions and grants
+				else if ((d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+					d3.select(this).style("fill", "#DCBE6B")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.cosup + d.grant); });					
 			}
 		});
 	});
 
 	$('input#matrixFilterCo_pubs').on("ifUnchecked", function() {
 		d3.selectAll("rect.matrixcell").each(function(d) {
-			if(d.z > 0) {
-				if(d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked'))
-					d3.select(this).style("fill", "blue")
+			if(d.copub > 0) {
+				//if supervisions and grants
+				if((d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+					d3.select(this).style("fill", "#A0E191")
+									.style("opacity", function(d) { return matrix_z(d.cosup + d.grant); });
+				//if supervisions and not grants
+				else if ((d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
+					d3.select(this).style("fill", "#D5E067")
 									.style("opacity", function(d) { return matrix_z(d.cosup); });
+				//if not supervisions and grants
+				else if ((d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+					d3.select(this).style("fill", "#79DEC0")
+									.style("opacity", function(d) { return matrix_z(d.grant); });									
+				//if not supervisions and not grants
 				else
 					d3.select(this).style("visibility", "hidden");
 			}
@@ -1829,9 +1847,22 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		d3.selectAll("rect.matrixcell").each(function(d) {
 			if(d.cosup > 0) {
 				d3.select(this).style("visibility", "visible");
-				if(d.z > 0 && $('input#matrixFilterCo_pubs').is(':checked'))
-					d3.select(this).style("fill", "purple")
-									.style("opacity", function(d) { return matrix_z(d.z + d.cosup); });
+				//if supervisions and not publications and not grants
+				if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')==false) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
+					d3.select(this).style("fill", "#D5E067")
+									.style("opacity", function(d) { return matrix_z(d.cosup); });
+				//if supervisions and not publications and grants
+				else if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+					d3.select(this).style("fill", "#A0E191")
+									.style("opacity", function(d) { return matrix_z(d.cosup + d.grant); });													
+				//if supervisions and publications and not grants
+				else if ((d.copub > 0 && $('input#matrixFilterCo_pub').is(':checked')) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
+					d3.select(this).style("fill", "#9BD0E3")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.cosup); });
+				//if supervisions and publications and grants
+				else if ((d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+					d3.select(this).style("fill", "#DCBE6B")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.cosup + d.grant); });
 			}
 		});
 	});
@@ -1839,15 +1870,70 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	$('input#matrixFilterCo_sups').on("ifUnchecked", function() {
 		d3.selectAll("rect.matrixcell").each(function(d) {
 			if(d.cosup > 0) {
-				if(d.z > 0 && $('input#matrixFilterCo_pubs').is(':checked'))
-					d3.select(this).style("fill", "red")
-									.style("opacity", function(d) { return matrix_z(d.z); });
+				//if publications and grants
+				if((d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+					d3.select(this).style("fill", "#F0A487")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.grant); });
+				//if publications and not grants
+				else if ((d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
+					d3.select(this).style("fill", "#E1B2D7")
+									.style("opacity", function(d) { return matrix_z(d.copub); });
+				//if not publications and grants
+				else if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')==false) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+					d3.select(this).style("fill", "#79DEC0")
+									.style("opacity", function(d) { return matrix_z(d.grant); });									
+				//if not publications and not grants
 				else
 					d3.select(this).style("visibility", "hidden");
 			}
 		});
 	});
 
+	$('input#matrixFilterCo_grants').on("ifChecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.grant > 0) {
+				d3.select(this).style("visibility", "visible");
+				//if grants and not publications and not supervisions
+				if ((d.copub == 0 || $('input#matrixFilterCo_copub').is(':checked')==false) && (d.cosup == 0 || $('input#matrixFilterCo_sup').is(':checked')==false))
+					d3.select(this).style("fill", "#79DEC0")
+									.style("opacity", function(d) { return matrix_z(d.grant); });
+				//if grants and not publications and supervisions
+				else if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')) && (d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')))
+					d3.select(this).style("fill", "#A0E191")
+									.style("opacity", function(d) { return matrix_z(d.cosup + d.grant); });													
+				//if grants and publications and not supervisions
+				else if ((d.copub > 0 && $('input#matrixFilterCo_pub').is(':checked')) && (d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false))
+					d3.select(this).style("fill", "#F0A487")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.grant); });
+				//if grants and publications and supervisions
+				else if ((d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.cosup > 0 && $('input#matrixFilterCo_cosup').is(':checked')))
+					d3.select(this).style("fill", "#DCBE6B")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.cosup + d.grant); });
+			}
+		});
+	});	
+
+	$('input#matrixFilterCo_grants').on("ifUnchecked", function() {
+		d3.selectAll("rect.matrixcell").each(function(d) {
+			if(d.grant > 0) {
+				//if publications and supervisions
+				if((d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')))
+					d3.select(this).style("fill", "#9BD0E3")
+									.style("opacity", function(d) { return matrix_z(d.copub + d.cosup); });
+				//if publications and not supervisions
+				else if ((d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false))
+					d3.select(this).style("fill", "#E1B2D7")
+									.style("opacity", function(d) { return matrix_z(d.copub); });
+				//if not publications and supervsions
+				else if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')==false) && (d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')))
+					d3.select(this).style("fill", "#D5E067")
+									.style("opacity", function(d) { return matrix_z(d.cosup); });									
+				//if not publications and not supervisions
+				else
+					d3.select(this).style("visibility", "hidden");
+			}
+		});
+	});
 
 	//listens to the slider for scoping by year
 	//
@@ -1919,7 +2005,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  var ypos = $('#vizcontainer').height()/2 - $('#vizloader').height()/2;
 	  $('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
 
-	  getNetworkData(buildNetwork);
+	  getNetworkData(buildNetwork); 
+
 	}//end constructNetwork
 
 	//var all_grants; TODO: delete
@@ -1930,16 +2017,6 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	@returns: none
 	*/
 	function getNetworkData (callback){
-
-		//for testing		
-   //  	$.get('network/test', function(result){
-			// science_faculty_data= JSON.parse(result.science_faculty_data);
-			// western_faculty_data= JSON.parse(result.western_faculty_data);
-			// grant_data= JSON.parse(result.grant_data);
-			// supervisor_data= JSON.parse(result.supervisor_data);
-			// publication_data= JSON.parse(result.publication_data);
-			// console.log("yup");
-   //        });
 
 	  var all_grants, links_for_network, links_science_exclusive, links_western_exclusive, science_faculty_data, western_faculty_data, science_departments, all_departments, pub_years_uniq, links_co_sup;
 
@@ -2093,7 +2170,6 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      }
 	      ,
 
-		  /////testing/////
 	      function(callback){
 	      	console.log("fetching grants...");
 	      	$.get('network/all_grants', function(result) {
@@ -2122,69 +2198,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  	populateFilter(science_departments);
 
 
-
-
-
-	    //group grants by the proposal number (i.e., group multiple records of the same grant)
-	    var grouped_grants = _.groupBy(all_grants, function(x) { return x.Proposal; });
-
-	    _.each(grouped_grants, function(grantobj, key) { 
-	      if (grantobj.length > 1) {
-	        var temp = rm.combineObjects(grantobj); 
-	        grouped_grants[key] = temp;
-	      } 
-	      else
-	        grouped_grants[key] = grantobj[0]; //remove the object from its array enclosure so that the resulting grouped_grants is consistent
-	    });
-
-		var co_grants = _.filter(grouped_grants, function(grant) { return typeof grant.CoI == "object"; })
-
-		//loop through each grant 
-		_.each(co_grants, function(grant) {
-
-			var people = [];
-			people.push(grant.PI.substring(0, grant.PI.indexOf(',') + 2));
-			_.each(grant.CoI, function(x) {
-				people.push(x.substring(0, x.indexOf(',') + 2));
-			});
-			people = _.uniq(people); //remove duplicates
-
-			//loop through each Co Investigator of a grant
-			_.each(people, function (person) {
-
-				//if person is not the last in the collaboration
-				if (person != _.last(people)) {
-
-					//make him/her the source
-					var source = person;
-
-					var counter = 1;//use to keep track of the target index
-			        do {
-			          var target = people[counter];
-			          if (target != source) {
-			          	links_grants.push({"source":source, "target":target, "value":0, "sponsor":grant.Sponsor, "begin":grant.BeginDate, "end":grant.EndDate, "program":grant.PgmName, "type":"grant", "title":grant.Title, "status":grant.AwardStatus, "proposal":grant.Proposal, "PI":grant.PI });
-			          }
-
-			          counter += 1;
-			        } while (target != _.last(people)); //while target is not the last element 
-				 }
-			});
-		});
-
-		_.each (links_grants, function(grant){
-			_.each(science_faculty_data, function(person, index, list){
-				if (grant.source == person.Name.substring(0,person.Name.indexOf(',')+2))
-					grant.source = parseInt(index);
-				if (grant.target == person.Name.substring(0,person.Name.indexOf(',')+2))
-					grant.target = parseInt(index);
-			});
-		});
-
-		var links_grants_exclusive = _.filter(links_grants, function(grant) { return (typeof grant.source == "number" && typeof grant.target == "number"); })
-
-
-
-
+	  	var links_grants_exclusive = constructGrantLinks(all_grants, science_faculty_data);
 
 	  	var filteryears = d3.select("#matrixviz")
 	    	.data(pub_years_uniq)
@@ -2213,9 +2227,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      .attr("class", "link")
 	      .attr("animViz", "true")  //it declares whether the link should be visible after the animation
 	      .style("visibility", "visible")
-	      .style("stroke", "black")
+	      .style("stroke", "#b3b3b3")
 	      .style("stroke-dasharray", function (d) {
-	        if (d.type == "cosup")
+	        if (d.type == "supervision")
 	          return "4, 2";
 	      	else if (d.type =="grant")
 	      		return "6,4";
@@ -2223,25 +2237,20 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	          return "10, 0";
 	           })
 	      //.style("stroke-width", function (d) { return d.value/4; });
-	      .style("stroke-width", "1px");
+	      .style("stroke-width", "0.5px");
 
 
 	 	node = networksvg.selectAll("circle.node")
 		    .data(science_faculty_data)
 		    .enter().append("svg:circle")
 		    .attr("class", "node")
-		    .attr("r", 1)
+		    .attr("r", 10)
 		    .style("visibility", "visible")
 		    .attr("gathering", "false") //tell if a node is in an gathering area
-		    .attr("department", function (d) { 
-		      return d.Department; })
 		    //.attr("selectedIndividually", "false") //<-- for the selecting action
-		    .attr("copubs", 0)
-		    .attr("cosups", 0)
+		    .attr("publications", 0)
+		    .attr("supervisions", 0)
 		    .attr("grants", 0)
-		    .attr("name", function (d) { return d.Name; })
-		    .attr("rank", function (d) { return d.Rank; })
-		    .attr("contract", function (d) { return d.Contract; })
 		    .style("fill", function(d){ return color20(d.Department); })
 		    .call(node_drag);
 
@@ -2253,7 +2262,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				nodeTooltip.transition()        
 	                .duration(200)      
 	                .style("opacity", .95);      
-	            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + d.Department + "<br>" + d.Rank)                
+	            nodeTooltip.html("<b>" + d.Name + "</b><br><hr>" + "Department: " + d.Department + "<br>" + "Rank: " + d.Rank + "<br>" + "Co-Supervisions: " + this.attributes[4].value + "<br>" + "Co-Publications: " + this.attributes[3].value + "<br>" + "Co-Grants: " + this.attributes[5].value)                
 	            	.style("left", (parseInt(d3.select(this).attr("cx")) + document.getElementById("networkviz").offsetLeft) + "px")     
 	                .style("top", d.y + "px");
 
@@ -2370,7 +2379,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  		this.selectedIndividually = false;
 	  	});  
 
-	  	node.transition().duration(2000).attr("r", 10);
+	  	//node.transition().duration(2000).attr("r", 10);
 
 	  	network_constructed = true;
 
@@ -2383,7 +2392,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    	.charge(dcharge)
 	    	.linkDistance(dlinkDistance)
 	    	.on("tick", tick)
-	      	.start();
+	      	.start(); 	
 	}//end buildNetwork
 
 	$('#arrange').chosen().change(function() {
@@ -2676,7 +2685,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	//@return: none
 	function getMatrixData (callbackMatrix){
 
-	  var links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, links_co_sup;
+	  var links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, links_co_sup, all_grants;
 
 	  async.parallel(
 	    [
@@ -2760,6 +2769,13 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        }
 	      },
 
+	      function (callback) {
+	      	$.get('network/all_grants', function(result) {
+	      		all_grants = JSON.parse(result.all_grants);
+	      		callback(null);
+	      	});
+	      },
+
 	      function(callback){
 	        if(store.session.has("links_co_sup")){
 	          console.log("links_co_sup is already in sessionStorage...no need to fetch again");
@@ -2778,16 +2794,16 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    ],
 
 	    function(err, results){
-	      callbackMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, links_co_sup);
+	      callbackMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, all_grants, links_co_sup);
 	    }
 	  );
 	}//end getMatrixData
 
 
 
-	function buildMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, links_co_sup){
+	function buildMatrix(links_for_matrix, links_science_exclusive, science_faculty_data, science_departments, pub_years_uniq, all_grants, links_co_sup){
 
-	  var links_combined = links_science_exclusive.concat(links_co_sup);
+		var links_grants_exclusive;
 
 	  $('#vizloader').hide();  
 
@@ -2802,49 +2818,57 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  nodes.forEach(function(node, i) {
 	    node.index = i;
 	    node.count = 0;
-	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0, cosup: 0}; });
+	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, copub: 0, cosup: 0, grant: 0}; });
 	  });
 
+	    if (store.session.has("links_grants_exclusive"))
+	    	links_grants_exclusive = store.session("links_grants_exclusive");
+	    else 
+	    	links_grants_exclusive = constructGrantLinks(all_grants, nodes);
+
+	  var links_combined = links_science_exclusive.concat(links_co_sup, links_grants_exclusive);
+
 	  //calculate the max publications to decide the domain of scale matrix_z
-	  var max_z = 0;
+	  var max_copub = 0;
 	  var max_cosup = 0;
+	  var max_grant = 0;
 	  // Convert links to matrix; count occurrences.
 	  links_combined.forEach(function(link) {
-	  	if(link.type == "cosup") {
-	  		matrix[link.source][link.target].cosup += link.value;
-	    	matrix[link.target][link.source].cosup += link.value;
+	  	if(link.type == "supervision") {
+	  		matrix[link.source][link.target].cosup += 1;
+	    	matrix[link.target][link.source].cosup += 1;
 	  	}
-	  	//else if (link.type == "grant") {
-	  		//TODO: finish this
-	  	//}
-	  	else {
-	  		matrix[link.source][link.target].z += 1;
-	    	matrix[link.target][link.source].z += 1;
+	  	else if (link.type == "grant") {
+	  		matrix[link.source][link.target].grant += 1;
+	    	matrix[link.target][link.source].grant += 1;	  	
+	    }
+	  	else if (link.type == "publication") {
+	  		matrix[link.source][link.target].copub += 1;
+	    	matrix[link.target][link.source].copub += 1;
 	  	}
+
 	    nodes[link.source].count += 1;
 	    nodes[link.target].count += 1;
 
-	    max_z = matrix[link.source][link.target].z > max_z ? matrix[link.source][link.target].z : max_z;
-	    max_z = matrix[link.target][link.source].z > max_z ? matrix[link.target][link.source].z : max_z;
+	    max_copub = matrix[link.source][link.target].copub > max_copub ? matrix[link.source][link.target].copub : max_copub;
+	    max_copub = matrix[link.target][link.source].copub > max_copub ? matrix[link.target][link.source].copub : max_copub;
 	    max_cosup = matrix[link.source][link.target].cosup > max_cosup ? matrix[link.source][link.target].cosup : max_cosup;
 	    max_cosup = matrix[link.target][link.source].cosup > max_cosup ? matrix[link.target][link.source].cosup : max_cosup;
+	    max_grant = matrix[link.source][link.target].grant > max_grant ? matrix[link.source][link.target].grant : max_grant;
+	    max_grant = matrix[link.target][link.source].grant > max_grant ? matrix[link.target][link.source].grant : max_grant;	    
 	  });
 
 	  // Precompute the orders.
 	  var orders = {
 	    name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].Name, nodes[b].Name); }),
-	    count: d3.range(n).sort(function(a, b) { return nodes[b].count - nodes[a].count; }),
+	    count: d3.range(n).sort(function(a, b) { 
+	    	return nodes[b].count - nodes[a].count; }),
 	    department: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].Department, nodes[b].Department); })
 	  };
 
-	  // var cellcolor = d3.scale.linear()
-	  //       .range(["hsl(62,100%,90%)", "hsl(228,30%,20%)"])
-	  //       .interpolate(d3.interpolateLab);
-
-
 	  // The default sort order.
 	  matrix_x.domain(orders.name);
-	  matrix_z.domain([0, max_z + max_cosup]);
+	  matrix_z.domain([0, max_copub + max_cosup + max_grant]);
 
 	  matrixsvg.append("rect")
 	      .attr("class", "matrixbackground")
@@ -2892,20 +2916,30 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  //for the matrix
 	  function row(row, index) {
 	    var cell = d3.select(this).selectAll(".matrixcell")
-	        .data(row.filter(function(d) { return d.z || d.cosup; }))
+	        .data(row.filter(function(d) { 
+	        	return d.copub || d.grant || d.cosup; }))
 	      .enter().append("rect")
 	        .attr("class", "matrixcell")
 	        .attr("x", function(d) { return matrix_x(d.x); })
 	        .attr("width", matrix_x.rangeBand())
 	        .attr("height", matrix_x.rangeBand())
-	        .style("fill-opacity", function(d) { return matrix_z(d.z + d.cosup) })
+	        .style("fill-opacity", function(d) { return matrix_z(d.copub + d.cosup + d.grant) })
 	        .style("fill", function(d) {
-	        	if(d.z > 0 && d.cosup == 0)
-	        		return "red";
-	        	if(d.z == 0 && d.cosup > 0)
-	        		return "blue";
-	        	if(d.z && d.cosup)
-	        		return "purple";
+	        	//the colors used here have been selected to be optimally distinct from one another based on their hue
+	        	if (d.copub > 0 && d.cosup == 0 && d.grant == 0)
+	        		return "#E1B2D7";
+	        	else if (d.cosup > 0 && d.copub == 0 && d.grant == 0)
+	        		return "#D5E067";	
+	        	else if (d.grant > 0 && d.copub == 0 && d.cosup == 0)
+	        		return "#79DEC0";		        		        	
+	        	else if (d.cosup == 0 && d.copub > 0 && d.grant > 0)
+	        		return "#F0A487";
+	        	else if (d.grant == 0 && d.cosup > 0 && d.copub > 0)
+	        		return "#9BD0E3";
+	        	else if (d.copub == 0 && d.cosup > 0 && d.grant > 0)
+	        		return "#A0E191";	
+	        	else if (d.copub > 0 && d.cosup > 0 && d.grant > 0)
+	        		return "#DCBE6B";	        			        	
 	        })
 	        //.style("fill", function(d) { return nodes[d.x].Department == nodes[d.y].Department ? matrix_c(nodes[d.x].Department) : null; })
 	        .on("mouseover", mouseover)
@@ -2913,9 +2947,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	    cell.append("name1").text(function(d) { return "<b>" + nodes[d.x].Name + " & </b>" + "<br>"; });
 	    cell.append("name2").text(function(d) { return "<b>" + nodes[d.y].Name + "</b>" + "<br>" + "<hr>"; });
-	    cell.append("value").text(function(d) { return "publications: " + d.z + "<br>"; });
-	    cell.append("value2").text(function(d) {return "co_supervisions: " + d.cosup + "<br>"; });
-
+	    cell.append("value").text(function(d) { return "publications: " + d.copub + "<br>"; });
+	    cell.append("value2").text(function(d) {return "supervisions: " + d.cosup + "<br>"; });
+	    cell.append("value3").text(function(d) {return "grants: " + d.grant + "<br>"; });
+	    cell.append("value4").text(function(d) { return "total: " + (d.grant + d.cosup + d.copub); });
 	  }
 
 	  //for the matrix
@@ -2947,12 +2982,12 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    	for(var i = 0; i < n - 1; i++) {
 	    		if(d3.ascending(nodes[orders[this.value][i]].Department, nodes[orders[this.value][i+1]].Department)) {
 	    			//delay = 9700 = matrix trasition duration + max rows & columns delay = 2500 + 4 * 1800
-	    			matrixsvg.transition().delay(9700).selectAll("#row-" + orders[this.value][i+1] + " > line").style("stroke", "red");
-	    			matrixsvg.transition().delay(9700).selectAll("#col-" + orders[this.value][i+1] + " > line").style("stroke", "red");
+	    			matrixsvg.transition().delay(9700).selectAll("#row-" + orders[this.value][i+1] + " > line").style("stroke", "#b8b8b8");
+	    			matrixsvg.transition().delay(9700).selectAll("#col-" + orders[this.value][i+1] + " > line").style("stroke", "#b8b8b8");
 	    		}
 	    	}
 	    } else {
-	    	matrixsvg.selectAll("line").style("stroke", "white");
+	    	matrixsvg.selectAll("line").style("stroke", "#fbfbfb");
 	    }
 	  });
 
@@ -3267,6 +3302,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	function countLinks (type) {
 	  d3.selectAll("circle.node").each( function () {
+	  	d3.select(this).attr(type+"s", 0); //(re)set the count to 0
 	    that=this;
 	    d3.selectAll("line.link").each( function () {
 	    	var a =1;
@@ -3281,16 +3317,19 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	function sizeNodes (type) {
 	  d3.selectAll("circle.node").each( function () {
 	  	if (type == "combined") {
-	  		d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_combined( parseInt($(this).attr("cosups")) + parseInt($(this).attr("grants")) + parseInt($(this).attr("copubs"))); });
+	  		d3.select(this).attr("r", function() { return scale_combined( parseInt($(this).attr("supervisions")) + parseInt($(this).attr("grants")) + parseInt($(this).attr("publications"))); });
 	  	}
 	  	else if (type == "grant") {
 	  		d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_grants( parseInt($(this).attr("grants"))); });
 	  	}
-	  	else if (type == "copub") {
-	    	d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_copubs( parseInt($(this).attr("copubs"))); });
+	  	else if (type == "publication") {
+	    	d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_copubs( parseInt($(this).attr("publications"))); });
 	    }
-	  	else if (type == "cosup") {
-	    	d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_cosups( parseInt($(this).attr("cosups"))); });
+	  	else if (type == "supervision") {
+	    	d3.select(this)/*.transition().duration(1000)*/.attr("r", function() { return scale_cosups( parseInt($(this).attr("supervisions"))); });
+	    }
+	    else if (type == "uniform") {
+	    	d3.select(this).attr("r", 10);
 	    }	    
 	  });
 //	  setTimeout(function() {
@@ -3429,5 +3468,69 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    });
 	  };
 	}	
+
+	/*
+	constructs the links for the network based on grant collaborations
+	@params: all_grants: all of the grants as retrieved from the database
+			 nodes: the nodes that will be used in the network (needed to calculate source and target values for the links)
+	@returns: links for grant collaborations that are exclusive to members of the faculty of science
+	*/
+	function constructGrantLinks(all_grants, nodes) {
+	    //group grants by the proposal number (i.e., group multiple records of the same grant)
+	    var grouped_grants = _.groupBy(all_grants, function(x) { return x.Proposal; });
+
+	    _.each(grouped_grants, function(grantobj, key) { 
+	      if (grantobj.length > 1) {
+	        var temp = rm.combineObjects(grantobj); 
+	        grouped_grants[key] = temp;
+	      } 
+	      else
+	        grouped_grants[key] = grantobj[0]; //remove the object from its array enclosure so that the resulting grouped_grants is consistent
+	    });
+
+		var co_grants = _.filter(grouped_grants, function(grant) { return typeof grant.CoI == "object"; })
+
+					//loop through each grant 
+					_.each(co_grants, function(grant) {
+
+						var people = [];
+						people.push(grant.PI.substring(0, grant.PI.indexOf(',') + 2));
+						_.each(grant.CoI, function(x) {
+							people.push(x.substring(0, x.indexOf(',') + 2));
+						});
+						people = _.uniq(people); //remove duplicates
+
+						//loop through each Co Investigator of a grant
+						_.each(people, function (person) {
+
+							//if person is not the last in the collaboration
+							if (person != _.last(people)) {
+
+								//make him/her the source
+								var source = person;
+
+								var counter = 1;//use to keep track of the target index
+						        do {
+						          var target = people[counter];
+						          if (target != source) {
+						          	links_grants.push({"source":source, "target":target, "value":0, "sponsor":grant.Sponsor, "begin":grant.BeginDate, "end":grant.EndDate, "program":grant.PgmName, "type":"grant", "title":grant.Title, "status":grant.AwardStatus, "proposal":grant.Proposal, "PI":grant.PI });
+						          }
+
+						          counter += 1;
+						        } while (target != _.last(people)); //while target is not the last element 
+							 }
+						});
+					});
+
+					_.each (links_grants, function(grant){
+						_.each(nodes, function(person, index, list){
+							if (grant.source == person.Name.substring(0,person.Name.indexOf(',')+2))
+								grant.source = parseInt(index);
+							if (grant.target == person.Name.substring(0,person.Name.indexOf(',')+2))
+								grant.target = parseInt(index);
+						});
+					});
+				return _.filter(links_grants, function(grant) { return (typeof grant.source == "number" && typeof grant.target == "number"); });
+	}//end constructGrantsLinks	
 
 }());
