@@ -1235,7 +1235,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		  );       
 	  } else if($('#granularity').val() == "departmentsChord") {
 	  	d3.selectAll("path.chord").each(function(d) {
-	  		if(d.type == "supervision" && this.style.opacity == 0) {
+	  		if(d.type == "cosup" && this.style.opacity == 0) {
 	  			d3.select(this).style("visibility", "visible").style("opacity", 0);
 	  			d3.select(this).transition().duration(1500).style("opacity", 0.8);
 	  		}
@@ -1292,7 +1292,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		  ); 
 	  } else if($('#granularity').val() == "departmentsChord") {
 	  	d3.selectAll("path.chord").each(function(d) {
-	  		if(d.type == "supervision" && this.style.opacity == 0.8) {
+	  		if(d.type == "cosup" && this.style.opacity == 0.8) {
 	  			d3.select(this).transition().delay(1500).style("visibility", "hidden");
 	  			d3.select(this).transition().duration(1500).style("opacity", 0);
 	  		}
