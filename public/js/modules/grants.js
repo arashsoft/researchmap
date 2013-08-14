@@ -21,7 +21,7 @@ var GRANTS = (function () {
   var bubble_constructed = false;
   var bubblezoom = d3.behavior.zoom();
   var bubble;
-  var top20;
+  var top20 = [];
 
   var grouped_grants;
   //log scale for the grant request amounts
@@ -41,18 +41,6 @@ var GRANTS = (function () {
 
 
   //FOR TREEMAP//
-  var w = 1280 - 80,
-    h = 800 - 180,
-    x = d3.scale.linear().range([0, w]),
-    y = d3.scale.linear().range([0, h]),
-    xscale = x,
-    yscale = y,
-    colorTreemap = d3.scale.category20c(),
-    headerHeight = 20,
-    headerColor = "#555555",
-    transitionDuration = 1500,    
-    root,
-    node;
 
   var margin = {top: 5, right: 0, bottom: 5, left: 0},
       width = $('#vizcontainer').width() - margin.left - margin.right,
@@ -62,6 +50,17 @@ var GRANTS = (function () {
   //get the width and height of the div containing the svg--this way the dimensions are specified dynamically
   var svgwidth = $('#vizcontainer').width();
   var svgheight = $('#vizcontainer').height();
+
+  var x = d3.scale.linear().range([0, width]),
+    y = d3.scale.linear().range([0, height]),
+    xscale = x,
+    yscale = y,
+    colorTreemap = d3.scale.category20c(),
+    headerHeight = 20,
+    headerColor = "#555555",
+    transitionDuration = 1500,    
+    root,
+    node;
 
   //center of the svg area
   var normal_center = { y: svgheight/2, x: svgwidth/2 }; 
@@ -1159,54 +1158,80 @@ var GRANTS = (function () {
   //@param: callback: a callback function--in this case buildTreemap--that builds the treemap visualization
   //@return: none
   function getTreemapData (nestedData, callback) {
-    var nested_by_sponsor, nested_by_department, grants_unique, grant_sponsors;
+    var nested_by_sponsor, nested_by_department, grants_unique, grant_sponsors, all_grants;
 
-    if (nestedData == "department"){
-      if(store.session.has("nested_by_department")){
-        console.log("nested_by_department is already in sessionStorage...no need to fetch again!");
-        nestedData = store.session("nested_by_department");
-        //grants_unique = store.session("grants_unique");
-        grant_sponsors = store.session("grant_sponsors");
-        callback(nestedData, grant_sponsors);      
-      }
-      else{
-        console.log("fetching nested_by_department...");
-        $.get('/grants/nested_by_department', function(result) {
-          nested_by_department = JSON.parse(result.nested_by_department);
-          //grants_unique = JSON.parse(result.grants_unique);
-          grant_sponsors = JSON.parse(result.grant_sponsors);
-          
-          try {
-            //store.session("nested_by_department", nested_by_department);
-            store.session("grant_sponsors", grant_sponsors);
+    async.parallel([
+      function(callback) {
+        if (nestedData == "department"){
+          if(store.session.has("nested_by_department")){
+            console.log("nested_by_department is already in sessionStorage...no need to fetch again!");
+            nestedData = store.session("nested_by_department");
+            //grants_unique = store.session("grants_unique");
+            grant_sponsors = store.session("grant_sponsors");
+            callback();      
           }
-          catch (e) {
-            console.log("Error trying to save data to sessionStorage: " + e);
+          else{
+            console.log("fetching nested_by_department...");
+            $.get('/grants/nested_by_department', function(result) {
+              nested_by_department = JSON.parse(result.nested_by_department);
+              //grants_unique = JSON.parse(result.grants_unique);
+              grant_sponsors = JSON.parse(result.grant_sponsors);
+              
+              try {
+                //store.session("nested_by_department", nested_by_department);
+                store.session("grant_sponsors", grant_sponsors);
+              }
+              catch (e) {
+                console.log("Error trying to save data to sessionStorage: " + e);
+              }
+              nestedData = nested_by_department;
+              callback();        
+            });
           }
-          callback(nested_by_department, grant_sponsors);        
-        });
+        }
+        else if (nestedData == "sponsor"){
+          if(store.session.has("nested_by_sponsor")){
+            console.log("nested_by_sponsor is already in sessionStorage...no need to fetch again!");
+            nestedData = store.session("nested_by_sponsor");
+            //grants_unique = store.session("grants_unique");
+            grant_sponsors = store.session("grant_sponsors");      
+            callback();      
+          }
+          else{
+            console.log("fetching nested_by_sponsor...");
+            $.get('/grants/nested_by_sponsor', function(result) {
+              nested_by_sponsor = JSON.parse(result.nested_by_sponsor);
+              store.session("nested_by_sponsor", nested_by_sponsor);
+              //grants_unique = JSON.parse(result.grants_unique);
+              grant_sponsors = JSON.parse(result.grant_sponsors);
+              store.session("grant_sponsors", grant_sponsors);
+              nestedData = nested_by_sponsor;
+              callback();
+            });
+          }  
+        }
+      },
+      function(callback) {
+        if(store.session.has("all_grants")){
+          console.log("all_grants is already in sessionStorage...no need to fetch again");
+          all_grants = store.session("all_grants");
+          callback();
+        }
+        else {
+          console.log("fetching all_grants");
+          $.get('grants/all_grants', function(result){
+            all_grants = JSON.parse(result.all_grants);
+            //store.session("all_grants", all_grants);
+            callback();
+          });
+        }         
       }
-    }
-    else if (nestedData == "sponsor"){
-      if(store.session.has("nested_by_sponsor")){
-        console.log("nested_by_sponsor is already in sessionStorage...no need to fetch again!");
-        nestedData = store.session("nested_by_sponsor");
-        //grants_unique = store.session("grants_unique");
-        grant_sponsors = store.session("grant_sponsors");      
-        callback(nestedData, grant_sponsors);      
+      ],
+      function(err, result) {
+        top20 = topSponsors(20, grant_sponsors, all_grants);
+        callback(nestedData, grant_sponsors);
       }
-      else{
-        console.log("fetching nested_by_sponsor...");
-        $.get('/grants/nested_by_sponsor', function(result) {
-          nested_by_sponsor = JSON.parse(result.nested_by_sponsor);
-          store.session("nested_by_sponsor", nested_by_sponsor);
-          //grants_unique = JSON.parse(result.grants_unique);
-          grant_sponsors = JSON.parse(result.grant_sponsors);
-          store.session("grant_sponsors", grant_sponsors);
-          callback(nested_by_sponsor, grant_sponsors);
-        });
-      }  
-    }
+    );
   }
 
   function buildTreemap(nestedData, grant_sponsors) {
@@ -1228,23 +1253,26 @@ var GRANTS = (function () {
         return d.children;
     });
 
-
     // create parent cells
-    var parentCells = treemapsvg.selectAll("g.parent")
+    var parentCells = treemapsvg.selectAll("g.cell.parent")
             .data(parents)
             .enter().append("g")
             .attr("class", "cell parent")
             .on("click", zoom);
     parentCells.append("rect")
+            .classed("background", true)
             .style("fill", headerColor);
     parentCells.append("text")
             .attr("class", "celllabel")
             .attr("x", function(d) { return d.dx / 2; })
-            .attr("y", function(d) { return headerHeight / 2 + 3; })
-            .attr("text-anchor", "middle");
+            .attr("y", function(d) { return headerHeight / 2 + 1; })
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .text(function(d) { return d.name; })
+            .style("opacity", 0);
 
     // update transition
-    parentCells.transition().duration(transitionDuration)
+    parentCells//.transition().duration(transitionDuration)
             .attr("transform", function(d) {
                 return "translate(" + d.x + "," + d.y + ")";
             })
@@ -1253,107 +1281,59 @@ var GRANTS = (function () {
                 return Math.max(0.01, d.dx - 1);
             })
             .attr("height", headerHeight);
-    setTimeout(function() {
-      parentCells.selectAll('text')
-      .text(function(d) { return d.name; })
-      .style("opacity", function(d) { d.w = this.getComputedTextLength(); return d.dx > d.w ? 1 : 0; });
-    }, transitionDuration);
-            
-            
+    parentCells.transition().delay(transitionDuration)
+            .selectAll('text')
+            .style("opacity", function(d) {
+              d.w = this.getComputedTextLength();
+              return d.dx > d.w ? 1 : 0;
+            });
 
     // create children cells
-    var childrenCells = treemapsvg.selectAll("g.child")
-            .data(children, function(d, i) {
-                return "c-" + i;
-            });
-    // enter transition
-    var childEnterTransition = childrenCells.enter()
-            .append("g")
-            .attr("class", "cell child")                                     
+    var childCells = treemapsvg.selectAll("g.cell.child")
+            .data(children)
+            .enter().append("g")
+            .attr("class", "cell child")
             .on("click", function(d) {
+              console.log(node);
                 zoom(node === d.parent ? root : d.parent);
             });
-    childEnterTransition.append("rect")
-            .classed("background", true)
+    childCells.append("rect")
             .style("fill", function(d) {
               if(_.contains(top20, d.Sponsor))
                 return colorTreemap(d.Sponsor);
               else
                 return "#f9f9f9";
-            });
-    childEnterTransition.append('text')
+            });/*
+    childCells.append('text')
             .attr("class", "celllabel")
-            .attr('x', function(d) {
-                return d.dx / 2;
-            })
-            .attr('y', function(d) {
-                return d.dy / 2;
-            })
+            .attr('x', function(d) { return d.dx / 2; })
+            .attr('y', function(d) { return d.dy / 2; })
             .attr("dy", ".35em")
             .attr("text-anchor", "middle")
-            .style("display", "none")
+            .style("opacity", 0)
             .text(function(d) {
-                if (d.children != undefined)//if it is not a leaf node
-                  return d.name;
-                else  //if it is a leaf node
-                  return ;//d.Sponsor;
-            });/*
-            .style("opacity", function(d) {
-                d.w = this.getComputedTextLength();
-                return d.dx > d.w ? 1 : 0;
+              return d.Sponsor;
             });*/
 
     // update transition
-    var childUpdateTransition = childrenCells.transition().duration(transitionDuration);
-    childUpdateTransition.selectAll("g.child")
+    childCells//.transition().duration(transitionDuration)
             .attr("transform", function(d) {
                 return "translate(" + d.x  + "," + d.y + ")";
-            });
-    childUpdateTransition.select("rect")
+            })
+            .selectAll("rect")
             .attr("width", function(d) {
                 return Math.max(0.01, d.dx - 1);
             })
             .attr("height", function(d) {
-                return (d.dy - 1);
-            })
-            .style("fill", function(d) {
-                if (d.children != undefined)//if it is not a leaf node
-                  return color(d.parent.name);
-                else  //if it is a leaf node
-                  if(_.contains(top20, d.Sponsor))
-                    return colorTreemap(d.Sponsor);
-                  else
-                    return "#f9f9f9";
-            });
-    childUpdateTransition.select(".celllabel")
-            .attr('x', function(d) {
-                return d.dx / 2;
-            })
-            .attr('y', function(d) {
-                return d.dy / 2;
-            })
-            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .style("display", "none")
-            .text(function(d) {
-                if (d.children != undefined)//if it is not a leaf node
-                  return color(d.parent.name);
-                else  //if it is a leaf node
-                  return ; //color(d.Sponsor);
-            });/*
+                return Math.max(0.01, d.dy - 1);
+            })/*
+    childCells.transition().delay(transitionDuration)
+            .selectAll("text")
             .style("opacity", function(d) {
-                d.w = this.getComputedTextLength();
-                return d.dx > d.w ? 1 : 0;
+              d.w = this.getComputedTextLength();
+              return d.dx > d.w ? 1 : 0;
             });*/
 
-          // exit transition
-       //   childrenCells.exit()
-        //          .remove();
-
-//          zoom(node);
-
-    //top20 = topSponsors(20, grant_sponsors);
-          
     treemap_constructed = true;
 
   }//end constructtreemap
@@ -1615,34 +1595,32 @@ var GRANTS = (function () {
     }
   }
 
-
-  function topSponsors (topNum, grantSponsors, grants) {
+  function topSponsors(topNum, grantSponsors, all_grants) {
     var temp = _.extend({}, grantSponsors);
     temp = _.invert(temp);
 
-    //for each pair in temp
-    $.each(grants, function(k, v){
-      //loop through the grantData
-      for (entry in grantData){
-        //get top 'num' according to requestamt
-        var req = this.RequestAmt;
-          req = req.replace(/^\s+|\s+$/g, ''); //remove whitespaces
-          req = req.replace(/\$/g,""); //remove dollar sign
-          req = req.replace(/,/g,""); //remove commas
-          req = parseFloat(req); //convert from string to float 
-        //if bigger than current, replace
-        if (temp[this.Sponsor] < req)
-          temp[this.Sponsor] = req;
-      }
+    $.each(temp, function(k, v) {
+      temp[k] = 0;
+    })
 
+    all_grants.forEach(function(grant) {
+      //get top 'num' according to requestamt
+      var req = grant.RequestAmt;
+        req = req.replace(/^\s+|\s+$/g, ''); //remove whitespaces
+        req = req.replace(/\$/g,""); //remove dollar sign
+        req = req.replace(/,/g,""); //remove commas
+        req = parseFloat(req); //convert from string to float 
+
+      temp[grant.Sponsor] += req;
     });
+
     var temp2 = [];
     $.each(temp, function(k,v){
       temp2.push([k,v]);
     });
     temp2.sort(function(a, b) {return a[1] - b[1]});
 
-    var sliced = temp2.slice(temp2.length-topNum);
+    var sliced = temp2.slice(temp2.length - topNum);
     var finallist = [];
 
     sliced.forEach(function(element){
