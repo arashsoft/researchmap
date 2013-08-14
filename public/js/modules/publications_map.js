@@ -86,7 +86,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    matrix_width = 1800;
 
 	var matrix_x = d3.scale.ordinal().rangeBands([0, matrix_width]),
-	    matrix_z = d3.scale.linear()/*.domain([0, 21])*/.range([0.2,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
+	    matrix_z = d3.scale.linear().range([0.2,1]).clamp(true), //for calculating the opacity of the cells...21 is hardcoded in for now
 	    matrix_c = d3.scale.category10().domain(d3.range(10));
 
 	var matrixsvg = d3.select("#matrixviz").append("svg:svg")
