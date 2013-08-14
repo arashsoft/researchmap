@@ -49,5 +49,6 @@ rm = function() {
 	    });
 	    return obj[0];
 	  };
+
 	  return rm;
 }();
