@@ -30,6 +30,7 @@ var GRANTS = (function () {
   var brush;
   var selectedBubbles = [];
   var grantValueCenters = [];
+  var departmentCenters = [];
   var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 
   //receive JSON from the server
@@ -119,7 +120,7 @@ var GRANTS = (function () {
      .append('svg:g')
       .call(bubblezoom.on("zoom", redrawBubble))
       .on("dblclick.zoom", null)
-      .call(d3.behavior.drag().on("drag", pan).on("dragend", function() { d3.select(this).attr("cursor", "default"); }))
+      //.call(d3.behavior.drag().on("drag", pan).on("dragend", function() { d3.select(this).attr("cursor", "default"); }))
      .append('svg:g');
 
   //variables and initilizations for cloning
@@ -144,7 +145,7 @@ var GRANTS = (function () {
     .attr('height', cloningHeight)
     .append('svg:g')
     .attr("pointer-events", "all")
-    .append('svg:g')
+    //.append('svg:g')
     .call(cloningZoom)
     .on("dblclick.zoom", null)
     .append('svg:g');
@@ -260,7 +261,7 @@ var GRANTS = (function () {
     });  
 
     $('#cloningArea').hide();
-    $('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false });
+    $('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false, handle: "h2" });
 
   });
 
@@ -273,6 +274,17 @@ var GRANTS = (function () {
     values: [ 2008, 2013 ],
     slide: function( event, ui ) {
       $( "#grantyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+
+      d3.selectAll("circle.bubble").each(function(d) {
+        var createdYear = parseInt(d.Created.substring(0, 4));
+        if(ui.values[0] <= createdYear && createdYear <= ui.values[1]) {
+          d3.select(this).style("visibility", "visible");
+          d3.select(this).transition().duration(800).style("opacity", 1);
+        } else {
+          d3.select(this).transition().duration(800).style("opacity", 0);
+          d3.select(this).transition().delay(800).style("visibility", "hidden");
+        }
+      });
     }
   });
   $( "#grantyear" ).val( $( "#grantyearrange" ).slider( "values", 0 ) +
@@ -412,34 +424,102 @@ var GRANTS = (function () {
 
 ///// for bubble interactions
   $('input#filterAccepted').on('ifChecked', function() {
-
-    });
-  $('input#filterDeclined').on('ifChecked', function() {
-    var declined_grants = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Declined"; } );
-
-    bubble_force.nodes(declined_grants);
+    var accepted_grants = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Accepted"; } );
+    var grants_combined;
+    if($('input#filterClosed').is(':checked'))
+      grants_combined = _.toArray(grouped_grants);
+    else
+      grants_combined = accepted_grants;
+    bubble_force.nodes(grants_combined);
 
     bubble = bubblesvg.selectAll("circle.bubble")
-      .data(declined_grants);
+      .data(grants_combined);
 
     bubble.exit().remove(); //remove existing bubbles
 
-    bubble = bubblesvg.selectAll("circle.bubble")
-      .data(declined_grants)
+    bubble
       .enter().append("svg:circle")
       .attr("class", "bubble")
       .attr("r", function(grant) { 
         var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
-        return log_scale(num); })
+        return (num ? log_scale(num) : 1) * 0.3; })
       .style("fill", function(grant) { return color20(grant.Sponsor); });
-    });
-  $('input#filterClosed').on('ifChecked', function() {
 
+    bubble_force.start();
+  });
+  $('input#filterAccepted').on('ifUnchecked', function() {
+    var grants_combined = [];
+    if($('input#filterClosed').is(':checked'))
+      grants_combined = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Closed"; } );
+    bubble_force.nodes(grants_combined);
+
+    bubble = bubblesvg.selectAll("circle.bubble")
+      .data(grants_combined);
+
+    bubble.exit().remove(); //remove existing bubbles
+
+    bubble
+      .enter().append("svg:circle")
+      .attr("class", "bubble")
+      .attr("r", function(grant) { 
+        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
+        return (num ? log_scale(num) : 1) * 0.3; })
+      .style("fill", function(grant) { return color20(grant.Sponsor); });
+
+    bubble_force.start();
+  });
+  $('input#filterClosed').on('ifChecked', function() {
+    var closed_grants = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Closed"; } );
+    var grants_combined;
+    if($('input#filterAccepted').is(':checked'))
+      grants_combined = _.toArray(grouped_grants);
+    else
+      grants_combined = closed_grants;
+    bubble_force.nodes(grants_combined);
+
+    bubble = bubblesvg.selectAll("circle.bubble")
+      .data(grants_combined);
+
+    bubble.exit().remove(); //remove existing bubbles
+
+    bubble
+      .enter().append("svg:circle")
+      .attr("class", "bubble")
+      .attr("r", function(grant) { 
+        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
+        return (num ? log_scale(num) : 1) * 0.3; })
+      .style("fill", function(grant) { return color20(grant.Sponsor); });
+
+    bubble_force.start();
+  });
+  $('input#filterClosed').on('ifUnchecked', function() {
+    var grants_combined = [];
+    if($('input#filterAccepted').is(':checked'))
+      grants_combined = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Accepted"; } );
+    bubble_force.nodes(grants_combined);
+
+    bubble = bubblesvg.selectAll("circle.bubble")
+      .data(grants_combined);
+
+    bubble.exit().remove(); //remove existing bubbles
+
+    bubble
+      .enter().append("svg:circle")
+      .attr("class", "bubble")
+      .attr("r", function(grant) { 
+        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
+        return (num ? log_scale(num) : 1) * 0.3; })
+      .style("fill", function(grant) { return color20(grant.Sponsor); });
+
+    bubble_force.start();
   });
 
   $('#arrangebubble').chosen().change(function() {
     if(this.value == "random") {
       bubble_force.gravity(0.25).start();
+    }
+    if(this.value == "department") {
+      bubble_force.gravity(0.45).start();
     }
     if(this.value == "grantvalue") {
       bubble_force.gravity(0.45).start();
@@ -1097,7 +1177,7 @@ var GRANTS = (function () {
           grant_sponsors = JSON.parse(result.grant_sponsors);
           
           try {
-            store.session("nested_by_department", nested_by_department);
+            //store.session("nested_by_department", nested_by_department);
             store.session("grant_sponsors", grant_sponsors);
           }
           catch (e) {
@@ -1151,8 +1231,8 @@ var GRANTS = (function () {
 
     // create parent cells
     var parentCells = treemapsvg.selectAll("g.cell.parent")
-            .data(parents, function(d) {
-                return "p-" + d.id;
+            .data(parents, function(d, i) {
+                return "p-" + i;
             });
     var parentEnterTransition = parentCells.enter()
             .append("g")
@@ -1179,9 +1259,9 @@ var GRANTS = (function () {
 
     // update transition
     var parentUpdateTransition = parentCells.transition().duration(transitionDuration);
-    parentUpdateTransition.select(".cell")
+    parentUpdateTransition.select(".cell.parent")
             .attr("transform", function(d) {
-                return "translate(" + d.dx + "," + d.y + ")";
+                return "translate(" + d.x + "," + d.y + ")";
             });
     parentUpdateTransition.select("rect")
             .attr("width", function(d) {
@@ -1205,8 +1285,8 @@ var GRANTS = (function () {
 
     // create children cells
     var childrenCells = treemapsvg.selectAll("g.cell.child")
-            .data(children, function(d) {
-                return "c-" + d.id;
+            .data(children, function(d, i) {
+                return "c-" + i;
             });
     // enter transition
     var childEnterTransition = childrenCells.enter()
@@ -1318,10 +1398,31 @@ var GRANTS = (function () {
           });
           d3.select(this).attr("cy", function(d) {
             return d.y += (grantValueCenters[i].focuscoords[1]) * 0.12 * bubble_force.alpha();
-          })
-        })
-    }
-    else {
+          });
+        });
+    } else if($('#arrangebubble').val() == "department") {
+      bubble
+        .each(function(d) {
+          var i = 0;
+          //there are only 8 grants that have a nested department object, it does not matter how to put these bubbles
+          //the random center at each tick allows thses bubbles to stay in between department areas they belong to
+          var dept = ($.isArray(d.Department) ? d.Department[parseInt(Math.random()*d.Department.length)] : d.Department).substring(0, 5);
+          //find matched center index
+          while(i < departmentCenters.length) {
+            if(departmentCenters[i].name.substring(0, 5) == dept)
+              break;
+            i++;
+          }
+          if(i == departmentCenters.length)
+            i--;
+          d3.select(this).attr("cx", function(d) {
+            return d.x += (departmentCenters[i].focuscoords[0]) * 0.12 * bubble_force.alpha();
+          });
+          d3.select(this).attr("cy", function(d) {
+            return d.y += (departmentCenters[i].focuscoords[1]) * 0.12 * bubble_force.alpha();
+          });
+        });
+    } else {
       bubble
         .each(function() { //moves each node towards the normal_center
           d3.select(this).attr("cx", function(d) {
@@ -1363,6 +1464,40 @@ var GRANTS = (function () {
       var newY = (centery + radius * Math.sin(angle));
       grantValueCenters.push({"amount": Math.pow(10, i), "focuscoords": [newX, newY]});
     }
+
+    //calculate department centers.
+    var science_departments;
+    if(store.session.has("science_departments")) {
+        console.log("science_departments is already in sessionStorage...no need to fetch again");
+        science_departments = store.session("science_departments");
+        buildDepartmentCenter();
+    } else {
+      console.log("fetching science_departments...");
+      $.get('/network/science_departments', function(result) {
+        science_departments = JSON.parse(result.science_departments);
+        store.session("science_departments", science_departments);
+        buildDepartmentCenter();
+      });
+    }
+
+    function buildDepartmentCenter() {
+      science_departments.forEach(function (d) {
+        departmentCenters.push({"name": d, "focuscoords": []});
+      });
+      departmentCenters.push({"name": "others", "focuscoords": []});
+
+      slice = 2 * Math.PI / departmentCenters.length;
+      radius = circleOutline[0][0].r.animVal.value;
+      centerx = circleOutline[0][0].cx.animVal.value;
+      centery = circleOutline[0][0].cy.animVal.value;
+      for(var i = 0; i < departmentCenters.length; i++) {
+        var angle = slice * i;
+        var newX = (centerx + radius * Math.cos(angle));
+        var newY = (centery + radius * Math.sin(angle));
+        departmentCenters[i].focuscoords = [newX, newY];
+      }
+    }
+    
   }
 
   function size(d) {
