@@ -373,6 +373,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	  $('#selectionArea').hide();
 
+	  $('input#scopeYear').val( $("#scopeSlider").slider("value") );
 
 	  //listen to the zoom buttons 
 	  $('#networkzoomin').click(function() {
@@ -519,7 +520,6 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      }
 	    }
 	  });	  	  
-
 
 	  $('input#freezeNodes').iCheck('uncheck');
 
@@ -1653,6 +1653,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				break;	
 			case "uniform":
 				sizeNodes("uniform");		
+				break;
 			default:
 				countLinks("publication");
 				sizeNodes("publication");
