@@ -70,7 +70,7 @@ var GRANTS = (function () {
   var bubble_force = d3.layout.force().size([svgwidth,svgheight]);      
 
   var treemap = d3.layout.treemap()
-      .round(true)
+      .round(false)
       .size([width, height])
       .mode("squarify")
       .sticky(true)
@@ -699,7 +699,7 @@ var GRANTS = (function () {
           else{
             var numChildren = this.__data__.children.length;
             var total = this.__data__.value;
-            var text = "Grant Requests: " + numChildren + "<br>Total Request Amount: $" + total;
+            var text = "<b>Department:</b> " + this.__data__.name + "<br><b>Grant Requests:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
             return text;
           }
 
@@ -1230,61 +1230,39 @@ var GRANTS = (function () {
 
 
     // create parent cells
-    var parentCells = treemapsvg.selectAll("g.cell.parent")
-            .data(parents, function(d, i) {
-                return "p-" + i;
-            });
-    var parentEnterTransition = parentCells.enter()
-            .append("g")
+    var parentCells = treemapsvg.selectAll("g.parent")
+            .data(parents)
+            .enter().append("g")
             .attr("class", "cell parent")
-            .on("click", function(d) {
-                zoom(d);
-            });
-    parentEnterTransition.append("rect")
-            .attr("width", function(d) {
-                return Math.max(0.01, d.dx - 1);
-            })
-            .attr("height", headerHeight)
+            .on("click", zoom);
+    parentCells.append("rect")
             .style("fill", headerColor);
-    parentEnterTransition.append('text')
+    parentCells.append("text")
             .attr("class", "celllabel")
-            .attr("transform", "translate(3, 13)")
-            .attr("width", function(d) {
-                return Math.max(0.01, d.dx - 1);
-            })
-            .attr("height", headerHeight)
-            .text(function(d) {
-                return d.name;
-            });
+            .attr("x", function(d) { return d.dx / 2; })
+            .attr("y", function(d) { return headerHeight / 2 + 3; })
+            .attr("text-anchor", "middle");
 
     // update transition
-    var parentUpdateTransition = parentCells.transition().duration(transitionDuration);
-    parentUpdateTransition.select(".cell.parent")
+    parentCells.transition().duration(transitionDuration)
             .attr("transform", function(d) {
                 return "translate(" + d.x + "," + d.y + ")";
-            });
-    parentUpdateTransition.select("rect")
+            })
+            .selectAll("rect")
             .attr("width", function(d) {
                 return Math.max(0.01, d.dx - 1);
             })
-            .attr("height", headerHeight)
-            .style("fill", headerColor);
-    parentUpdateTransition.select(".celllabel")
-            .attr("transform", "translate(3, 13)")
-            .attr("width", function(d) {
-                return Math.max(0.01, d.dx - 1);
-            })
-            .attr("height", headerHeight)
-            .text(function(d) {
-                return d.name;
-            });
-
-    // remove transition
-    parentCells.exit()
-            .remove();
+            .attr("height", headerHeight);
+    setTimeout(function() {
+      parentCells.selectAll('text')
+      .text(function(d) { return d.name; })
+      .style("opacity", function(d) { d.w = this.getComputedTextLength(); return d.dx > d.w ? 1 : 0; });
+    }, transitionDuration);
+            
+            
 
     // create children cells
-    var childrenCells = treemapsvg.selectAll("g.cell.child")
+    var childrenCells = treemapsvg.selectAll("g.child")
             .data(children, function(d, i) {
                 return "c-" + i;
             });
@@ -1327,7 +1305,7 @@ var GRANTS = (function () {
 
     // update transition
     var childUpdateTransition = childrenCells.transition().duration(transitionDuration);
-    childUpdateTransition.select(".cell")
+    childUpdateTransition.selectAll("g.child")
             .attr("transform", function(d) {
                 return "translate(" + d.x  + "," + d.y + ")";
             });
@@ -1369,10 +1347,10 @@ var GRANTS = (function () {
             });*/
 
           // exit transition
-          childrenCells.exit()
-                  .remove();
+       //   childrenCells.exit()
+        //          .remove();
 
-          zoom(node);
+//          zoom(node);
 
     //top20 = topSponsors(20, grant_sponsors);
           
