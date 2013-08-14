@@ -1070,7 +1070,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		    [  
 		      function(callback){
 		        d3.selectAll("line.link").each( function () {
-		          if (this.__data__.type != "cosup" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
+		          if (this.__data__.type != "supervision" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
 		            d3.select(this).style("visibility", "visible");        
 		            d3.select(this).transition().duration(1000).style("opacity", 1);
 		          }
@@ -1189,7 +1189,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		    [  
 		      function(callback){
 		        d3.selectAll("line.link").each( function () {
-		          if (this.__data__.type == "cosup" && d3.select(this).attr("animViz") == "true") {
+		          if (this.__data__.type == "supervision" && d3.select(this).attr("animViz") == "true") {
 		            d3.select(this).style("visibility", "visible");        
 		            d3.select(this).transition().duration(1000).style("opacity", 1);
 		          }
@@ -1235,7 +1235,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		  );       
 	  } else if($('#granularity').val() == "departmentsChord") {
 	  	d3.selectAll("path.chord").each(function(d) {
-	  		if(d.type == "cosup" && this.style.opacity == 0) {
+	  		if(d.type == "supervision" && this.style.opacity == 0) {
 	  			d3.select(this).style("visibility", "visible").style("opacity", 0);
 	  			d3.select(this).transition().duration(1500).style("opacity", 0.8);
 	  		}
@@ -1248,7 +1248,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		    [
 		      function(callback){
 		        d3.selectAll("line.link").each( function () {
-		          if (this.__data__.type == "cosup") {
+		          if (this.__data__.type == "supervision") {
 		            d3.select(this).transition().duration(1000).style("opacity", 0);
 		            d3.select(this).transition().delay(1000).style("visibility", "hidden");
 		          }
@@ -1292,7 +1292,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		  ); 
 	  } else if($('#granularity').val() == "departmentsChord") {
 	  	d3.selectAll("path.chord").each(function(d) {
-	  		if(d.type == "cosup" && this.style.opacity == 0.8) {
+	  		if(d.type == "supervision" && this.style.opacity == 0.8) {
 	  			d3.select(this).transition().delay(1500).style("visibility", "hidden");
 	  			d3.select(this).transition().duration(1500).style("opacity", 0);
 	  		}
@@ -3424,11 +3424,11 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			})
 			chordMatrix[source][target]++;
 			chordMatrix[target][source]++;
-			if(link.type == "cosup")
+			if(link.type == "supervision")
 				chordDetailsMatrix[source][target].sup++, chordDetailsMatrix[target][source].sup++;
 			else if(link.type == "grant")
 				chordDetailsMatrix[source][target].grant++, chordDetailsMatrix[target][source].grant++;
-			else
+			else //publication
 				chordDetailsMatrix[source][target].pub++, chordDetailsMatrix[target][source].pub++;
 		})
 
