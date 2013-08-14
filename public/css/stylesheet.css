@@ -418,7 +418,7 @@ for matrix
 
 
 .matrixbackground {
-  fill: #eee;
+  fill: #fff;
 }
 
 .nodeTooltip {   
@@ -565,7 +565,7 @@ for matrix
 }
 
 #matrixviz line {
-  stroke: #fff;
+  stroke: #fbfbfb;
 }
 
 #matrixviz text {
