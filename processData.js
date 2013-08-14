@@ -461,8 +461,8 @@ function processData (res, results) {
 							console.log("constructing the links for co-supervision...");
 							_.each(cosupervisions, function(element) {
 								//need both arrays since one is dependent on the other while it is changing (needs to stay consistent)								
-								links_cosupervisions.push({"source":element[0].SupervisorName, "target":element[1].SupervisorName, "value":1, "type":"cosup"});
-								links_cosupervisions_converted.push({"source":element[0].SupervisorName, "target":element[1].SupervisorName, "value":1, "type":"cosup"});
+								links_cosupervisions.push({"source":element[0].SupervisorName, "target":element[1].SupervisorName, "value":1, "type":"supervision"});
+								links_cosupervisions_converted.push({"source":element[0].SupervisorName, "target":element[1].SupervisorName, "value":1, "type":"supervision"});
 							});
 
 		 				// 	var sorted = _.sortBy(supervisor_data, function(d) { return d.StudentName; } );
@@ -488,16 +488,6 @@ function processData (res, results) {
 						links are for both co-supervisions and co-publications
 						*/
 	 					function(callback){
-	 						//console.log("constructing the links for co-supervision...");
-							//construct the links for the co-supervision data
-							// links_cosupervisions = [];
-							// links_cosupervisions_converted = [];
-							// _.each(co_supervision, function(element){
-							// 	var source = element[0];
-							// 	var target = element[1];
-							// 	links_cosupervisions.push({"source":source, "target":target, "value":1, "type":"cosup"});
-							// 	links_cosupervisions_converted.push({"source":source, "target":target, "value":1, "type":"cosup"});
-							// });
 
 							console.log("constructing the links for co-publications for science...");
 							//construct the "links" array to be used in the networkviz.
@@ -506,7 +496,7 @@ function processData (res, results) {
 							    authors2 = publications_science[row_num2].Authors;
 							    autharr2 = authors2.split("; ");
 							    pubyear = parseInt(publications_science[row_num2].Year);
-							    var type = publications_science[row_num2].Type;
+							    var pubtype = publications_science[row_num2].Type;
 							    var title = publications_science[row_num2].Title;
 							    var outlet = publications_science[row_num2].SourceTitle;
 							    var citations = publications_science[row_num2].CitationCount;
@@ -525,7 +515,7 @@ function processData (res, results) {
 							          ////check for duplicates////
 							          //var instances = 0;
 							          //check if already exists...instances += numDuplicates;
-							          links_science.push({"source":source, "target":target, "value":0, "year":pubyear, "type":type, "title":title, "outlet":outlet, "citations":citations, "URL":url, "from":datafrom});
+							          links_science.push({"source":source, "target":target, "value":0, "year":pubyear, "type":"publication", "pubtype":pubtype, "title":title, "outlet":outlet, "citations":citations, "URL":url, "from":datafrom});
 
 							          counter += 1;
 							        } while ((target != autharr2[autharr2.length-1].substring(0, autharr2[author_num2].indexOf(' ') + 2)) && ((counter + author_num2) < autharr2.length)); //while target is not the last element and we don't go out of bounds
@@ -548,7 +538,7 @@ function processData (res, results) {
 							    authors2 = publications_western[row_num2].Authors;
 							    autharr2 = authors2.split("; ");
 							    pubyear = parseInt(publications_western[row_num2].Year);
-							    var type = publications_western[row_num2].Type;
+							    var pubtype = publications_western[row_num2].Type;
 							    var title = publications_western[row_num2].Title;
 							    var outlet = publications_western[row_num2].SourceTitle;
 							    var citations = publications_western[row_num2].CitationCount;
@@ -567,7 +557,7 @@ function processData (res, results) {
 							          ////check for duplicates////
 							          //var instances = 0;
 							          //check if already exists...instances += numDuplicates;
-							          links_western.push({"source":source, "target":target, "value":0, "year":pubyear, "type":type, "title":title, "outlet":outlet, "citations":citations, "URL":url, "from":datafrom});
+							          links_western.push({"source":source, "target":target, "value":0, "year":pubyear, "type":"publication", "pubtype":pubtype, "title":title, "outlet":outlet, "citations":citations, "URL":url, "from":datafrom});
 
 							          counter += 1;
 							        } while ((target != autharr2[autharr2.length-1].substring(0, autharr2[author_num2].indexOf(' ') + 2)) && ((counter + author_num2) < autharr2.length)); //while target is not the last element and we don't go out of bounds
@@ -655,8 +645,8 @@ function processData (res, results) {
 
 									  		//remove duplicates
 									  		//provide an iterator function that specifies the criteria for comparison
-									  		links_science_exclusive = _.uniq(links_science_exclusive, false, function(x){ return (x.source + x.target + x.year + x.type + x.title + x.outlet); });
-									  		links_western_exclusive = _.uniq(links_western_exclusive, false, function(x){ return (x.source + x.target + x.year + x.type + x.title + x.outlet); });
+									  		links_science_exclusive = _.uniq(links_science_exclusive, false, function(x){ return (x.source + x.target + x.year + x.pubtype + x.title + x.outlet); });
+									  		links_western_exclusive = _.uniq(links_western_exclusive, false, function(x){ return (x.source + x.target + x.year + x.pubtype + x.title + x.outlet); });
 
 									  		links_for_network = _.filter(links_science, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
 									  		links_cosupervisions_converted = _.filter(links_cosupervisions_converted, function(n) { return _.isNumber(n.source) && _.isNumber(n.target); });
