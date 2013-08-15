@@ -159,7 +159,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	//$('#networkviz').annotator();
 
 	var cloningWidth = 280;
-	var cloningHeight = 280;
+	var cloningHeight = 250;
 
 	//zoom behavior
 	var cloningZoom = d3.behavior.zoom()
@@ -413,15 +413,15 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      }); 
 	      if (match == false){
 	        //make the node invisible
-	        d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
-	        d3.select(this).transition().delay(300).style("visibility", "hidden");
+	        d3.select(this).transition().duration(1500).style("opacity", 0);//.attr("r", 0);
+	        d3.select(this).transition().delay(1500).style("visibility", "hidden");
 	      }
 	      else {
 	        //if the current node is currently hidden
 	        if (this.style.visibility == "hidden"){
 	          //set it to visible, but with an opacity of 0 so that it can be gradually faded in
 	          d3.select(this).style("visibility", "visible").style("opacity", 0);
-	          d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+	          d3.select(this).transition().duration(1500).style("opacity", 1);//.attr("r", 10);
 	        }
 	      }
 	    });
@@ -629,7 +629,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  clearInterval(int1);
 	  //override the current transitions with new ones to stop the current transitions
 	  d3.selectAll("line.link").style("visibility", "visible").style("opacity", 0).attr("animViz", "true");
-	  d3.selectAll("circle.node").style("visibility", "visible").attr("r", 10);
+	  d3.selectAll("circle.node").style("visibility", "visible");//.attr("r", 10);
 
 	  $('#animateYearPlaceholder').show('slow');
 	  function animatePerYear(){
@@ -643,7 +643,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	          $('#animateYearPlaceholder').text(currentYear);
 	          var t = d3.selectAll("line.link").each(function(){
 	          	//co-supervision links do not have "year" attributes, change their visibility according to filter
-	          	if(this.__data__.type == "supervision") {
+	          	if(this.__data__.type == "supervision" || this.__data__.type == "grant") {
 	          		if($('input#filterCo_sups').is(':checked')) {
 	          			d3.select(this).attr("animViz", "true");
 	          			if(currentYear == animatebegin) {
@@ -690,13 +690,12 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		            		d3.select(this).attr("animViz", "true");
 		            		if(this.style.visibility == "hidden") {
 		            			if(currentYear == animatebegin) {
-		            				console.log("ha");
 			            			d3.select(this).style("visibility", "visible");
-			                		d3.select(this).style("opacity", 1).style("stroke", "black");
+			                		d3.select(this).style("opacity", 1).style("stroke", "gray");
 			            		}
 			            		else {
 			            			d3.select(this).style("visibility", "visible");
-			                		d3.select(this).transition().duration(2000).style("opacity", 1).style("stroke", "black");
+			                		d3.select(this).transition().duration(2000).style("opacity", 1).style("stroke", "gray");
 			            		}
 		            		}
 		            	}
@@ -719,12 +718,12 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	            if (match == false){
 	              //make the node invisible
 	              if(currentYear == animatebegin) {
-	              	d3.select(this).style("opacity", 0).attr("r", 0);
+	              	d3.select(this).style("opacity", 0);//.attr("r", 0);
 	                d3.select(this).style("visibility", "hidden");
 	              }
 	              else {
 	              	//d3.select(this).style("stroke", "#e6e6e6");
-	                d3.select(this).transition().duration(2500).style("opacity", 0).attr("r", 0);
+	                d3.select(this).transition().duration(2500).style("opacity", 0);//.attr("r", 0);
 	                d3.select(this).transition().delay(2500).style("visibility", "hidden");
 	              }
 	            }
@@ -734,10 +733,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
 	                if(currentYear == animatebegin) {
 	                	d3.select(this).style("visibility", "visible").style("opacity", 0);
-	                	d3.select(this).style("opacity", 1).attr("r", 10);
+	                	d3.select(this).style("opacity", 1);//.attr("r", 10);
 	                }
 	                d3.select(this).style("visibility", "visible").style("opacity", 0);
-	                d3.select(this).transition().duration(1000).style("opacity", 1).attr("r", 10);
+	                d3.select(this).transition().duration(1000).style("opacity", 1);//.attr("r", 10);
 	              }
 	            }
 	          });
@@ -762,7 +761,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    );
 	  }
 	  animatePerYear();
-	  int1 = setInterval(animatePerYear, 3000);
+	  int1 = setInterval(animatePerYear, 4000);
 	});
 
 	$('#animateReset').click(function() {
@@ -783,7 +782,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			  	else
 			  		return "hidden";
 		  	});
-		d3.selectAll("circle.node").transition().duration(0).delay(0).style("opacity", 1).style("visibility", "visible").attr("r", 10);
+		d3.selectAll("circle.node").transition().duration(0).delay(0).style("opacity", 1).style("visibility", "visible");//.attr("r", 10);
 		$('#animateYearPlaceholder').hide('slow');
 	});
 
@@ -946,7 +945,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			.enter().append('svg:line')
 			.attr('class', 'link')
 			.style("visibility", "visible")
-		    .style("stroke", "black")
+		    .style("stroke", "gray")
 		    .style("stroke-dasharray", function (d) {
 		      if (d.type == "supervision")
 		        return "4, 4";
@@ -970,8 +969,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			.links(links)
 			//.gravity(dgravity)
 			.friction(dfriction)
-			//.charge(dcharge)
-			.linkDistance(30)
+			.charge(dcharge)
+			.linkDistance(40)
 
 	    function cloningAreaTick() {
 	    	cloningLink.attr("x1", function(d) { return d.source.x; })
@@ -1093,7 +1092,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		            }); 
 		            if (match == false){
 		              //make the node invisible
-		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().duration(300).style("opacity", 0);//.attr("r", 0);a
 		              d3.select(this).transition().delay(300).style("visibility", "hidden");
 		            }
 		            else {
@@ -1101,7 +1100,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		              if (this.style.visibility == "hidden"){
 		                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
 		                d3.select(this).style("visibility", "visible").style("opacity", 0);
-		                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+		                d3.select(this).transition().duration(1500).style("opacity", 1);//.attr("r", 10);
 		              }
 		            }
 		          });
@@ -1153,7 +1152,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		            }); 
 		            if (match == false){
 		              //make the node invisible
-		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().duration(300).style("opacity", 0);//.attr("r", 0);
 		              d3.select(this).transition().delay(300).style("visibility", "hidden");
 		              
 		            }
@@ -1212,7 +1211,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		            }); 
 		            if (match == false){
 		              //make the node invisible
-		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().duration(300).style("opacity", 0);//.attr("r", 0);
 		              d3.select(this).transition().delay(300).style("visibility", "hidden");
 		            }
 		            else {
@@ -1220,7 +1219,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		              if (this.style.visibility == "hidden"){
 		                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
 		                d3.select(this).style("visibility", "visible").style("opacity", 0);
-		                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+		                d3.select(this).transition().duration(1500).style("opacity", 1);//.attr("r", 10);
 		              }
 		            }
 		          });
@@ -1271,7 +1270,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		            }); 
 		            if (match == false){
 		              //make the node invisible
-		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().duration(300).style("opacity", 0);//.attr("r", 0);
 		              d3.select(this).transition().delay(300).style("visibility", "hidden");
 		              
 		            }
@@ -1329,7 +1328,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		            }); 
 		            if (match == false){
 		              //make the node invisible
-		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().duration(300).style("opacity", 0);//.attr("r", 0);
 		              d3.select(this).transition().delay(300).style("visibility", "hidden");
 		            }
 		            else {
@@ -1337,7 +1336,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		              if (this.style.visibility == "hidden"){
 		                //set it to visible, but with an opacity of 0 so that it can be gradually faded in
 		                d3.select(this).style("visibility", "visible").style("opacity", 0);
-		                d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+		                d3.select(this).transition().duration(1500).style("opacity", 1);//.attr("r", 10);
 		              }
 		            }
 		          });
@@ -1388,7 +1387,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		            }); 
 		            if (match == false){
 		              //make the node invisible
-		              d3.select(this).transition().duration(300).style("opacity", 0).attr("r", 0);
+		              d3.select(this).transition().duration(300).style("opacity", 0);//.attr("r", 0);
 		              d3.select(this).transition().delay(300).style("visibility", "hidden");
 		              
 		            }
@@ -1423,7 +1422,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      if (this.style.visibility == "hidden"){
 	        //set it to visible, but with an opacity of 0 so that it can be gradually faded in
 	        d3.select(this).style("visibility", "visible").style("opacity", 0);
-	        d3.select(this).transition().duration(1500).style("opacity", 1).attr("r", 10);
+	        d3.select(this).transition().duration(1500).style("opacity", 1);//.attr("r", 10);
 	      }
 	   });
 	  network_force.start();      
@@ -1438,7 +1437,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	         }
 	      }); 
 	      if (match == false){
-	        d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0);
+	        d3.select(this).transition().duration(1000).style("opacity", 0);//.attr("r", 0);
 	        d3.select(this).transition().delay(1000).style("visibility", "hidden");
 	        
 	      }
