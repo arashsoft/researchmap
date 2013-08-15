@@ -1035,6 +1035,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    cloning_network_force.start();
     }) //end of selectionClone click
 
+	$('input#motionFreeze').on('ifUnchecked', function() {
+		network_force.resume();
+	})
+
 	/*
 	filters (hides) all nodes that do not have links connected to them
 
@@ -2347,6 +2351,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		    .style("fill", function(d){ return color20(d.Department); })
 		    .call(node_drag);
 
+		countCollaborationsOfNodes();
+
 		node.on("mouseover", function(d) {
 		  	d3.select(this).attr("cursor", "pointer");
 		  	if(!d3.select(this).classed("selected"))
@@ -2513,11 +2519,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  // var currentwidth = networksvg.width = $('#networkviz').width();
 	  // d3.select("#networkviz").attr("width", currentwidth).attr("height", currentheight); //not updating the actual svg element
 
-
-	  	if($('input#motionFreeze').is(':checked')) {
-	  		console.log("uyp");
-			network_force.stop();	
-		}
+	  if($('input#motionFreeze').is(':checked')) {
+		network_force.stop();
+		return ;
+	  }
 
 		if($('input#gatheringMode').is(':checked')) {
 			var svgx = networkzoom.translate()[0];
@@ -3814,5 +3819,26 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					});
 				return _.filter(links_grants, function(grant) { return (typeof grant.source == "number" && typeof grant.target == "number"); });
 	}//end constructGrantsLinks	
+
+	/*
+	count publications, supervisions and grants of every nodes. Then add the numbers to the node attributes.
+	@params:
+	@returns:
+	*/
+	function countCollaborationsOfNodes() {
+		node = d3.selectAll("circle.node");
+		d3.selectAll("line.link").each(function(d) {
+			if(d.type == "publication") {
+				node[0][d.source].attributes[3].value++;
+				node[0][d.target].attributes[3].value++;
+			} else if(d.type == "supervision") {
+				node[0][d.source].attributes[4].value++;
+				node[0][d.target].attributes[4].value++;
+			} else { //grant
+				node[0][d.source].attributes[5].value++;
+				node[0][d.target].attributes[5].value++;
+			}
+		});
+	}
 
 }());
