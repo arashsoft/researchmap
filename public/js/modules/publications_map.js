@@ -3255,19 +3255,33 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			d3.select(label)
 				.style("background-color", "rgb(36,137,197)")
 				.style("color", "white");
-			d3.selectAll(".matrixrow").each(function() {
-				d3.select(this).selectAll("rect.matrixcell").attr("previousopacity", function() { return this.style.opacity; });					
-				if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
-					d3.select(this).selectAll("rect.matrixcell").style("opacity", function() { return "0.05"; });
-					d3.select(this).selectAll("text").style("opacity", "0.05");
-					d3.select(this).selectAll("rect.matrixcell").attr("currentlyfiltered", 1); //specify that each of these cells is currently filtered
-				}
-				// else {
-				// 	//d3.select(this).selectAll("rect.matrixcell").style("opacity", "1");
-				// 	d3.select(this).selectAll("text").style("opacity", "1");
-				// }
-			});
+			//if the label is not selected
+			if (!_.contains(selectedDepartments, d)){
+				d3.selectAll(".matrixrow").each(function() {
+					if (selectedDepartments.length == 0) {
+						d3.select(this).selectAll("rect.matrixcell").attr("previousopacity", function() { return this.style.opacity; });	
+					}				
+					if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+						d3.select(this).selectAll("rect.matrixcell").style("opacity", function() { return "0.05"; });
+						d3.select(this).selectAll("text").style("opacity", "0.05");
+						d3.select(this).selectAll("rect.matrixcell").attr("currentlyfiltered", 1); //specify that each of these cells is currently filtered
+					}
+					else {
+						d3.select(this).selectAll("rect.matrixcell").style("opacity", function() { return this.attributes.previousopacity.value; });
+						// 	d3.select(this).selectAll("text").style("opacity", "1");
+					 }
+				});
+			}
+			//for the text
 			d3.selectAll(".matrixcolumn").each(function() {
+				if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+					d3.select(this).selectAll("text").style("opacity", "0.05");
+				}
+				else {
+					d3.select(this).selectAll("text").style("opacity", "1");
+				}
+			});
+			d3.selectAll(".matrixrow").each(function() {
 				if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
 					d3.select(this).selectAll("text").style("opacity", "0.05");
 				}
@@ -3285,12 +3299,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 				//if no departments are currently selected
 				if( _.isEmpty(selectedDepartments)){
-					d3.selectAll("rect.matrixcell").each(function() {
-						if (this.attributes.previousopacity.value != 1)
-							d3.select(this).style("opacity", function() { 
-								return this.attributes.previousopacity.value; });
-						else
-							d3.select(this).style("opacity", "1");
+					//restore previous opacity values of all cells
+					d3.selectAll('rect.matrixcell').each(function() {
+						d3.select(this).style("opacity", function() { return this.attributes.previousopacity.value; });
 					});
 					d3.selectAll("text").style("opacity", "1");
 					d3.selectAll(".matrixcell").attr("currentlyfiltered", 0); //they are not filtered anymore
@@ -3323,8 +3334,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					});
 				}
 			}
-	    });
-/*
+	    })
 	    .on("click", function(d) {
 	    	var label = this;
 			//if currently selected, "unselect" it
@@ -3332,14 +3342,6 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				selectedDepartments = _.without(selectedDepartments, d);
 				d3.select(label)
 				 	.style("border-color", "rgba(255,255,255,0)");
-
-				//if no other departments are selected
-				if (selectedDepartments.length == 0) {
-					//restore previous opacity values of all cells
-					d3.selectAll('rect.matrixcell').each(function() {
-						d3.select(this).style("opacity", function() { return this.attributes.previousopacity.value; });
-					});
-				}
 			}
 			//if not currently selected, "select" it
 			else {
@@ -3348,30 +3350,32 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					.style("background-color", "rgb(36,137,197)")
 					.style("color", "white")
 					.style("border-color", "rgba(255,255,255,1)");
-				d3.selectAll(".matrixrow").each(function() {
-					if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
-						d3.select(this).selectAll("rect.matrixcell").style("opacity", "0.05");
-						d3.select(this).selectAll("text").style("opacity", "0.05");
-					}
-					else {
-						d3.select(this).selectAll("rect.matrixcell").each(function() { 
-							d3.select(this).style("opacity", function() { 
-								return this.attributes.previousopacity.value; 
-							});
-						});
-						d3.select(this).selectAll("text").style("opacity", "1");
-					}
-				});
-				d3.selectAll(".matrixcolumn").each(function() {
-					if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
-						d3.select(this).selectAll("text").style("opacity", "0.05");
-					}
-					else {
-						d3.select(this).selectAll("text").style("opacity", "1");
-					}
-				});
-			}
-	    });*/
+				}
+			// 	d3.selectAll(".matrixrow").each(function() {
+			// 		if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+			// 			d3.select(this).selectAll("rect.matrixcell").attr("previousopacity", function() { return this.style.opacity; });											
+			// 			d3.select(this).selectAll("rect.matrixcell").style("opacity", "0.05");
+			// 			d3.select(this).selectAll("text").style("opacity", "0.05");
+			// 		}
+			// 		else {
+			// 			d3.select(this).selectAll("rect.matrixcell").each(function() { 
+			// 				d3.select(this).style("opacity", function() { 
+			// 					return this.attributes.previousopacity.value; 
+			// 				});
+			// 			});
+			// 			d3.select(this).selectAll("text").style("opacity", "1");
+			// 		}
+			// 	});
+			// 	d3.selectAll(".matrixcolumn").each(function() {
+			// 		if (nodes[this.id.substring(4)].Department != d && !_.contains(selectedDepartments, nodes[this.id.substring(4)].Department)) {
+			// 			d3.select(this).selectAll("text").style("opacity", "0.05");
+			// 		}
+			// 		else {
+			// 			d3.select(this).selectAll("text").style("opacity", "1");
+			// 		}
+			// 	});
+			// }
+	    });
 	}
 
 	function constructChord() {
