@@ -1258,15 +1258,17 @@ var GRANTS = (function () {
             .data(parents)
             .enter().append("g")
             .attr("class", "cell parent")
-            .on("click", zoom);
+            .on("click", function(d) {
+              zoom(node === d ? root : d);
+            });
     parentCells.append("rect")
             .classed("background", true)
             .style("fill", headerColor);
     parentCells.append("text")
             .attr("class", "celllabel")
             .attr("x", function(d) { return d.dx / 2; })
-            .attr("y", function(d) { return headerHeight / 2 + 1; })
-            .attr("dy", ".35em")
+            .attr("y", function(d) { return headerHeight / 2 + 3; })
+            //.attr("dy", function(d) { return headerHeight; })
             .attr("text-anchor", "middle")
             .text(function(d) { return d.name; })
             .style("opacity", 0);
@@ -1281,7 +1283,7 @@ var GRANTS = (function () {
                 return Math.max(0.01, d.dx - 1);
             })
             .attr("height", headerHeight);
-    parentCells.transition().delay(transitionDuration)
+    parentCells//.transition().delay(transitionDuration)
             .selectAll('text')
             .style("opacity", function(d) {
               d.w = this.getComputedTextLength();
@@ -1294,7 +1296,6 @@ var GRANTS = (function () {
             .enter().append("g")
             .attr("class", "cell child")
             .on("click", function(d) {
-              console.log(node);
                 zoom(node === d.parent ? root : d.parent);
             });
     childCells.append("rect")
@@ -1308,7 +1309,7 @@ var GRANTS = (function () {
             .attr("class", "celllabel")
             .attr('x', function(d) { return d.dx / 2; })
             .attr('y', function(d) { return d.dy / 2; })
-            .attr("dy", ".35em")
+            //.attr("dy", ".35em")
             .attr("text-anchor", "middle")
             .style("opacity", 0)
             .text(function(d) {
@@ -1509,13 +1510,13 @@ var GRANTS = (function () {
 
 
   function zoom(d) {
-    treemap
-            .padding([headerHeight/(h/d.dy), 0, 0, 0])
-            .nodes(d);
+    // treemap
+    //         .padding([headerHeight/(height/d.dy), 0, 0, 0])
+    //         .nodes(d);
 
     // moving the next two lines above treemap layout messes up padding of zoom result
-    var kx = w  / d.dx;
-    var ky = h / d.dy;
+    var kx = width  / d.dx;
+    var ky = height / d.dy;
     var level = d;
 
     xscale.domain([d.x, d.x + d.dx]);
@@ -1528,9 +1529,9 @@ var GRANTS = (function () {
     var zoomTransition = treemapsvg.selectAll("g.cell").transition().duration(transitionDuration)
             .attr("transform", function(d) {
                 return "translate(" + xscale(d.x) + "," + yscale(d.y) + ")";
-            })
+            })/*
             .each("start", function() {
-                d3.select(this).select("celllabel")
+                d3.select(this).select(".celllabel")
                         .style("display", "none");
             })
             .each("end", function(d, i) {
@@ -1545,29 +1546,23 @@ var GRANTS = (function () {
                             return idealTextColor(color(d.parent.name));
                         });
                 }
-            });
-
-    zoomTransition.select(".celllabel")
+            });*/
+/*
+    zoomTransition.selectAll(".celllabel")
             .attr("width", function(d) {
                 return Math.max(0.01, (kx * d.dx - 1));
             })
             .attr("height", function(d) {
-                return d.children ? headerHeight: Math.max(0.01, (ky * d.dy - 1));
-            })
-            .text(function(d) {
-              if (d.children != undefined)//if it is not a leaf node
-                return d.name;
-              else  //if it is a leaf node
-                return ;//d.Sponsor;
+                return d.children ? (ky * headerHeight) : Math.max(0.01, (ky * d.dy - 1));
             });
-
+/*
     zoomTransition.select(".child .celllabel")
             .attr("x", function(d) {
                 return kx * d.dx / 2;
             })
             .attr("y", function(d) {
                 return ky * d.dy / 2;
-            });
+            });*/
 
     // update the width/height of the rects
     zoomTransition.select("rect")
@@ -1575,17 +1570,7 @@ var GRANTS = (function () {
                 return Math.max(0.01, (kx * d.dx - 1));
             })
             .attr("height", function(d) {
-                return d.children ? headerHeight : Math.max(0.01, (ky * d.dy - 1));
-            })
-            .style("fill", function(d) {
-              if (d.children != undefined)
-                return headerColor;
-              else { 
-                if(_.contains(top20, d.Sponsor))
-                  return colorTreemap(d.Sponsor);
-                else
-                  return "#f9f9f9";
-              }
+                return d.children ? (ky * headerHeight) : Math.max(0.01, (ky * d.dy - 1));
             });
 
     node = d;
