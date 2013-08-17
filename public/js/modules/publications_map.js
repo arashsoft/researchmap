@@ -1894,20 +1894,34 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	$('input#matrixFilterCo_pubs').on("ifChecked", function() {
 		d3.selectAll("rect.matrixcell").each(function(d) {
 			if(d.copub > 0) {
-				d3.select(this).style("visibility", "visible");
-				//if copubs and not supervisions and not grants
+				if (this.attributes.currentlyfiltered == null || this.attributes.currentlyfiltered.value == 0)
+					d3.select(this).style("visibility", "visible"); //only make it visible if it is not currently filtered
+				
+				// //if not publications and supervisions and not grants
+				// if ((d.copub == 0) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
+				// 	d3.select(this).style("fill", "#D5E067")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });
+				// //if not publications and not supervisions and grants
+				// else if ((d.copub == 0) && (d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false))
+				// 	d3.select(this).style("fill", "#79DEC0")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });
+				// //if not publictaions and supervisions and grants
+				// else if ((d.copub == 0) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
+				// 	d3.select(this).style("fill", "#A0E191")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_cosup + max_grant]); return matrix_z(d.cosup + d.grant); });
+				//if publications and not supervisions and not grants
 				if ((d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
 					d3.select(this).style("fill", "#E1B2D7")
 									.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });
-				//if copubs and not supervisions and grants
+				//if publications and not supervisions and grants
 				else if ((d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
 					d3.select(this).style("fill", "#F0A487")
 									.style("opacity", function(d) { matrix_z.domain([0,max_copub + max_grant]); return matrix_z(d.copub + d.grant); });													
-				//if copubs and supervisions and not grants
+				//if publications and supervisions and not grants
 				else if ((d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
 					d3.select(this).style("fill", "#9BD0E3")
 									.style("opacity", function(d) { matrix_z.domain([0,max_copub + max_cosup]); return matrix_z(d.copub + d.cosup); });
-				//if copubs and supervisions and grants
+				//if publications and supervisions and grants
 				else if ((d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')) && (d.grant > 0 && $('input#matrixFilterCo_grants').is(':checked')))
 					d3.select(this).style("fill", "#DCBE6B")
 									.style("opacity", function(d) { matrix_z.domain([0,max_copub + max_grant + max_cosup]); return matrix_z(d.copub + d.cosup + d.grant); });					
@@ -1933,6 +1947,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				//if not supervisions and not grants
 				else
 					d3.select(this).style("visibility", "hidden");
+
+				//if the cell is currently filtered, set it to be hidden
+				if (this.attributes.currentlyfiltered.value)
+					d3.select(this).style("visibility", "hidden"); 				
 			}
 		});
 	});
@@ -1940,7 +1958,21 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	$('input#matrixFilterCo_sups').on("ifChecked", function() {
 		d3.selectAll("rect.matrixcell").each(function(d) {
 			if(d.cosup > 0) {
-				d3.select(this).style("visibility", "visible");
+				if (this.attributes.currentlyfiltered == null || this.attributes.currentlyfiltered.value == 0)
+					d3.select(this).style("visibility", "visible"); //only make it visible if it is not currently filtered				//if supervisions and not publications and not grants
+				
+				//if not supervisions and publications and not grants
+				// if ((d.grant == 0) && (d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false))
+				// 	d3.select(this).style("fill", "#E1B2D7")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });
+				// //if not supervisions and not publications and grants
+				// else if ((d.copub == 0) && (d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false))
+				// 	d3.select(this).style("fill", "#79DEC0")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });
+				// //if not supervisions and publications and grants				
+				// else if ((d.copub > 0) && (d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false))
+				// 	d3.select(this).style("fill", "#F0A487")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_copub + max_grant]); return matrix_z(d.copub + d.grant); });
 				//if supervisions and not publications and not grants
 				if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')==false) && (d.grant == 0 || $('input#matrixFilterCo_grants').is(':checked')==false))
 					d3.select(this).style("fill", "#D5E067")
@@ -1979,6 +2011,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				//if not publications and not grants
 				else
 					d3.select(this).style("visibility", "hidden");
+
+				//if the cell is currently filtered, set it to be hidden
+				if (this.attributes.currentlyfiltered.value)
+					d3.select(this).style("visibility", "hidden"); 						
 			}
 		});
 	});
@@ -1986,13 +2022,27 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	$('input#matrixFilterCo_grants').on("ifChecked", function() {
 		d3.selectAll("rect.matrixcell").each(function(d) {
 			if(d.grant > 0) {
-				d3.select(this).style("visibility", "visible");
+				if (this.attributes.currentlyfiltered == null || this.attributes.currentlyfiltered.value == 0)
+					d3.select(this).style("visibility", "visible"); //only make it visible if it is not currently filtered				//if grants and not publications and not supervisions
+				
+				//if not grants and not publications and supervisions
+				// if ((d.grant == 0) && (d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')==false) && (d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')))
+				// 	d3.select(this).style("fill", "#D5E067")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });
+				// //if not grants and publications and not supervisions
+				// else if ((d.grant == 0) && (d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false))
+				// 	d3.select(this).style("fill", "#E1B2D7")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });
+				// //if not grants and publications and supervisions
+				// else if ((d.grant == 0) && (d.copub > 0 && $('input#matrixFilterCo_pubs').is(':checked')) && (d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')))
+				// 	d3.select(this).style("fill", "#9BD0E3")
+				// 					.style("opacity", function(d) { matrix_z.domain([0,max_copub + max_cosup]); return matrix_z(d.copub + d.cosup); });
 				//if grants and not publications and not supervisions
 				if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')==false) && (d.cosup == 0 || $('input#matrixFilterCo_sups').is(':checked')==false))
 					d3.select(this).style("fill", "#79DEC0")
 									.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });
 				//if grants and not publications and supervisions
-				else if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')) && (d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')))
+				else if ((d.copub == 0 || $('input#matrixFilterCo_pubs').is(':checked')==false) && (d.cosup > 0 && $('input#matrixFilterCo_sups').is(':checked')))
 					d3.select(this).style("fill", "#A0E191")
 									.style("opacity", function(d) { matrix_z.domain([0,max_cosup + max_grant]); return matrix_z(d.cosup + d.grant); });													
 				//if grants and publications and not supervisions
@@ -2025,6 +2075,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				//if not publications and not supervisions
 				else
 					d3.select(this).style("visibility", "hidden");
+
+				//if the cell is currently filtered, set it to be hidden
+				if (this.attributes.currentlyfiltered.value)
+					d3.select(this).style("visibility", "hidden"); 						
 			}
 		});
 	});
@@ -3268,7 +3322,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}
 					else {
 						d3.select(this).selectAll("rect.matrixcell").style("opacity", function() { return this.attributes.previousopacity.value; });
-						// 	d3.select(this).selectAll("text").style("opacity", "1");
+						d3.select(this).selectAll("rect.matrixcell").attr("currentlyfiltered", 0); //specify that each of these cells is currently filtered						
+						d3.select(this).selectAll("rect.matrixcell").style("visibility", "visible");
 					 }
 				});
 			}
