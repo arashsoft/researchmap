@@ -291,36 +291,42 @@
       <div id="matrixactions">
         <h3>arrange</h3><hr>
         <div class="action">
-          <select id="order" data-placeholder="Arrange matrix according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
-            <option value=""></option>
-            <option value="name" selected>by Name</option>
-            <option value="count">by Count</option>
-            <option value="department">by Department</option>
+          <p>according to</p>           
+          <select id="order" class="chzn-select" style="width:75%;"> 
+            <option value="name" selected>name</option>
+            <option value="count">count</option>
+            <option value="department">department</option>
           </select><br>
-            <!--                <select id="order">
-            <option value="name" selected>by Name</option>
-            <option value="count">by Count</option>
-            <option value="department">by Department</option>
-          </select>  <br>    -->
         </div> 
 
         <h3>filter</h3><hr>
         <div class="action">
+          <p>by collaboration type</p>    
           <ul class="actionlist"> 
             <li>
               <input type="checkbox" checked id="matrixFilterCo_pubs"></input> 
-              <label for="matrixFilterCo_pubs">co-publications</label>
+              <label for="matrixFilterCo_pubs">publications</label>
             </li>
             <li>
               <input type="checkbox" checked id="matrixFilterCo_sups"></input> 
-              <label for="matrixFilterCo_sups">co-supervisions</label>
+              <label for="matrixFilterCo_sups">supervisions</label>
             </li>     
             <li>
               <input type="checkbox" checked id="matrixFilterCo_grants"></input> 
-              <label for="matrixFilterCo_grants">co-grants</label>
+              <label for="matrixFilterCo_grants">grants</label>
             </li>                    
           </ul>
+          <hr style="margin: 20px 0px">            
+          <input type="radio" name="matrixFilterType" id="matrixFilterAND"></input>
+          <input type="radio" name="matrixFilterType" id="matrixFilterOR" checked></input>
+          <br>
+          <label for="matrixFilterAND" style="margin:0% 6% 0% 34%">AND</label>
+          <label for="matrixFilterOR" style="margin:0% 36% 0% 4%">OR</label>   
           </div>
+
+        <h3>granularity</h3><hr>
+        <div class="action">
+        </div>
 
         <h3>translate</h3><hr>
         <div class="action">
