@@ -31,12 +31,12 @@ exports.data = function(req, res){
 		});
 	}
 
-	else if (request == "nested_sponsor"){
+	else if (request == "nested_by_sponsor"){
 		db.getDoc('viz_data', function(err, doc){
 			if (err) console.log(err);
 					db.getDoc('processed_data', function(err, doc2){
 						res.send({
-							nested_sponsor: JSON.stringify(doc.treemap_data.nested_by_sponsor)
+							nested_by_sponsor: JSON.stringify(doc.treemap_data.nested_by_sponsor)
 							, grant_sponsors: JSON.stringify(doc2.lists.grant_sponsors)
 							//, grants_unique: JSON.stringify(doc2.lists.grants_unique) 
 						});

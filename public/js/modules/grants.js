@@ -33,6 +33,14 @@ var GRANTS = (function () {
   var departmentCenters = [];
   var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 
+  //for the bubble diagram filter
+  var grant_year_begin_min = 9999;
+  var grant_year_begin_max = 0;
+  var grant_year_end_min = 9999;
+  var grant_year_end_max = 0;
+  var grantBeginYearArray = [];
+  var grantEndYearArray = [];
+
   //receive JSON from the server
   //var nested_by_sponsor = {{{nested_by_sponsor}}};
   // var nested_by_department = {{{nested_by_department}}};
@@ -58,7 +66,7 @@ var GRANTS = (function () {
     colorTreemap = d3.scale.category20c(),
     headerHeight = 20,
     headerColor = "#555555",
-    transitionDuration = 1500,    
+    transitionDuration = 3000,    
     root,
     node;
 
@@ -74,21 +82,46 @@ var GRANTS = (function () {
       .mode("squarify")
       .sticky(true)
       .padding([headerHeight + 1, 1, 1, 1])
-      .value(function(d) { 
+      .value(function(d) {
+
         var req = d.RequestAmt;
         req = req.replace(/^\s+|\s+$/g, ''); //remove whitespaces
         req = req.replace(/\$/g,""); //remove dollar sign
         req = req.replace(/,/g,""); //remove commas
-        return parseFloat(req); }); //convert from string to float and return
+        req = parseFloat(req);  //convert from string to float and return
 
-  var treemapsvg = d3.select("#treemapviz").append("div")
+        switch(d.AwardStatus) {
+          case "Accepted":
+            req = $('input#treemapFilterAccepted').is(':checked') ? req : 0;
+            break;
+          case "Closed":
+            req = $('input#treemapFilterClosed').is(':checked') ? req : 0;
+            break;
+          case "":
+            if(d.ProposalStatus == "Declined")
+              req = $('input#treemapFilterDeclined').is(':checked') ? req : 0;
+            else //others including Withdrawn, Inst. Approved, Pending Approval, Draft
+              req = $('input#treemapFilterOthers').is(':checked') ? req : 0;
+            break;
+          default:
+            req = 0;
+        }
+
+        return req;
+      });
+
+  var treemapviz = d3.select("#treemapviz").append("div")
       .attr("class", "chart")
       .style("width", width + margin.left + margin.right + "px")
       .style("height", height + margin.top + margin.bottom + "px")
     .append("svg:svg")
       .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-    .append("svg:g")
+      .attr("height", height + margin.top + margin.bottom);
+    // .append("svg:g")
+    //   .attr("transform", "translate(.5,.5)");
+
+  var treemapsvg = treemapviz.append("svg:g")
+      .attr("id", "departmentsTreemap")
       .attr("transform", "translate(.5,.5)");
 
   var treemaplegend = d3.select("#treemaplegend"); //where the treemap legend will go
@@ -264,19 +297,23 @@ var GRANTS = (function () {
 
   });
 
-
-  $( "#grantyearrange" ).slider({
+  $( "#grantbeginyearrange" ).slider({
     range: true,
-    min: 2008,  //TODO: populate dynamically
-    max: 2013,  //TODO: populate dynamically
+    //min: 0,  //TODO: populate dynamically
+    //max: 0,  //TODO: populate dynamically
     animate: true,
-    values: [ 2008, 2013 ],
+    //values: [ 0, 0 ],
     slide: function( event, ui ) {
-      $( "#grantyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+      var beginLowerLimit = grantBeginYearArray[ ui.values[0] ];
+      var beginUpperLimit = grantBeginYearArray[ ui.values[1] ];
+      var endLowerLimit = grantEndYearArray[ $( "#grantendyearrange" ).slider("option", "values")[0] ];
+      var endUpperLimit = grantEndYearArray[ $( "#grantendyearrange" ).slider("option", "values")[1] ];
+      $( "#grantbeginyear" ).val( beginLowerLimit + " - " + beginUpperLimit );
 
       d3.selectAll("circle.bubble").each(function(d) {
-        var createdYear = parseInt(d.Created.substring(0, 4));
-        if(ui.values[0] <= createdYear && createdYear <= ui.values[1]) {
+        var beginYear = parseInt(d.BeginDate.substring(0, 4));
+        var endYear = parseInt(d.EndDate.substring(0, 4));
+        if(beginLowerLimit <= beginYear && beginYear <= beginUpperLimit && endLowerLimit <= endYear && endYear <= endUpperLimit) {
           d3.select(this).style("visibility", "visible");
           d3.select(this).transition().duration(800).style("opacity", 1);
         } else {
@@ -286,13 +323,64 @@ var GRANTS = (function () {
       });
     }
   });
-  $( "#grantyear" ).val( $( "#grantyearrange" ).slider( "values", 0 ) +
-    " - " + $( "#grantyearrange" ).slider( "values", 1 ) );
 
-  var grant_year_begin_min = 0;
-  var grant_year_begin_max = 0;
-  var grant_year_end_min = 0;
-  var grant_year_end_max = 0;
+  $( "#grantendyearrange" ).slider({
+    range: true,
+    //min: 0,  //TODO: populate dynamically
+    //max: 0,  //TODO: populate dynamically
+    animate: true,
+    //values: [ 0, 0 ],
+    slide: function( event, ui ) {
+      var endLowerLimit = grantEndYearArray[ ui.values[0] ];
+      var endUpperLimit = grantEndYearArray[ ui.values[1] ];
+      var beginLowerLimit = grantBeginYearArray[ $( "#grantbeginyearrange" ).slider("option", "values")[0] ];
+      var beginUpperLimit = grantBeginYearArray[ $( "#grantbeginyearrange" ).slider("option", "values")[1] ];
+      $( "#grantendyear" ).val( endLowerLimit + " - " + endUpperLimit );
+
+      d3.selectAll("circle.bubble").each(function(d) {
+        var beginYear = parseInt(d.BeginDate.substring(0, 4));
+        var endYear = parseInt(d.EndDate.substring(0, 4));
+        if(beginLowerLimit <= beginYear && beginYear <= beginUpperLimit && endLowerLimit <= endYear && endYear <= endUpperLimit) {
+          d3.select(this).style("visibility", "visible");
+          d3.select(this).transition().duration(800).style("opacity", 1);
+        } else {
+          d3.select(this).transition().duration(800).style("opacity", 0);
+          d3.select(this).transition().delay(800).style("visibility", "hidden");
+        }
+      });
+    }
+  });
+
+  function initBubbleFilter(accepted_grants) {
+    accepted_grants.forEach(function(d) {
+      var begin = parseInt(d.BeginDate.substring(0, 4));
+      var end = parseInt(d.EndDate.substring(0, 4));
+      grant_year_begin_max = begin > grant_year_begin_max ? begin : grant_year_begin_max;
+      grant_year_begin_min = begin < grant_year_begin_min ? begin : grant_year_begin_min;
+      grant_year_end_max = end > grant_year_end_max ? end : grant_year_end_max;
+      grant_year_end_min = end < grant_year_end_min ? end : grant_year_end_min;
+    });
+
+    //the begin years of most grants are after 2000. There are only 60 grants that begin before 2000 and 42 grants ending before 2012
+    grantBeginYearArray.push(grant_year_begin_min);
+    for(var year = 2000; year <= grant_year_begin_max; year++)
+      grantBeginYearArray.push(year);
+    grantEndYearArray.push(grant_year_end_min);
+    for(var year = 2012; year <= grant_year_end_max; year++)
+      grantEndYearArray.push(year);
+
+    $( "#grantbeginyearrange" ).slider("option", "min", 0);
+    $( "#grantbeginyearrange" ).slider("option", "max", grantBeginYearArray.length - 1);
+    $( "#grantbeginyearrange" ).slider("option", "values", [0, grantBeginYearArray.length - 1]);
+    $( "#grantbeginyear" ).val( grantBeginYearArray[$( "#grantbeginyearrange" ).slider( "values", 0 )] +
+      " - " + grantBeginYearArray[$( "#grantbeginyearrange" ).slider( "values", 1 )] );
+
+    $( "#grantendyearrange" ).slider("option", "min", 0);
+    $( "#grantendyearrange" ).slider("option", "max", grantEndYearArray.length - 1);
+    $( "#grantendyearrange" ).slider("option", "values", [0, grantEndYearArray.length - 1]);
+    $( "#grantendyear" ).val( grantEndYearArray[$( "#grantendyearrange" ).slider( "values", 0 )] +
+      " - " + grantEndYearArray[$( "#grantendyearrange" ).slider( "values", 1 )] );
+  }
 
 
   // $( "#sankeyyearbeginrange" ).slider({
@@ -422,13 +510,30 @@ var GRANTS = (function () {
 
 
 ///// for bubble interactions
-  $('input#filterAccepted').on('ifChecked', function() {
-    var accepted_grants = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Accepted"; } );
-    var grants_combined;
-    if($('input#filterClosed').is(':checked'))
-      grants_combined = _.toArray(grouped_grants);
-    else
-      grants_combined = accepted_grants;
+
+  function filterBubbles() {
+
+    var grants_combined = _.filter(grouped_grants, function(grant) {
+      var flag = false;
+      switch(grant.AwardStatus) {
+        case "Accepted":
+          flag = $('input#filterAccepted').is(':checked');
+          break;
+        case "Closed":
+          flag = $('input#filterClosed').is(':checked');
+          break;
+        case "":
+          if(grant.ProposalStatus == "Declined")
+            flag = $('input#filterDeclined').is(':checked');
+          else //others including Withdrawn, Inst. Approved, Pending Approval, Draft
+            flag = $('input#filterOthers').is(':checked');
+          break;
+        default:
+          flag = false;
+      }
+      return flag;
+    });
+
     bubble_force.nodes(grants_combined);
 
     bubble = bubblesvg.selectAll("circle.bubble")
@@ -445,73 +550,16 @@ var GRANTS = (function () {
       .style("fill", function(grant) { return color20(grant.Sponsor); });
 
     bubble_force.start();
-  });
-  $('input#filterAccepted').on('ifUnchecked', function() {
-    var grants_combined = [];
-    if($('input#filterClosed').is(':checked'))
-      grants_combined = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Closed"; } );
-    bubble_force.nodes(grants_combined);
+  }
 
-    bubble = bubblesvg.selectAll("circle.bubble")
-      .data(grants_combined);
-
-    bubble.exit().remove(); //remove existing bubbles
-
-    bubble
-      .enter().append("svg:circle")
-      .attr("class", "bubble")
-      .attr("r", function(grant) { 
-        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
-        return (num ? log_scale(num) : 1) * 0.3; })
-      .style("fill", function(grant) { return color20(grant.Sponsor); });
-
-    bubble_force.start();
-  });
-  $('input#filterClosed').on('ifChecked', function() {
-    var closed_grants = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Closed"; } );
-    var grants_combined;
-    if($('input#filterAccepted').is(':checked'))
-      grants_combined = _.toArray(grouped_grants);
-    else
-      grants_combined = closed_grants;
-    bubble_force.nodes(grants_combined);
-
-    bubble = bubblesvg.selectAll("circle.bubble")
-      .data(grants_combined);
-
-    bubble.exit().remove(); //remove existing bubbles
-
-    bubble
-      .enter().append("svg:circle")
-      .attr("class", "bubble")
-      .attr("r", function(grant) { 
-        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
-        return (num ? log_scale(num) : 1) * 0.3; })
-      .style("fill", function(grant) { return color20(grant.Sponsor); });
-
-    bubble_force.start();
-  });
-  $('input#filterClosed').on('ifUnchecked', function() {
-    var grants_combined = [];
-    if($('input#filterAccepted').is(':checked'))
-      grants_combined = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Accepted"; } );
-    bubble_force.nodes(grants_combined);
-
-    bubble = bubblesvg.selectAll("circle.bubble")
-      .data(grants_combined);
-
-    bubble.exit().remove(); //remove existing bubbles
-
-    bubble
-      .enter().append("svg:circle")
-      .attr("class", "bubble")
-      .attr("r", function(grant) { 
-        var num = parseFloat((grant.RequestAmt.substring(1)).replace(/\,/g, ''))  //cast the string into a float after removing commas and dollar sign
-        return (num ? log_scale(num) : 1) * 0.3; })
-      .style("fill", function(grant) { return color20(grant.Sponsor); });
-
-    bubble_force.start();
-  });
+  $('input#filterAccepted').on('ifChecked', filterBubbles);
+  $('input#filterAccepted').on('ifUnchecked', filterBubbles);
+  $('input#filterClosed').on('ifChecked', filterBubbles);
+  $('input#filterClosed').on('ifUnchecked', filterBubbles);
+  $('input#filterDeclined').on('ifChecked', filterBubbles);
+  $('input#filterDeclined').on('ifUnchecked', filterBubbles);
+  $('input#filterOthers').on('ifChecked', filterBubbles);
+  $('input#filterOthers').on('ifUnchecked', filterBubbles);
 
   $('#arrangebubble').chosen().change(function() {
     if(this.value == "random") {
@@ -669,6 +717,150 @@ var GRANTS = (function () {
   //             .nodes(root);
   //     zoom(node);
   // });
+  
+  function refreshTreemap() {
+    //recalculate the layout
+    var nodes = treemap.nodes(root);
+
+    var children = nodes.filter(function(d) {
+        return !d.children;
+    });
+    var parents = nodes.filter(function(d) {
+        return d.children;
+    });
+
+    treemapsvg.selectAll("g.cell.parent")
+            .data(parents)
+            .transition().duration(transitionDuration)
+            .call(function(d, i) {
+              this.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+              
+              this.selectAll("rect")
+                  .attr("width", function(d) { return Math.max(0.01, d.dx - 1); })
+                  .attr("height", function(d) { return headerHeight; });
+                
+              this.selectAll("text")
+                .attr("x", function(d) { return d.dx / 2; })
+                .attr("y", function(d) { return headerHeight / 2 + 4; });
+            });
+    treemapsvg.selectAll("g.cell.parent")
+            .transition().delay(transitionDuration)
+            .call(function(d, i) {
+              this.selectAll("text")
+                .style("opacity", function(d) {
+                  d.w = this.getComputedTextLength();
+                  return d.dx > d.w ? 1 : 0;
+                });
+            });
+    treemapsvg.selectAll("g.cell.child")
+            .data(children)
+            .transition().duration(transitionDuration)
+            .call(function(d, i) {
+              this.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+              
+              this.selectAll("rect")
+                  .attr("width", function(d) { return Math.max(0.01, d.dx - 1); })
+                  .attr("height", function(d) { return Math.max(0.01, d.dy - 1); });
+                
+              this.selectAll("text")
+                .attr("x", function(d) { return d.dx / 2; })
+                .attr("y", function(d) { return d.dy / 2; });
+            });
+  }
+
+  function valueAccessorByStatus(d) {
+    var req = d.RequestAmt;
+    req = req.replace(/^\s+|\s+$/g, ''); //remove whitespaces
+    req = req.replace(/\$/g,""); //remove dollar sign
+    req = req.replace(/,/g,""); //remove commas
+    req = parseFloat(req);  //convert from string to float and return
+
+    switch(d.AwardStatus) {
+      case "Accepted":
+        req = $('input#treemapFilterAccepted').is(':checked') ? req : 0;
+        break;
+      case "Closed":
+        req = $('input#treemapFilterClosed').is(':checked') ? req : 0;
+        break;
+      case "":
+        if(d.ProposalStatus == "Declined")
+          req = $('input#treemapFilterDeclined').is(':checked') ? req : 0;
+        else //others including Withdrawn, Inst. Approved, Pending Approval, Draft
+          req = $('input#treemapFilterOthers').is(':checked') ? req : 0;
+        break;
+      default:
+        req = 0;
+    }
+    return req;
+  }
+
+  function valueAccessorByYear(d) {
+    var req = d.RequestAmt;
+    req = req.replace(/^\s+|\s+$/g, ''); //remove whitespaces
+    req = req.replace(/\$/g,""); //remove dollar sign
+    req = req.replace(/,/g,""); //remove commas
+    req = parseFloat(req);  //convert from string to float and return
+
+    var beginLowerLimit = grantBeginYearArray[ $( "#treemapbeginyearrange" ).slider("option", "values")[0] ];
+    var beginUpperLimit = grantBeginYearArray[ $( "#treemapbeginyearrange" ).slider("option", "values")[1] ];
+    var endLowerLimit = grantEndYearArray[ $( "#treemapendyearrange" ).slider("option", "values")[0] ];
+    var endUpperLimit = grantEndYearArray[ $( "#treemapendyearrange" ).slider("option", "values")[0] ];
+    
+    return req;
+  }
+
+  ///filters for treemap
+  $('input#treemapFilterAccepted').on('ifChecked', refreshTreemap);
+  $('input#treemapFilterAccepted').on('ifUnchecked', refreshTreemap);
+  $('input#treemapFilterClosed').on('ifChecked', refreshTreemap);
+  $('input#treemapFilterClosed').on('ifUnchecked', refreshTreemap);
+  $('input#treemapFilterDeclined').on('ifChecked', refreshTreemap);
+  $('input#treemapFilterDeclined').on('ifUnchecked', refreshTreemap);
+  $('input#treemapFilterOthers').on('ifChecked', refreshTreemap);
+  $('input#treemapFilterOthers').on('ifUnchecked', refreshTreemap);
+
+  $('#arrangetreemap').chosen().change(function() {
+    var built = false;
+
+    if(this.value == "department") {
+      if(treemapviz.select("g#departmentsTreemap")[0][0]) {
+        treemapsvg = treemapviz.select("g#departmentsTreemap");
+        treemapsvg.style("visibility", "visible").style("opacity", 0);
+        treemapsvg.transition().duration(transitionDuration).style("opacity", 1);
+        built = true;
+      } else {
+        treemapsvg = treemapviz.append("svg:g")
+              .attr("id", "departmentsTreemap")
+              .attr("transform", "translate(.5,.5)");
+      }
+      if(treemapviz.select("g#sponsorsTreemap")[0][0]) {
+        treemapviz.select("g#sponsorsTreemap")//.transition().duration(transitionDuration)
+              .style("opacity", 0);
+        treemapviz.select("g#sponsorsTreemap")//.transition().delay(transitionDuration)
+              .style("visibility", "hidden");
+      }
+    } else if(this.value == "sponsor") {
+      if(treemapviz.select("g#sponsorsTreemap")[0][0]) {
+        treemapsvg = treemapviz.select("g#sponsorsTreemap");
+        treemapsvg.style("visibility", "visible").style("opacity", 0);
+        treemapsvg.transition().duration(transitionDuration).style("opacity", 1);
+        built = true;
+      } else {
+        treemapsvg = treemapviz.append("svg:g")
+              .attr("id", "sponsorsTreemap")
+              .attr("transform", "translate(.5,.5)");
+      }
+      if(treemapviz.select("g#departmentsTreemap")[0][0]) {
+        treemapviz.select("g#departmentsTreemap")//.transition().duration(transitionDuration)
+              .style("opacity", 0);
+        treemapviz.select("g#departmentsTreemap")//.transition().delay(transitionDuration)
+              .style("visibility", "hidden");
+      }
+    }
+
+    if(!built)
+      constructTreemap(this.value);
+  });
 
   $(function() {
     $( "#treemapviz" ).tooltip({
@@ -703,6 +895,24 @@ var GRANTS = (function () {
           }
 
         }
+      }
+    });
+
+    $('#bubbleviz').tooltip({
+      items: "circle.bubble",
+      content: function() {
+        var title = this.__data__.Title;
+        var PI = this.__data__.PI;
+        var coI = this.__data__.CoI;
+        var sponsor = this.__data__.Sponsor;
+        var program = this.__data__.PgmName;
+        var amt = this.__data__.RequestAmt;
+        var pstatus = this.__data__.ProposalStatus;
+        var astatus = this.__data__.AwardStatus;
+        var begin = this.__data__.BeginDate;
+        var end = this.__data__.EndDate;
+        var text = "<b>Title:</b> " + title + "<br><b>PI:</b> " + PI + "<br><b>Co I:</b> " + coI + "<br><b>Sponsor:</b> " + sponsor + "<br><b>Program:</b> " + program + "<br><b>Amount:</b> " + amt + "<br><b>Proposal Status:</b> " + pstatus + "<br><b>Award Status:</b> " + astatus + "<br><b>Begin Date:</b> " + begin + "<br><b>End Date:</b> " + end;
+        return text;
       }
     });
 
@@ -1081,6 +1291,8 @@ var GRANTS = (function () {
 
     var accepted_grants = _.filter(grouped_grants, function(grant) { return grant.AwardStatus==="Accepted"; } );
 
+    initBubbleFilter(accepted_grants);
+
     bubble_force
       .nodes(accepted_grants); //d3 needs the data in the form of an array
 
@@ -1201,10 +1413,16 @@ var GRANTS = (function () {
             console.log("fetching nested_by_sponsor...");
             $.get('/grants/nested_by_sponsor', function(result) {
               nested_by_sponsor = JSON.parse(result.nested_by_sponsor);
-              store.session("nested_by_sponsor", nested_by_sponsor);
               //grants_unique = JSON.parse(result.grants_unique);
               grant_sponsors = JSON.parse(result.grant_sponsors);
-              store.session("grant_sponsors", grant_sponsors);
+
+              try {
+                //store.session("nested_by_sponsor", nested_by_sponsor);
+                store.session("grant_sponsors", grant_sponsors);
+              }
+              catch(e) {
+                console.log("Error trying to save data to sessionStorage: " + e);
+              }
               nestedData = nested_by_sponsor;
               callback();
             });
@@ -1243,6 +1461,8 @@ var GRANTS = (function () {
 
     node = root = nestedData;
 
+    //sticky treemaps cache the array of nodes internally; therefore, to reset the cached state when switching datasets with a sticky layout, call sticky(true) again
+    treemap.sticky(true);
     var nodes = treemap.nodes(root);
         //.filter(function(d) { return !d.children; }); //no children
 
@@ -1267,8 +1487,8 @@ var GRANTS = (function () {
     parentCells.append("text")
             .attr("class", "celllabel")
             .attr("x", function(d) { return d.dx / 2; })
-            .attr("y", function(d) { return headerHeight / 2 + 3; })
-            //.attr("dy", function(d) { return headerHeight; })
+            .attr("y", function(d) { return headerHeight / 2 + 4; })
+            .style("font-size", headerHeight / 3 * 2 + "px")
             .attr("text-anchor", "middle")
             .text(function(d) { return d.name; })
             .style("opacity", 0);
@@ -1304,7 +1524,7 @@ var GRANTS = (function () {
                 return colorTreemap(d.Sponsor);
               else
                 return "#f9f9f9";
-            });/*
+            });/*//Sponsor name is too long. It won't display even when zooming the treemap.
     childCells.append('text')
             .attr("class", "celllabel")
             .attr('x', function(d) { return d.dx / 2; })
@@ -1572,6 +1792,11 @@ var GRANTS = (function () {
             .attr("height", function(d) {
                 return d.children ? (ky * headerHeight) : Math.max(0.01, (ky * d.dy - 1));
             });
+
+    zoomTransition.select("text")
+            .attr("x", function(d) { return kx * d.dx / 2; })
+            .attr("y", function(d) { return ky * (headerHeight / 2 + 4); })
+            .style("font-size", ky * headerHeight  / 3 * 2 + "px");
 
     node = d;
 

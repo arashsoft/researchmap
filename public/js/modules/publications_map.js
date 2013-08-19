@@ -397,7 +397,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  slide: function( event, ui ) {
 	    $( "#networkyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
 
-	  d3.selectAll("line.link").each( function () {
+	  d3.selectAll("line.link").filter(function(d) { return d.type == "publication"; }).each( function () {
 	    if (ui.values[0] <= this.__data__.year && this.__data__.year <= ui.values[1] ) {
 	        d3.select(this).style("visibility", "visible").style("opacity", 1);
 	    }
@@ -1079,7 +1079,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		      function(callback){
 		        d3.selectAll("line.link").each( function () {
 		          if (this.__data__.type != "supervision" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
-		            d3.select(this).style("visibility", "visible");        
+		            d3.select(this).style("visibility", "visible");
 		            d3.select(this).transition().duration(1000).style("opacity", 1);
 		          }
 		        });
@@ -1775,29 +1775,29 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  if(this.value == "individuals"){
 	  	//hide the department nodes
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
-	    d3.selectAll("circle.dept").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("circle.dept").transition().delay(1500).style("display", "none");
 	    //hide the chord diagram
 	    d3.selectAll("path.group").transition().duration(1500).style("opacity", 0);
-	    d3.selectAll("path.group").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("path.group").transition().delay(1500).style("display", "none");
 	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0);
-	    d3.selectAll("path.chord").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("path.chord").transition().delay(1500).style("display", "none");
 	    //show the individual nodes
-	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 1).style("visibility", "visible");
-	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 1).style("visibility", "visible");
+	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 1).style("display", "");
+	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 1).style("display", "");
 	  }
 	  if(this.value == "departments"){
 	  	//hide the individual nodes
 	  	d3.selectAll("circle.node").transition().duration(1500).style("opacity", 0);
-	    d3.selectAll("circle.node").transition().delay(1500).style("visibility", "hidden");    
+	    d3.selectAll("circle.node").transition().delay(1500).style("display", "none");
 	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 0);
-	    d3.selectAll("line.link").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("line.link").transition().delay(1500).style("display", "none");
 	    //hide the chord diagram
 	    d3.selectAll("path.group").transition().duration(1500).style("opacity", 0);
-	    d3.selectAll("path.group").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("path.group").transition().delay(1500).style("display", "none");
 	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0);
-	    d3.selectAll("path.chord").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("path.chord").transition().delay(1500).style("display", "none");
 	    //show the department nodes
-	    d3.selectAll("circle.dept").style("visibility", "visible").style("opacity", "0");
+	    d3.selectAll("circle.dept").style("display", "").style("opacity", "0");
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 1).attr("r", function(d){ 
 	      //return departmentCounts[d[0]] * 2; 
 	      return d.count;
@@ -1807,18 +1807,18 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  if(this.value == "departmentsChord") {
 	  	//hide the individual nodes
 	  	d3.selectAll("circle.node").transition().duration(1500).style("opacity", 0);
-	    d3.selectAll("circle.node").transition().delay(1500).style("visibility", "hidden");    
+	    d3.selectAll("circle.node").transition().delay(1500).style("display", "none");
 	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 0);
-	    d3.selectAll("line.link").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("line.link").transition().delay(1500).style("display", "none");
 	    //hide the department nodes
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
-	    d3.selectAll("circle.dept").transition().delay(1500).style("visibility", "hidden");
+	    d3.selectAll("circle.dept").transition().delay(1500).style("display", "none");
 	    //build chord diagram
 	    if(!chord_constructed)
 	    	constructChord();
-	    d3.selectAll("path.group").style("visibility", "visible").style("opacity", 0);
+	    d3.selectAll("path.group").style("display", "").style("opacity", 0);
 	    d3.selectAll("path.group").transition().duration(1500).style("opacity", 1);
-	    d3.selectAll("path.chord").style("visibility", "visible").style("opacity", 0);
+	    d3.selectAll("path.chord").style("display", "").style("opacity", 0);
 	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0.8);
 	  }
 	});
@@ -2729,7 +2729,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					.style("fill", function(d) { return color20(d.name); })
 					.style("stroke-width", "2px")
 					.style("stroke", "gray")
-					.style("opacity", "0");
+					.style("opacity", "0")
+					.style("display", "none");
 				callback(null, 'done');			
 			}
 			],
@@ -3526,7 +3527,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			.style("stroke", "#000")
 			.attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
 			.style("opacity", 1)
-			.style("visibility", "hidden");
+			.style("display", "none");
 		chordsvg.append("g").selectAll("path.chord")
 			.data(processedChords)
 			.enter().append("path")
@@ -3534,7 +3535,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			.attr("d", d3.svg.chord().radius(innerRadius))
 		    .style("fill", function(d, i) { return color20(science_departments[d.source.index]); })
 		    .style("opacity", 0.8)
-		    .style("visibility", "hidden");
+		    .style("display", "none");
 	}
 
 	function redrawNetwork() {

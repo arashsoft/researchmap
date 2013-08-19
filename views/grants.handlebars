@@ -103,10 +103,45 @@
       <div class="action">
         <select id="arrangetreemap" data-placeholder="Sort by..." class="chzn-select" style="width:250px;" tabindex="1"> 
           <option value=""></option>
-          <option value="grantvalue">Grant Value</option>
-          <option value="numgrants">Number of Grants</option>
+          <option value="department">Department</option>
+          <option value="sponsor">Sponsor</option>
         </select>
       </div>
+
+      <h3>filter</h3><img src="img/info.png"></img><hr>
+      <div class="action">        
+
+        <p>grant status</p>
+        <ul class="actionlist"> 
+          <li>
+            <input type="checkbox" checked id="treemapFilterAccepted"></input> 
+            <label for="treemapFilterAccepted">accepted</label>
+          </li>  
+          <li>
+            <input type="checkbox" checked id="treemapFilterClosed"></input> 
+            <label for="treemapFilterClosed">closed</label>
+          </li>
+          <li>
+            <input type="checkbox" checked id="treemapFilterDeclined"></input> 
+            <label for="treemapFilterDeclined">declined</label>
+          </li>
+          <li>
+            <input type="checkbox" checked id="treemapFilterOthers"></input> 
+            <label for="treemapFilterOthers">others</label>
+          </li>
+        </ul>
+
+        <p>years</p>
+        <label for="treemapbeginyear">begin year:</label>
+        <input type="text" id="treemapbeginyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="treemapbeginyearrange">
+        </div>
+        <label for="treemapendyear">end year:</label>
+        <input type="text" id="treemapendyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="treemapendyearrange">
+        </div>
+
+      </div>  
 
       <h3>translate</h3><img src="img/info.png"></img><hr>
       <div class="action">  
@@ -143,14 +178,26 @@
           <li>
             <input type="checkbox" id="filterClosed"></input> 
             <label for="filterClosed">closed</label>
-          </li>                    
+          </li>
+          <li>
+            <input type="checkbox" id="filterDeclined"></input> 
+            <label for="filterDeclined">declined</label>
+          </li>
+          <li>
+            <input type="checkbox" id="filterOthers"></input> 
+            <label for="filterOthers">others</label>
+          </li>
         </ul>
 
         <p>years</p>
-        <label for="grantyear">range:</label>
-        <input type="text" id="grantyear" style="border: 0; color: #f6931f; font-weight: bold;" />
-        <div id="grantyearrange">
-        </div>      
+        <label for="grantbeginyear">begin year:</label>
+        <input type="text" id="grantbeginyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="grantbeginyearrange">
+        </div>
+        <label for="grantendyear">end year:</label>
+        <input type="text" id="grantendyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="grantendyearrange">
+        </div>
 
       </div>  
 
