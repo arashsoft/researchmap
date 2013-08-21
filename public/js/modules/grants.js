@@ -38,9 +38,19 @@ var GRANTS = (function () {
   var grant_year_begin_max = 0;
   var grant_year_end_min = 9999;
   var grant_year_end_max = 0;
+  var grant_year_deadline_min = 9999;
+  var grant_year_deadline_max = 0;
   var grantBeginYearArray = [];
   var grantEndYearArray = [];
+  var grantDeadlineYearArray = [];
   var yearRangeArrayBuilt = false;
+  //for the bubble diagram sliders
+  var beginLowerLimit;
+  var beginUpperLimit;
+  var endLowerLimit;
+  var endUpperLimit;
+  var deadlineLowerLimit;
+  var deadlineUpperLimit;
 
   //receive JSON from the server
   //var nested_by_sponsor = {{{nested_by_sponsor}}};
@@ -236,6 +246,7 @@ var GRANTS = (function () {
 
     //gets every div that is a child of bubbleactions and hides it
     $('#bubbleactions:eq(0)> div').hide();
+    $('#bubbleFilterTips').hide();
 
     //bind a click handler to each action (i.e., each h3)
     $('#bubbleactions:eq(0)> h3').click(function() { 
@@ -279,25 +290,15 @@ var GRANTS = (function () {
     animate: true,
     //values: [ 0, 0 ],
     slide: function( event, ui ) {
-      var beginLowerLimit = grantBeginYearArray[ ui.values[0] ];
-      var beginUpperLimit = grantBeginYearArray[ ui.values[1] ];
-      var endLowerLimit = grantEndYearArray[ $( "#grantendyearrange" ).slider("option", "values")[0] ];
-      var endUpperLimit = grantEndYearArray[ $( "#grantendyearrange" ).slider("option", "values")[1] ];
+      beginLowerLimit = grantBeginYearArray[ ui.values[0] ];
+      beginUpperLimit = grantBeginYearArray[ ui.values[1] ];
+      endLowerLimit = grantEndYearArray[ $( "#grantendyearrange" ).slider("option", "values")[0] ];
+      endUpperLimit = grantEndYearArray[ $( "#grantendyearrange" ).slider("option", "values")[1] ];
+      deadlineLowerLimit = grantDeadlineYearArray[ $( "#grantdeadlineyearrange" ).slider("option", "values")[0] ];
+      deadlineUpperLimit = grantDeadlineYearArray[ $( "#grantdeadlineyearrange" ).slider("option", "values")[1] ];
       $( "#grantbeginyear" ).val( beginLowerLimit + " - " + beginUpperLimit );
 
-      d3.selectAll("circle.bubble").each(function(d) {
-        var beginYear = parseInt(d.BeginDate.substring(0, 4));
-        var endYear = parseInt(d.EndDate.substring(0, 4));
-        if(d.AwardStatus == "Accepted") {
-          if(beginLowerLimit <= beginYear && beginYear <= beginUpperLimit && endLowerLimit <= endYear && endYear <= endUpperLimit) {
-            d3.select(this).style("visibility", "visible");
-            d3.select(this).transition().duration(800).style("opacity", 1);
-          } else {
-            d3.select(this).transition().duration(800).style("opacity", 0);
-            d3.select(this).transition().delay(800).style("visibility", "hidden");
-          }
-        }
-      });
+      filterBubblesByYear();
     }
   });
 
@@ -308,27 +309,67 @@ var GRANTS = (function () {
     animate: true,
     //values: [ 0, 0 ],
     slide: function( event, ui ) {
-      var endLowerLimit = grantEndYearArray[ ui.values[0] ];
-      var endUpperLimit = grantEndYearArray[ ui.values[1] ];
-      var beginLowerLimit = grantBeginYearArray[ $( "#grantbeginyearrange" ).slider("option", "values")[0] ];
-      var beginUpperLimit = grantBeginYearArray[ $( "#grantbeginyearrange" ).slider("option", "values")[1] ];
+      beginLowerLimit = grantBeginYearArray[ $( "#grantbeginyearrange" ).slider("option", "values")[0] ];
+      beginUpperLimit = grantBeginYearArray[ $( "#grantbeginyearrange" ).slider("option", "values")[1] ];
+      endLowerLimit = grantEndYearArray[ ui.values[0] ];
+      endUpperLimit = grantEndYearArray[ ui.values[1] ];
+      deadlineLowerLimit = grantDeadlineYearArray[ $( "#grantdeadlineyearrange" ).slider("option", "values")[0] ];
+      deadlineUpperLimit = grantDeadlineYearArray[ $( "#grantdeadlineyearrange" ).slider("option", "values")[1] ];
       $( "#grantendyear" ).val( endLowerLimit + " - " + endUpperLimit );
 
-      d3.selectAll("circle.bubble").each(function(d) {
-        var beginYear = parseInt(d.BeginDate.substring(0, 4));
-        var endYear = parseInt(d.EndDate.substring(0, 4));
-        if(d.AwardStatus == "Accepted") {
-          if(beginLowerLimit <= beginYear && beginYear <= beginUpperLimit && endLowerLimit <= endYear && endYear <= endUpperLimit) {
-            d3.select(this).style("visibility", "visible");
-            d3.select(this).transition().duration(800).style("opacity", 1);
-          } else {
-            d3.select(this).transition().duration(800).style("opacity", 0);
-            d3.select(this).transition().delay(800).style("visibility", "hidden");
-          }
-        }
-      });
+      filterBubblesByYear();
     }
   });
+
+  $( "#grantdeadlineyearrange" ).slider({
+    range: true,
+    //min: 0,  //TODO: populate dynamically
+    //max: 0,  //TODO: populate dynamically
+    animate: true,
+    //values: [ 0, 0 ],
+    slide: function( event, ui ) {
+      beginLowerLimit = grantBeginYearArray[ $( "#grantbeginyearrange" ).slider("option", "values")[0] ];
+      beginUpperLimit = grantBeginYearArray[ $( "#grantbeginyearrange" ).slider("option", "values")[1] ];
+      endLowerLimit = grantEndYearArray[ $( "#grantendyearrange" ).slider("option", "values")[0] ];
+      endUpperLimit = grantEndYearArray[ $( "#grantendyearrange" ).slider("option", "values")[1] ];
+      deadlineLowerLimit = grantDeadlineYearArray[ ui.values[0] ];
+      deadlineUpperLimit = grantDeadlineYearArray[ ui.values[1] ];
+      $( "#grantdeadlineyear" ).val( deadlineLowerLimit + " - " + deadlineUpperLimit );
+
+      filterBubblesByYear();
+    }
+  });
+
+  function filterBubblesByYear() {
+    d3.selectAll("circle.bubble").each(function(d) {
+      var beginYear = parseInt(d.BeginDate.substring(0, 4));
+      var endYear = parseInt(d.EndDate.substring(0, 4));
+      var deadline = parseInt(d.Deadline.substring(0, 4));
+      var match = false;
+
+      if(deadlineLowerLimit <= deadline && deadline <= deadlineUpperLimit) {
+        //Only accepted and closed grants have the begin and end years.
+        if(d.AwardStatus != "") {
+          if(beginLowerLimit <= beginYear && beginYear <= beginUpperLimit && endLowerLimit <= endYear && endYear <= endUpperLimit)
+            match = true;
+          else
+            match = false;
+        } else {
+          match = true;
+        }
+      } else {
+        match = false;
+      }
+
+      if(match) {
+        d3.select(this).style("visibility", "visible");
+        d3.select(this).transition().duration(800).style("opacity", 1);
+      } else {
+        d3.select(this).transition().duration(800).style("opacity", 0);
+        d3.select(this).transition().delay(800).style("visibility", "hidden");
+      }
+    });
+  }
 
   function initBubbleFilter(all_grants) {
     if(!yearRangeArrayBuilt)
@@ -338,12 +379,24 @@ var GRANTS = (function () {
     $( "#grantbeginyearrange" ).slider("option", "values", [0, grantBeginYearArray.length - 1]);
     $( "#grantbeginyear" ).val( grantBeginYearArray[$( "#grantbeginyearrange" ).slider( "values", 0 )] +
       " - " + grantBeginYearArray[$( "#grantbeginyearrange" ).slider( "values", 1 )] );
+    beginLowerLimit = grantBeginYearArray[$( "#grantbeginyearrange" ).slider( "values", 0 )];
+    beginUpperLimit = grantBeginYearArray[$( "#grantbeginyearrange" ).slider( "values", 1 )];
 
     $( "#grantendyearrange" ).slider("option", "min", 0);
     $( "#grantendyearrange" ).slider("option", "max", grantEndYearArray.length - 1);
     $( "#grantendyearrange" ).slider("option", "values", [0, grantEndYearArray.length - 1]);
     $( "#grantendyear" ).val( grantEndYearArray[$( "#grantendyearrange" ).slider( "values", 0 )] +
       " - " + grantEndYearArray[$( "#grantendyearrange" ).slider( "values", 1 )] );
+    endLowerLimit = grantEndYearArray[$( "#grantendyearrange" ).slider( "values", 0 )];
+    endUpperLimit = grantEndYearArray[$( "#grantendyearrange" ).slider( "values", 1 )];
+
+    $( "#grantdeadlineyearrange" ).slider("option", "min", 0);
+    $( "#grantdeadlineyearrange" ).slider("option", "max", grantDeadlineYearArray.length - 1);
+    $( "#grantdeadlineyearrange" ).slider("option", "values", [0, grantDeadlineYearArray.length - 1]);
+    $( "#grantdeadlineyear" ).val( grantDeadlineYearArray[$( "#grantdeadlineyearrange" ).slider( "values", 0 )] +
+      " - " + grantDeadlineYearArray[$( "#grantdeadlineyearrange" ).slider( "values", 1 )] );
+    deadlineLowerLimit = grantDeadlineYearArray[$( "#grantdeadlineyearrange" ).slider( "values", 0 )];
+    deadlineUpperLimit = grantDeadlineYearArray[$( "#grantdeadlineyearrange" ).slider( "values", 1 )];
   }
 
   $( "#treemapbeginyearrange" ).slider({
@@ -521,7 +574,16 @@ var GRANTS = (function () {
 
 ///// for bubble interactions
 
-  function filterBubbles() {
+  function filterBubblesByStatus() {
+
+    if(!$('input#filterAccepted').is(':checked') && !$('input#filterClosed').is(':checked')) {
+      $('#bubbleFilterTips').show('blind', 1500);
+      $('#bubbleSliderAcceptedType').hide('blind', 1500);
+    } else {
+      $('#bubbleFilterTips').hide('blind', 1500);
+      $('#bubbleSliderAcceptedType').show('blind', 1500);
+    }
+      
 
     var grants_combined = _.filter(grouped_grants, function(grant) {
       var flag = false;
@@ -593,16 +655,18 @@ var GRANTS = (function () {
     bubble.exit().remove(); //remove existing bubbles
 
     bubble_force.start();
+
+    filterBubblesByYear();
   }
 
-  $('input#filterAccepted').on('ifChecked', filterBubbles);
-  $('input#filterAccepted').on('ifUnchecked', filterBubbles);
-  $('input#filterClosed').on('ifChecked', filterBubbles);
-  $('input#filterClosed').on('ifUnchecked', filterBubbles);
-  $('input#filterDeclined').on('ifChecked', filterBubbles);
-  $('input#filterDeclined').on('ifUnchecked', filterBubbles);
-  $('input#filterOthers').on('ifChecked', filterBubbles);
-  $('input#filterOthers').on('ifUnchecked', filterBubbles);
+  $('input#filterAccepted').on('ifChecked', filterBubblesByStatus);
+  $('input#filterAccepted').on('ifUnchecked', filterBubblesByStatus);
+  $('input#filterClosed').on('ifChecked', filterBubblesByStatus);
+  $('input#filterClosed').on('ifUnchecked', filterBubblesByStatus);
+  $('input#filterDeclined').on('ifChecked', filterBubblesByStatus);
+  $('input#filterDeclined').on('ifUnchecked', filterBubblesByStatus);
+  $('input#filterOthers').on('ifChecked', filterBubblesByStatus);
+  $('input#filterOthers').on('ifUnchecked', filterBubblesByStatus);
 
   $('#arrangebubble').chosen().change(function() {
     if(this.value == "random") {
@@ -1852,13 +1916,17 @@ var GRANTS = (function () {
   }
 
   function buildYearRangeArray(all_grants) {
+
     all_grants.forEach(function(d) {
       var begin = parseInt(d.BeginDate.substring(0, 4));
       var end = parseInt(d.EndDate.substring(0, 4));
+      var deadline = parseInt(d.Deadline.substring(0, 4));
       grant_year_begin_max = begin > grant_year_begin_max ? begin : grant_year_begin_max;
       grant_year_begin_min = begin < grant_year_begin_min ? begin : grant_year_begin_min;
       grant_year_end_max = end > grant_year_end_max ? end : grant_year_end_max;
       grant_year_end_min = end < grant_year_end_min ? end : grant_year_end_min;
+      grant_year_deadline_max = deadline > grant_year_deadline_max ? deadline : grant_year_deadline_max;
+      grant_year_deadline_min = deadline < grant_year_deadline_min ? deadline : grant_year_deadline_min;
     });
 
     //the begin years of most grants are after 2000. There are only 60 grants that begin before 2000 and 42 grants ending before 2012
@@ -1868,6 +1936,9 @@ var GRANTS = (function () {
     grantEndYearArray.push(grant_year_end_min);
     for(var year = 2012; year <= grant_year_end_max; year++)
       grantEndYearArray.push(year);
+    grantDeadlineYearArray.push(grant_year_deadline_min);
+    for(var year = 2000; year <= grant_year_deadline_max; year++)
+      grantDeadlineYearArray.push(year);
 
     yearRangeArrayBuilt = true;
   }
