@@ -61,15 +61,20 @@
           </div>
           <button id="matrixreset">reset</button>
         </div>
-        <div id="matrixlegend">
+        <div id="matrixdepartmentlegend">
         </div>
-  <!--       <p>Order: 
-          <select id="order">
-            <option value="name" selected>by Name</option>
-            <option value="count">by Count</option>
-            <option value="department">by Department</option>
-          </select>
-        </p> -->
+        <div id="matrixcollaborationlegend">
+                <div><div id="matrixlegendpub" style="background: #E1B2D7;"></div><p>publication</p></div>
+                <div><div id="matrixlegendsup" style="background: #D5E067;"></div><p>supervision</p></div>
+                <div><div id="matrixlegendgrant" style="background: #79DEC0;"></div><p>grant</p></div>
+                <br>
+                <div><div id="matrixlegendpubsup" style="background: #9BD0E3;"></div><p>publication + supervision</p></div>
+                <div><div id="matrixlegendsupgrant" style="background: #A0E191;"></div><p>supervision + grant</p></div>
+                <div><div id="matrixlegendpubgrant" style="background: #F0A487;"></div><p>publication + grant</p></div>
+                <br>
+
+                <div><div id="matrixlegendpubsupgrant" style="background: #DCBE6B;"></div><p>all three</p></div>                             
+        </div>        
       </div>
     </div>
 
@@ -295,21 +300,24 @@
 
         <h3>filter</h3><hr>
         <div class="action">
-          <p>by collaboration type</p>    
-          <ul class="actionlist"> 
-            <li>
-              <input type="checkbox" checked id="matrixFilterCo_pubs"></input> 
-              <label for="matrixFilterCo_pubs">publications</label>
-            </li>
-            <li>
-              <input type="checkbox" checked id="matrixFilterCo_sups"></input> 
-              <label for="matrixFilterCo_sups">supervisions</label>
-            </li>     
-            <li>
-              <input type="checkbox" checked id="matrixFilterCo_grants"></input> 
-              <label for="matrixFilterCo_grants">grants</label>
-            </li>                    
-          </ul>
+          <p>by collaboration type</p> 
+            <ul class="actionlist"> 
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_pubs"></input> 
+                <label for="matrixFilterCo_pubs">publications</label>
+              </li>
+
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_sups"></input> 
+                <label for="matrixFilterCo_sups">supervisions</label>
+              </li>  
+   
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_grants"></input> 
+                <label for="matrixFilterCo_grants">grants</label>
+              </li> 
+            </ul>
+
           <div id="matrixFilterTypeMultiple">
             <hr style="margin: 20px 0px">            
             <input type="radio" name="matrixFilterMultipleType" id="matrixFilterAND"></input>
@@ -328,11 +336,7 @@
             <label for="matrixFilterAND" style="margin:0% 5% 0% 16%; line-height:1.5">EXCLUSIVE</label>
             <label for="matrixFilterOR" style="margin:0% 10% 0% 9%; line-height:1.5">INCLUSIVE</label>   
           </div>          
-        </div>
-
-<!--         <h3>granularity</h3><hr>
-        <div class="action">
-        </div> -->
+      </div>
 
         <h3>translate</h3><hr>
         <div class="action">
@@ -343,10 +347,9 @@
             <option value="matrix">co-matrix</option>
           </select><br> 
         </div>
-      </div>
     </div>
   </div>
-
+</div>
 
 {{#scripts}}
 <script type="text/javascript" src="js/modules/{{.}}.js"></script>

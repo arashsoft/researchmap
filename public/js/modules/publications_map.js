@@ -100,7 +100,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  .append("svg:g")
 	      .attr("transform", "translate(175, 175)");
 
-	var matrixlegend = d3.select("#matrixlegend"); //where the matrix legend will go
+	var matrixdepartmentlegend = d3.select("#matrixdepartmentlegend"); //where the matrix legend will go
 	var matrix = [], matrixnodes;
 
 	//vars to hold the max of each type of collaboration
@@ -315,7 +315,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  $('input#matrixFilterOR').parent().css("display", "inline-block").css("margin", "0% 25% 0% 15%");
 	  $('input#matrixFilterAND').parent().css("display", "inline-block").css("margin", "0% 15% 0% 25%");
 	  $('input#matrixFilterEXCLUSIVE').parent().css("display", "inline-block").css("margin", "0% 15% 0% 25%");
-	  $('input#matrixFilterINCLUSIVE').parent().css("display", "inline-block").css("margin", "0% 25% 0% 15%");	  
+	  $('input#matrixFilterINCLUSIVE').parent().css("display", "inline-block").css("margin", "0% 25% 0% 15%");	
+
+	  $('#matrixcollaborationlegend').draggable({ containment: "#vizcontainer", scroll: false });  
 
 		//hide the selectionArea div
 		$('#selectionArea').hide();
@@ -379,7 +381,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    delay: 500,
 	    minLength: 2,
 	    select: function (event, ui) {
-	    	$('#matrixlegend').slideUp();
+	    	$('#matrixdepartmentlegend').slideUp();
 	    	currentlySearchingMatrix = true;
 	      	var name = ui.item.value;
 	      	highlightSelectedRow(name);
@@ -1671,7 +1673,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  	  		d3.select(this).style("opacity", function() { return this.attributes.opacitybeforesearch.value; });
 		  	});		
 		  	currentlySearchingMatrix = false; 
-		  	$('#matrixlegend').slideDown();
+		  	$('#matrixdepartmentlegend').slideDown();
 		  	pubsChecked(); //to update the matrix so correct cells are made visible
 		}
 	});
@@ -1966,6 +1968,29 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			pubsUnchecked();
 	});	
 
+	/*
+	updates the matrix collaboration legend (colored divs)
+	@params: status: array that encodes the binary status of all 7 divs (either 1 or 0)
+	@returns: none
+	*/
+	function updateMatrixCollabLegend (status) {
+		var converted = [];
+		//this allows for converting the status to an opacity
+		_.each(status, function(x) {
+			if (x == 1)
+				converted.push(x);
+			else
+				converted.push(0.1);
+		})
+		$('#matrixlegendpub').css("opacity", converted[0] );
+		$('#matrixlegendsup').css("opacity", converted[1] );
+		$('#matrixlegendgrant').css("opacity", converted[2] );
+		$('#matrixlegendpubsup').css("opacity", converted[3] );
+		$('#matrixlegendsupgrant').css("opacity", converted[4] );
+		$('#matrixlegendpubgrant').css("opacity", converted[5] );
+		$('#matrixlegendpubsupgrant').css("opacity", converted[6] );		
+	}
+
 	function pubsChecked () {
 
 			//four possibilities for the combination of checkboxes
@@ -1974,6 +1999,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			if ($('input#matrixFilterCo_grants').is(':checked')==false && $('input#matrixFilterCo_sups').is(':checked')==false) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
 				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);
+
+				updateMatrixCollabLegend([1,0,0,0,0,0,0]);
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -2013,9 +2040,13 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				//hide single and show options for multiple filtering (union/intersection)
 				$('#matrixFilterTypeSingle').hide(0);$('#matrixFilterTypeMultiple').show(0);				
 
+
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);	
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,1,0,0,0]);
+
 						if(d.copub > 0 && d.grant == 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
@@ -2029,6 +2060,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");						
 					}
 					else{
+
+						updateMatrixCollabLegend([1,1,0,1,0,0,0]);
+
 						if(d.copub > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_copub]); return matrix_z(d.cosup+d.copub); });	
@@ -2065,9 +2099,13 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				//hide single and show options for multiple filtering (union/intersection)
 				$('#matrixFilterTypeSingle').hide(0);$('#matrixFilterTypeMultiple').show(0);				
 
+
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,0,0,1,0]);
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup == 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
@@ -2081,6 +2119,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");					
 					}
 					else{
+
+						updateMatrixCollabLegend([1,0,1,0,0,1,0]);
+
 						if(d.copub > 0 && d.grant > 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });	
@@ -2115,9 +2156,13 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//grants and supervisions	
 			else if ($('input#matrixFilterCo_grants').is(':checked') && $('input#matrixFilterCo_sups').is(':checked')) {				
 
+
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,0,0,0,1]);
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -2131,6 +2176,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");						
 					}
 					else{
+
+						updateMatrixCollabLegend([1,1,1,1,1,1,1]);
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -2213,6 +2261,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			if ($('input#matrixFilterCo_grants').is(':checked')==false && $('input#matrixFilterCo_sups').is(':checked')==false) {			
 				//hide multiple and single show options for filtering
 				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').hide(0);
+
+				updateMatrixCollabLegend([0,0,0,0,0,0,0]);
+
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					if(d.copub > 0) 
 						d3.select(this).style("visibility", "hidden");	 
@@ -2222,7 +2273,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//not grants and supervisions	
 			else if ($('input#matrixFilterCo_grants').is(':checked')==false && $('input#matrixFilterCo_sups').is(':checked')) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);					
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);
+
+				updateMatrixCollabLegend([0,1,0,0,0,0,0]);					
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -2259,7 +2312,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//grants and not supervisions
 			else if ($('input#matrixFilterCo_grants').is(':checked') && $('input#matrixFilterCo_sups').is(':checked')==false) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);					
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);
+
+				updateMatrixCollabLegend([0,0,1,0,0,0,0]);					
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -2295,9 +2350,14 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 			//grants and supervisions	
 			else if ($('input#matrixFilterCo_grants').is(':checked') && $('input#matrixFilterCo_sups').is(':checked')) {
+
+
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,0,1,0,0]);
+
 						if(d.copub == 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
@@ -2313,6 +2373,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 						}
 					}
 					else{
+
+						updateMatrixCollabLegend([0,1,1,0,1,0,0]);
+
 						if(d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
@@ -2360,7 +2423,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//neither grants or publications is checked
 			if ($('input#matrixFilterCo_grants').is(':checked')==false && $('input#matrixFilterCo_pubs').is(':checked')==false) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);				
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);
+
+				updateMatrixCollabLegend([0,1,0,0,0,0,0]);				
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -2402,6 +2467,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,1,0,0,0]);
+
 						if(d.cosup > 0 && d.grant == 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
@@ -2415,6 +2483,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");						
 					}
 					else{
+
+						updateMatrixCollabLegend([1,1,0,1,0,1,0]);
+
 						if(d.cosup > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });	
@@ -2454,6 +2525,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,0,1,0,0]);
+
 						if(d.cosup > 0 && d.grant > 0 && d.copub == 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
@@ -2467,6 +2541,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");					
 					}
 					else{
+
+						updateMatrixCollabLegend([0,1,1,0,1,0,0]);
+
 						if(d.cosup > 0 && d.grant > 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });	
@@ -2503,6 +2580,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,0,0,0,1]);
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -2516,6 +2596,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");					
 					}
 					else{
+
+						updateMatrixCollabLegend([1,1,1,1,1,1,1]);
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -2597,7 +2680,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//neither grants or publications is checked
 			if ($('input#matrixFilterCo_grants').is(':checked')==false && $('input#matrixFilterCo_pubs').is(':checked')==false) {
 				//hide multiple and single show options for filtering
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').hide(0);				
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').hide(0);	
+
+				updateMatrixCollabLegend([0,0,0,0,0,0,0]);			
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					if(d.cosup > 0) 
@@ -2608,7 +2693,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//not grants and publications	
 			else if ($('input#matrixFilterCo_grants').is(':checked')==false && $('input#matrixFilterCo_pubs').is(':checked')) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);					
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);	
+
+				updateMatrixCollabLegend([1,0,0,0,0,0,0]);				
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -2645,7 +2732,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//grants and not publications
 			else if ($('input#matrixFilterCo_grants').is(':checked') && $('input#matrixFilterCo_pubs').is(':checked')==false) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);					
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);	
+
+				updateMatrixCollabLegend([0,0,1,0,0,0,0]);				
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -2683,6 +2772,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,1,0,0,0]);
+
 						if(d.cosup == 0 && d.grant > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
@@ -2698,6 +2790,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 						}
 					}
 					else{
+
+						updateMatrixCollabLegend([1,0,1,0,0,1,0]);
+
 						if(d.grant > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
@@ -2745,7 +2840,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//neither supervisions or publications is checked
 			if ($('input#matrixFilterCo_sups').is(':checked')==false && $('input#matrixFilterCo_pubs').is(':checked')==false) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);				
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);	
+
+				updateMatrixCollabLegend([0,0,1,0,0,0,0]);			
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -2787,6 +2884,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,0,0,1,0]);
+
 						if(d.grant > 0 && d.cosup == 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
@@ -2800,6 +2900,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");	
 					}
 					else{
+
+						updateMatrixCollabLegend([1,0,1,0,0,1,0]);
+
 						if(d.grant > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });	
@@ -2839,6 +2942,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,0,1,0,0]);
+
 						if(d.grant > 0 && d.cosup > 0 && d.copub == 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
@@ -2852,6 +2958,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");						
 					}
 					else{
+
+						updateMatrixCollabLegend([0,1,1,0,1,0,0]);
+
 						if(d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });	
@@ -2888,6 +2997,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,0,0,0,1]);
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -2901,6 +3013,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("visibility", "hidden");						
 					}
 					else{
+
+						updateMatrixCollabLegend([1,1,1,1,1,1,1]);
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -2982,7 +3097,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//neither supervisions or publications is checked
 			if ($('input#matrixFilterCo_sups').is(':checked')==false && $('input#matrixFilterCo_pubs').is(':checked')==false) {
 				//hide multiple and single show options for filtering
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').hide(0);				
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').hide(0);
+
+				updateMatrixCollabLegend([0,0,0,0,0,0,0]);				
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					if(d.grant > 0) 
@@ -2993,7 +3110,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//not supervisions and publications	
 			else if ($('input#matrixFilterCo_sups').is(':checked')==false && $('input#matrixFilterCo_pubs').is(':checked')) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);					
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);
+
+				updateMatrixCollabLegend([1,0,0,0,0,0,0]);					
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -3030,7 +3149,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//supervisions and not publications
 			else if ($('input#matrixFilterCo_sups').is(':checked') && $('input#matrixFilterCo_pubs').is(':checked')==false) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
-				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);					
+				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);	
+
+				updateMatrixCollabLegend([0,1,0,0,0,0,0]);				
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
@@ -3068,6 +3189,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if($('input#matrixFilterAND').is(':checked')){
+
+						updateMatrixCollabLegend([0,0,0,1,0,0,0]);
+
 						if(d.grant == 0 && d.cosup > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
@@ -3083,6 +3207,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 						}
 					}
 					else{
+
+						updateMatrixCollabLegend([1,1,0,1,0,0,0]);
+
 						if(d.cosup > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
@@ -4021,7 +4148,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  $('#matrixFilterTypeSingle').hide(0);//multiple is the default to start
 
 	  //construct the legend
-	  constructMatrixLegend(science_departments, science_faculty_data);
+	  constructmatrixlegends(science_departments, science_faculty_data);
 
 	  matrixnodes = science_faculty_data;
 	  var n = matrixnodes.length;
@@ -4495,11 +4622,11 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	}
 
 	//since matrix rows and columns are not bound with department data, nodes(science_faculty_data) are needed here
-	function constructMatrixLegend(science_departments, nodes) {
+	function constructmatrixlegends(science_departments, nodes) {
 
 	  var selectedDepartments = [];
 
-	  var label = matrixlegend.selectAll(".label")
+	  var label = matrixdepartmentlegend.selectAll(".label")
 	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")

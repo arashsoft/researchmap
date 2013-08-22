@@ -2188,7 +2188,7 @@ form.signin input::-webkit-input-placeholder {
   cursor: default;
   }
 
-  #matrixlegend {
+  #matrixdepartmentlegend {
   display: inline-block;
   width: 100%;
   padding: 3px 50px;
@@ -2198,7 +2198,7 @@ form.signin input::-webkit-input-placeholder {
   box-sizing:        border-box;  
 }
 
-#matrixlegend p {
+#matrixdepartmentlegend p {
   text-align: center;
   font-family: 'Helvetica Neue';
   text-transform: uppercase;
@@ -2210,7 +2210,7 @@ form.signin input::-webkit-input-placeholder {
   letter-spacing: 0.1em;
 }
 
-#matrixlegend div.label{
+#matrixdepartmentlegend div.label{
   display: inline-block;
   color: black;
   font-family: 'Helvetica Neue';
@@ -2219,6 +2219,45 @@ form.signin input::-webkit-input-placeholder {
   cursor: default;
   }
 
+#matrixcollaborationfilters {
+  display: inline-block;
+  float: left;
+  width: 55%;
+}  
+
+#matrixcollaborationlegend {
+  position: absolute;
+  left: 1%;
+  top: 10%;
+  color: rgb(200,200,200);
+  border: 1px solid #ebebeb;
+  overflow: auto;
+  padding: 10px;
+  background: white;
+  opacity: 0.95;
+  border-radius: 2px;
+  cursor: move;
+}
+
+#matrixcollaborationlegend p {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1em;
+  display: inline-block;
+  position: relative;
+  top: -3px;
+}  
+
+#matrixcollaborationlegend div {
+  display: block;
+}
+
+#matrixcollaborationlegend div div {
+  width: 1em;
+  height: 1em;
+  margin: 0px 5px 0px 0px;
+  display: inline-block;
+}  
+ 
 #treemaplegend {
   display: inline-block;
   width: 100%;
