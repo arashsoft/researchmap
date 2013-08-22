@@ -1741,6 +1741,14 @@ div#networkbar div.ui-widget {
   padding: 3.5px 5px;
 }
 
+div#matrixbar div.ui-widget {
+  font-family: 'Helvetica Neue';
+  font-size: 14px;
+  display: inline-block;
+  vertical-align: top;
+  padding: 3.5px 5px;
+}
+
 div#sankeybar div.ui-widget {
   font-family: 'Helvetica Neue';
   font-size: 14px;

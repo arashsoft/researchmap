@@ -58,6 +58,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	var links_grants = [];
 	var network_constructed = false;
 	var matrix_constructed = false;
+	var currentlySearchingMatrix = false;
 
 	var chord_constructed = false;
 	 
@@ -362,6 +363,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  }
 
 	  //populate the autocomplete search box with the science members
+	  //for the network
 	  $( "#tags" ).autocomplete({
 	    source: store.session("science_names"),
 	    delay: 500,
@@ -371,6 +373,18 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      highlightSelectedNode(name);
 	    }
 	  });
+	  //and for the matrix
+	  $( "#matrixsearch" ).autocomplete({
+	    source: store.session("science_names"),
+	    delay: 500,
+	    minLength: 2,
+	    select: function (event, ui) {
+	    	$('#matrixlegend').slideUp();
+	    	currentlySearchingMatrix = true;
+	      	var name = ui.item.value;
+	      	highlightSelectedRow(name);
+	    }
+	  });	  
 
 	  $('input#filterNodesAll').iCheck('check');
 	  $('input#selectNone').iCheck('check');
@@ -1625,6 +1639,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	// }); //end document.ready
 
 	//if the user empties the search box, restore the opacity of all links and nodes
+	//for the network
 	$('#tags').change(function() {
 	  if ($('#tags').val() == "") {
 	    d3.selectAll("circle.node").each( function () {
@@ -1634,6 +1649,29 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      d3.select(this).transition().duration(1000).style("opacity", 1);
 	    });
 	  }
+	});
+	//and for the matrix
+	$('#matrixsearch').change(function() {
+	  if ($('#matrixsearch').val() == "") {
+	  	  d3.selectAll("rect.matrixcell").each(function() {	 
+	  	  	var notfiltered = this.attributes.currentlyfiltered == null || this.attributes.currentlyfiltered.value == 0;   	 
+			if (notfiltered) {
+		    	d3.select(this).style("opacity", function() { 
+		    			return this.attributes.previousopacity.value; //restore its previous opacity
+		    	}); 	    	
+		  	  }
+		  	else
+		  		d3.select(this).style("visibility", "hidden"); //for the cells that were made visible during the search
+	  		});
+	  	  	d3.selectAll(".matrixrow text").each(function(d) {
+	  	  		d3.select(this).style("opacity", function() { return this.attributes.opacitybeforesearch.value; });
+		  	});
+	  	  	d3.selectAll(".matrixcolumn text").each(function(d) {
+	  	  		d3.select(this).style("opacity", function() { return this.attributes.opacitybeforesearch.value; });
+		  	});		
+		  	currentlySearchingMatrix = false; 
+		  	$('#matrixlegend').slideDown();
+		}
 	});
 
 	$('#sizeNodes').change(function() {
@@ -4809,6 +4847,49 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  }, 1000);
 
 	}//end highlightSelectedNode
+
+	/*
+	highlights a row and column in the matrix that corresponds to a given name by lowering the opacity of all others 
+	@params: name: the name of the individual that has been searched
+	@returns: none
+	*/
+	function highlightSelectedRow (name) {
+		var collaborators = []; //for later filtering the column names
+  	  d3.selectAll("rect.matrixcell").each(function() {	 
+  	  	var notfiltered = this.attributes.currentlyfiltered == null || this.attributes.currentlyfiltered.value == 0;   	 
+		if (notfiltered) //if not currently filtered
+			d3.select(this).attr("previousopacity", function() { return this.style.opacity; }); 
+    	
+		if (notfiltered && _.last(this.parentNode.childNodes).textContent != name) //if not currently filtered
+			d3.select(this).style("opacity", function() { return 0.05; });
+		else if (!notfiltered && _.last(this.parentNode.childNodes).textContent == name) { //if it is currently filtered
+			d3.select(this).style("opacity", function() { return this.attributes.previousopacity.value; });//restore its previous opacity
+			d3.select(this).style("visibility", "visible");
+		}
+    	}); 	    	
+
+	  d3.selectAll(".matrixrow text").each( function () {
+	    d3.select(this).attr("opacitybeforesearch", function() { return this.style.opacity; });//to accomodate filtered names	  	
+	    if (this.textContent != name) {
+	      	d3.select(this).style("opacity", 0.05);
+	      }
+	    else {
+			d3.select(this).style("opacity", 1);
+			d3.select(this.parentElement).selectAll("rect.matrixcell").each(function() {
+				collaborators.push(this.childNodes[0].textContent.substring(this.childNodes[0].textContent.indexOf('b>')+2 , this.childNodes[0].textContent.indexOf('&')-1));
+			});
+	    }
+	  });
+  	  d3.selectAll(".matrixcolumn text").each( function () {
+	    d3.select(this).attr("opacitybeforesearch", function() { return this.style.opacity; });//to accomodate filtered names	  	  	  	
+    	if (!_.contains(collaborators, this.textContent))
+      		d3.select(this).style("opacity", 0.05);
+    	else {
+			d3.select(this).style("opacity", 1);
+    	}
+  	  });  	  	  
+
+	}//end highlightSelectedRow	
 
 	function countLinks (type) {
 	  d3.selectAll("circle.node").each( function () {
