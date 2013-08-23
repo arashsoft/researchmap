@@ -60,6 +60,15 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	var matrix_constructed = false;
 	var currentlySearchingMatrix = false;
 
+	var envandsusCluster = ["Bernards,Mark A", "Branfireun,Brian Andrew", "Creed,Irena F.", "Cumming,Robert", 
+	"Damjanovski,Sashko", "Grbic,Miodrag", "Grbic,Vojislava", "Guglielmo,Christopher G.", "Henry,Hugh A.L.", 
+	"Hill,Kathleen A.", "Huner,Norman P A", "Karagiannis,Jim", "Kelly,Gregory M", "Keyghobadi,Nusha", "Kohalmi,Susanne E.", 
+	"Lachance,Marc-Andre", "Lindo,Zoe", "MacDougall Shackleton,Elizabeth", "Macfie,Sheila M.", "Maxwell,Denis P", 
+	"McNeil,Jeremy", "Milligan,Louise", "Moehring,Amanda Jean", "Morbey,Yolanda", "Murphy,Brenda Carol", 
+	"Neff,Bryan David Tyson", "Percival-Smith,Anthony", "Rubin,Benjamin", "Sinclair,Brent J", "Singh,Shiva M", 
+	"Staples,James Francis", "Taylor,Graeme", "Thompson,Graham", "Thorn,Richard G.", "Timoshenko,Alexander", 
+	"Trick,Charles G", "Way,Danielle A", "Zanette,Liana"];
+
 	var chord_constructed = false;
 	 
 	// scales for the different node sizings
@@ -3810,6 +3819,29 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  		//network_force.gravity(0.6);
 	    	network_force.linkStrength(dlinkStrength).charge(dcharge).gravity(dgravity).linkDistance(dlinkDistance).start();	  		
 	  	}
+	});
+
+	$('#filterclusters').chosen().change(function() {
+		if (this.value == "envandsus") {
+			d3.selectAll("circle.node").each( function () {
+			    if (!_.contains(envandsusCluster, this.__data__.Name))
+			      d3.select(this).style("opacity", 0.07);
+			});
+		      d3.selectAll("line.link").each( function () {
+		        if (!_.contains(envandsusCluster, this.__data__.source.Name) || !_.contains(envandsusCluster, this.__data__.target.Name))
+		          d3.select(this).style("opacity", 0.03);
+		      });
+		}
+		else if (this.value == "none") {
+			d3.selectAll("circle.node").each( function () {
+			    //TODO: if not filtered, etc...
+			      d3.select(this).style("opacity", 1);
+			});
+		      d3.selectAll("line.link").each( function () {
+		      	//TODO: if not filtered, etc...
+			      d3.select(this).style("opacity", 1);
+		      });
+		}
 	});
 
 
