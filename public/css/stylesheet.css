@@ -2247,6 +2247,13 @@ form.signin input::-webkit-input-placeholder {
   top: -3px;
 }  
 
+#matrixcollaborationlegend p#dock {
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 0.3em;
+  float: right;
+  cursor: pointer;
+}
+
 #matrixcollaborationlegend div {
   display: block;
 }

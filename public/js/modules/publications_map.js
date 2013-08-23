@@ -1090,6 +1090,14 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  }); 
 	}*/
 
+	$('#dock').on("click", function() {
+		var w = $('#matrixcollaborationlegend').width()
+		$('#matrixcollaborationlegend').css("position", "relative").css("left", "10px").css("width", w).css("top", "-5px");
+		$('#dock').text("");		
+	});
+	$('#matrixcollaborationlegend').on("drag", function() {
+		$('#dock').text("dock");
+	});
 
 	$('input#filterCo_pubs').on('ifChecked', function() {
 
