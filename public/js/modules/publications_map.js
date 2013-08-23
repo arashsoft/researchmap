@@ -318,6 +318,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  $('input#matrixFilterINCLUSIVE').parent().css("display", "inline-block").css("margin", "0% 25% 0% 15%");	
 
 	  $('#matrixcollaborationlegend').draggable({ containment: "#vizcontainer", scroll: false });  
+	  $('#matrixcollaborationlegend').hide();
+	  $('#matrixdepartmentlegendtoggle').hide();
 
 		//hide the selectionArea div
 		$('#selectionArea').hide();
@@ -1097,6 +1099,18 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	});
 	$('#matrixcollaborationlegend').on("drag", function() {
 		$('#dock').text("dock");
+	});
+
+	$('#matrixdepartmentlegendtoggle').on("click", function() {
+		if ($('#matrixdepartmentlegend').is(':visible')){
+			$('#matrixdepartmentlegend').slideUp(200);
+			$('#matrixdepartmentlegendtoggle').css('top', '-4px').css('border-radius', '0px 0px 2px 2px');
+		}
+		else {
+		$('#matrixdepartmentlegend').slideDown(200);
+			$('#matrixdepartmentlegendtoggle').css('top', '-13px').css('border-radius', '2px 2px 0px 0px');			
+		}
+
 	});
 
 	$('input#filterCo_pubs').on('ifChecked', function() {
@@ -4154,6 +4168,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  $('#matrixFilterOR').iCheck('check');//set this as the default
 	  $('#matrixFilterINCLUSIVE').iCheck('check');//set this as the default	  
 	  $('#matrixFilterTypeSingle').hide(0);//multiple is the default to start
+	  $('#matrixcollaborationlegend').show();
+	  $('#matrixdepartmentlegendtoggle').show();	  
 
 	  //construct the legend
 	  constructmatrixlegends(science_departments, science_faculty_data);
@@ -4762,6 +4778,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			//trigger a mouseover event
 			$(this).onmouseover();	
 	    });
+
+		$('#matrixdepartmentlegendtoggle').css('left', $('#matrixdepartmentlegend').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2)
+
 	}
 
 	function constructChord() {
