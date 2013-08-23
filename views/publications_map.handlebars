@@ -28,17 +28,12 @@
             <input id="tags" />
           </div>
 
-  <!--         <div id="selectcontainer">
-            <select id="tasks" data-placeholder="Choose an automated task to perform..." class="chzn-select" style="width:250px;" tabindex="2"> 
-              <option value=""></option>
-              <option value="ii_clusters">Identify and isolate clusters</option>
-              <option value="department">task2</option>
-            </select>
-          </div> -->
           <button id="networkreset">reset</button>
         </div>
-        <div id="networklegend">
+        <div id="networkdepartmentlegend">
         </div>
+        <div id="networkdepartmentlegendtoggle">
+        </div>   
         <div id="animateYearPlaceholder">
         </div>
         <div id="selectionArea">
@@ -56,35 +51,25 @@
         <div id="matrixbar">
           <img id="matrixzoomin" src="img/zoomin.png"></img>
           <img id="matrixzoomout" src="img/zoomout.png"></img>
-          <div id="selectcontainer">
-
-  <!--           <select id="order" data-placeholder="Arrange matrix according to..." class="chzn-select" style="width:150px;" tabindex="2"> 
-              <option value=""></option>
-              <option value="name" selected>by Name</option>
-              <option value="count">by Count</option>
-              <option value="department">by Department</option>
-            </select><br>  -->
+          <div class="ui-widget">
+            <input id="matrixsearch" />
           </div>
           <button id="matrixreset">reset</button>
         </div>
-        <div id="matrixlegend">
+        <div id="matrixdepartmentlegend">
         </div>
-  <!--       <p>Order: 
-          <select id="order">
-            <option value="name" selected>by Name</option>
-            <option value="count">by Count</option>
-            <option value="department">by Department</option>
-          </select>
-        </p> -->
+        <div id="matrixdepartmentlegendtoggle">
+        </div>                 
       </div>
     </div>
 
 
-
+        <div id="actionpaneltoggle">
+          <p>></p>
+        </div> 
     <div id="actionpanel">
       <h2>Action Panel</h2>
-        <!-- <p>Select actions that you would like to perform on the visualization. Click on an action to expand its options.</p> -->
-      
+
       <div id="networkactions">
 
         <h3>automated tasks</h3><hr>
@@ -171,7 +156,13 @@
 <!--           <p>departments</p>
           <select id="filterdepartments" data-placeholder="Click to add departments" style="width:100%;" multiple class="chzn-select" tabindex="8">
               <option value=""></option>
-          </select>   -->        
+          </select>   -->   
+
+          <p>research clusters</p>
+          <select id="filterclusters" class="chzn-select" style="width:90%;"> 
+            <option value="none" selected>none</option>
+            <option value="envandsus">environment & sustainability</option>
+          </select>
 
         </div>
 
@@ -278,10 +269,8 @@
         
         <h3>translate</h3><hr>
         <div class="action">  
-          <select id="translate" data-placeholder="Translate to..." class="chzn-select" style="width:150px;">
-            <option value=""></option>
-            <option value="network">network</option>
-            <option value="table">table</option>
+          <select id="translate" class="chzn-select" style="width:90%">
+            <option value="network" selected>network</option>
             <option value="matrix">co-matrix</option>
           </select><br>
         </div>
@@ -301,21 +290,24 @@
 
         <h3>filter</h3><hr>
         <div class="action">
-          <p>by collaboration type</p>    
-          <ul class="actionlist"> 
-            <li>
-              <input type="checkbox" checked id="matrixFilterCo_pubs"></input> 
-              <label for="matrixFilterCo_pubs">publications</label>
-            </li>
-            <li>
-              <input type="checkbox" checked id="matrixFilterCo_sups"></input> 
-              <label for="matrixFilterCo_sups">supervisions</label>
-            </li>     
-            <li>
-              <input type="checkbox" checked id="matrixFilterCo_grants"></input> 
-              <label for="matrixFilterCo_grants">grants</label>
-            </li>                    
-          </ul>
+          <p>by collaboration type</p> 
+            <ul class="actionlist"> 
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_pubs"></input> 
+                <label for="matrixFilterCo_pubs">publications</label>
+              </li>
+
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_sups"></input> 
+                <label for="matrixFilterCo_sups">supervisions</label>
+              </li>  
+   
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_grants"></input> 
+                <label for="matrixFilterCo_grants">grants</label>
+              </li> 
+            </ul>
+
           <div id="matrixFilterTypeMultiple">
             <hr style="margin: 20px 0px">            
             <input type="radio" name="matrixFilterMultipleType" id="matrixFilterAND"></input>
@@ -334,25 +326,31 @@
             <label for="matrixFilterAND" style="margin:0% 5% 0% 16%; line-height:1.5">EXCLUSIVE</label>
             <label for="matrixFilterOR" style="margin:0% 10% 0% 9%; line-height:1.5">INCLUSIVE</label>   
           </div>          
-        </div>
-
-<!--         <h3>granularity</h3><hr>
-        <div class="action">
-        </div> -->
+      </div>
 
         <h3>translate</h3><hr>
         <div class="action">
           <select id="translatematrix" data-placeholder="Translate to..." class="chzn-select" style="width:150px;" tabindex="4">
             <option value=""></option>
             <option value="network">network</option>
-            <option value="table">table</option>
-            <option value="matrix">co-matrix</option>
           </select><br> 
         </div>
-      </div>
     </div>
   </div>
+  <div id="matrixcollaborationlegend">
+    <p id="dock">dock</p>
+    <div><div id="matrixlegendpub" style="background: #E1B2D7;"></div><p>publication</p></div>
+    <div><div id="matrixlegendsup" style="background: #D5E067;"></div><p>supervision</p></div>
+    <div><div id="matrixlegendgrant" style="background: #79DEC0;"></div><p>grant</p></div>
+    <br>
+    <div><div id="matrixlegendpubsup" style="background: #9BD0E3;"></div><p>publication + supervision</p></div>
+    <div><div id="matrixlegendsupgrant" style="background: #A0E191;"></div><p>supervision + grant</p></div>
+    <div><div id="matrixlegendpubgrant" style="background: #F0A487;"></div><p>publication + grant</p></div>
+    <br>
 
+    <div><div id="matrixlegendpubsupgrant" style="background: #DCBE6B;"></div><p>all three</p></div>                             
+  </div>   
+</div>
 
 {{#scripts}}
 <script type="text/javascript" src="js/modules/{{.}}.js"></script>
