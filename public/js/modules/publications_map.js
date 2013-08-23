@@ -149,7 +149,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	   	  })*/;
 /*	$('#networkviz').on("dblclick", function(e) {
 		var x = e.offsetX;
-		var y = e.offsetY + $('#networkbar').height() + $('#networklegend').height();
+		var y = e.offsetY + $('#networkbar').height() + $('#networkdepartmentlegend').height();
 		var note = d3.select('#networkviz').append('div')
    	  		.style('position', 'absolute')
    	  		.style('left', x + "px")
@@ -224,7 +224,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	//consructs the new force-directed layout
 	var network_force = d3.layout.force().size([svgwidth,svgheight]);
 
-	var networklegend = d3.select("#networklegend"); //where the network legend will go
+	var networkdepartmentlegend = d3.select("#networkdepartmentlegend"); //where the network legend will go
 
 	var node;
 	var link;
@@ -320,6 +320,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  $('#matrixcollaborationlegend').draggable({ containment: "#vizcontainer", scroll: false });  
 	  $('#matrixcollaborationlegend').hide();
 	  $('#matrixdepartmentlegendtoggle').hide();
+
+	  $('#networkdepartmentlegendtoggle').hide();
 
 		//hide the selectionArea div
 		$('#selectionArea').hide();
@@ -1094,7 +1096,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	$('#dock').on("click", function() {
 		var w = $('#matrixcollaborationlegend').width()
-		$('#matrixcollaborationlegend').css("position", "relative").css("left", "10px").css("width", w).css("top", "-5px");
+		$('#matrixcollaborationlegend').css("position", "relative").css("left", "10px").css("width", w).css("top", "-50px");
 		$('#dock').text("");		
 	});
 	$('#matrixcollaborationlegend').on("drag", function() {
@@ -1110,7 +1112,53 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		$('#matrixdepartmentlegend').slideDown(200);
 			$('#matrixdepartmentlegendtoggle').css('top', '-13px').css('border-radius', '2px 2px 0px 0px');			
 		}
+	});
 
+	$('#networkdepartmentlegendtoggle').on("click", function() {
+		if ($('#networkdepartmentlegend').is(':visible')){
+			$('#networkdepartmentlegend').slideUp(200);
+			$('#networkdepartmentlegendtoggle').css('top', '-4px').css('border-radius', '0px 0px 2px 2px');
+		}
+		else {
+		$('#networkdepartmentlegend').slideDown(200);
+			$('#networkdepartmentlegendtoggle').css('top', '-13px').css('border-radius', '2px 2px 0px 0px');			
+		}
+	});	
+
+	$('#actionpaneltoggle').on("click", function() {
+		if ($('#actionpanel').is(':visible')){
+			$('#actionpanel').hide('slow');
+			$('#actionpaneltoggle').css('left', '10px').css('width', '20px').css('border-radius', '2px 0px 0px 2px');
+			$('#actionpaneltoggle p').text('<');
+			$('#vizcontainer').css('width', $(window).width()-50);
+			if ($('#matrixviz').is(':visible')){
+				$('#matrixviz').css('width', $(window).width()-50);			
+				$('#matrixviz svg').css('width', $(window).width()-50);
+				$('#matrixdepartmentlegendtoggle').css('left', $('#matrixdepartmentlegend').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);
+			}
+			else if ($('#networkviz').is(':visible')){
+				$('#networkviz').css('width', $(window).width()-50);			
+				$('#networkviz svg').css('width', $(window).width()-50);
+				$('#networkdepartmentlegendtoggle').css('left', $('#networkdepartmentlegend').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
+			}
+		}
+		else {
+			$('#vizcontainer').css('width', '72%');	
+			$('#actionpanel').show();
+			$('#actionpaneltoggle').css('left', '10px').css('top', '6px').css('width', '20px').css('border-radius', '0px 2px 2px 0px');	
+			$('#actionpaneltoggle p').text('>');	
+			if ($('#matrixviz').is(':visible')){
+				$('#matrixviz').css('width', $('#vizcontainer').width());
+				$('#matrixviz svg').css('width', $('#vizcontainer').width());			
+				$('#matrixdepartmentlegendtoggle').css('left', $('#matrixdepartmentlegend').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);				
+			}
+			else if ($('#networkviz').is(':visible')){
+				$('#networkviz').css('width', $('#vizcontainer').width());
+				$('#networkviz svg').css('width', $('#vizcontainer').width());			
+				$('#networkdepartmentlegendtoggle').css('left', $('#networkdepartmentlegend').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);	
+			}		
+		}
+		//resizeViz();
 	});
 
 	$('input#filterCo_pubs').on('ifChecked', function() {
@@ -3542,9 +3590,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  	$('#vizloader').hide();
 
 	  	$('#networkactions').show(800);
+	  	$('#networkdepartmentlegendtoggle').show();
 
 	  	//construct the legend
-	  	constructNetworkLegend(science_departments);
+	  	constructnetworkdepartmentlegend(science_departments);
 
 	  	//populate the filter area with departments
 	  	populateFilter(science_departments);
@@ -3708,7 +3757,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        d.py += d3.event.dy;
 	        d.x += d3.event.dx;
 	        d.y += d3.event.dy; 
-	        //90 is the height of the bar & legend. "$('networklegend').height()" does not get the value for legend is constructed dynamically
+	        //90 is the height of the bar & legend. "$('networkdepartmentlegend').height()" does not get the value for legend is constructed dynamically
 	        //10 is the radius of node and 5 is the line-width of the gatheringArea
 	        var left = ($('#gatheringArea').position().left - networkzoom.translate()[0] + 10) / networkzoom.scale();
 			var right = ($('#gatheringArea').position().left - networkzoom.translate()[0] + $('#gatheringArea').width() + 10 + 5) / networkzoom.scale();
@@ -4529,11 +4578,11 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	}
 
 
-	function constructNetworkLegend(science_departments) {
+	function constructnetworkdepartmentlegend(science_departments) {
 
 		var selectedDepartments = [];
 
-	  var label = networklegend.selectAll(".label")
+	  var label = networkdepartmentlegend.selectAll(".label")
 	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")
@@ -4643,6 +4692,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					label.selected = true; //TODO: remove this property
 				}			
 			});
+
+		$('#networkdepartmentlegendtoggle').css('left', $('#networkdepartmentlegend').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
+
 	}
 
 	//since matrix rows and columns are not bound with department data, nodes(science_faculty_data) are needed here
@@ -4779,7 +4831,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			$(this).onmouseover();	
 	    });
 
-		$('#matrixdepartmentlegendtoggle').css('left', $('#matrixdepartmentlegend').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2)
+		$('#matrixdepartmentlegendtoggle').css('left', $('#matrixdepartmentlegend').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);
 
 	}
 
@@ -5307,8 +5359,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	/*
 	count publications, supervisions and grants of every nodes. Then add the numbers to the node attributes.
-	@params:
-	@returns:
+	@params: none
+	@returns: none
 	*/
 	function countCollaborationsOfNodes() {
 		node = d3.selectAll("circle.node");
@@ -5324,6 +5376,26 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				node[0][d.target].attributes[5].value++;
 			}
 		});
+	}
+
+	/*
+	resizes the visualization area if the action panel is hidden or shown
+	@params: none
+	@returns: none
+	*/
+	function resizeViz() {
+		if ($('#matrixviz').is(':visible')) {
+			$('#matrixviz').css('width', $(window).width()-50);
+			$('#vizcontainer').css('width', $(window).width()-50);
+			$('#matrixviz svg').css('width', $(window).width()-50);
+			$('#matrixdepartmentlegendtoggle').css('left', $('#matrixdepartmentlegend').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);
+		}
+		else if ($('#networkviz').is(':visible')) {
+			$('#networkviz').css('width', $(window).width()-50);
+			$('#vizcontainer').css('width', $(window).width()-50);
+			$('#networkviz svg').css('width', $(window).width()-50);
+			$('#networkdepartmentlegendtoggle').css('left', $('#networkdepartmentlegend').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
+		}
 	}
 
 }());

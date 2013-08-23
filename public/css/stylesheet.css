@@ -796,6 +796,8 @@ for matrix
   letter-spacing: 0.1em;
   font-size: 10px;
   margin-bottom: 20px;
+  position: relative;
+  top: -42px;
 }
 
 #actionpanel hr {
@@ -2157,7 +2159,7 @@ form.signin input::-webkit-input-placeholder {
   color: black;
 }
 
-#networklegend {
+#networkdepartmentlegend {
   display: inline-block;
   width: 100%;
   padding: 3px 10px;
@@ -2166,8 +2168,20 @@ form.signin input::-webkit-input-placeholder {
   -webkit-box-sizing: border-box;
   box-sizing:        border-box;
 }
+#networkdepartmentlegendtoggle {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 8px;
+  background: #f7f7f7;
+  border: 1px solid #f0f0f0;
+  left:500px;
+  top:-13px;
+  border-radius: 2px 2px 0px 0px;
+  cursor: pointer;
+}
 
-#networklegend p {
+#networkdepartmentlegend p {
   text-align: center;
   font-family: 'Helvetica Neue';
   text-transform: uppercase;
@@ -2179,7 +2193,7 @@ form.signin input::-webkit-input-placeholder {
   letter-spacing: 0.1em;
 }
 
-#networklegend div.label{
+#networkdepartmentlegend div.label{
   display: inline-block;
   color: black;
   font-family: 'Helvetica Neue', sans-serif;
@@ -2209,6 +2223,28 @@ form.signin input::-webkit-input-placeholder {
   top:-13px;
   border-radius: 2px 2px 0px 0px;
   cursor: pointer;
+}
+
+#actionpaneltoggle {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 40px;
+  background: #e9e9e9;
+  border: 1px solid #f0f0f0;
+  left:10px;
+  top:6px;
+  border-radius: 0px 2px 2px 0px;
+  cursor: pointer;
+  z-index: 10;
+}
+#actionpaneltoggle p {
+  text-align: center;
+  position: relative;
+  top: 10%;
+  font-size: 1.5em;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 800;
 }
 
 #matrixdepartmentlegend p {
