@@ -31,6 +31,14 @@ var GRANTS = (function () {
   var selectedBubbles = [];
   var grantValueCenters = [];
   var departmentCenters = [];
+  //for calculate boundary polygons in arranging
+  var grantvalue_border_coords = [];
+  var grantvalue_border_coords = [];
+  var department_border_coords = [];
+  var department_border_coords = [];
+  var border_coords_sampled = true; //when set to false, start updating the border coords arrays in the tick function
+  var sampletime = 15000;
+
   var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 
   //for the bubble diagram filter
@@ -171,7 +179,7 @@ var GRANTS = (function () {
   //to be panned
   var bubblesvgbackground = bubblesvg.append("svg:rect").attr("width", width).attr("height", height).style("fill", "aliceblue").style("opacity", 0);
     //this will be used to calculate the positions of the nodes when rearranged
-  var  circleOutline = bubblesvg.append("svg:circle").attr("cx", width/2-80).attr("cy", height/2-80).attr("r", width/3).style("stroke", "gray").style("stroke-width", "1px").style("fill", "none").style("opacity", 0);
+  var  circleOutline = bubblesvg.append("svg:circle").attr("cx", width/2).attr("cy", height/2).attr("r", width/3).style("stroke", "gray").style("stroke-width", "1px").style("fill", "none");//.style("opacity", 0);
 
 
   //this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
@@ -669,14 +677,28 @@ var GRANTS = (function () {
   $('input#filterOthers').on('ifUnchecked', filterBubblesByStatus);
 
   $('#arrangebubble').chosen().change(function() {
+    bubblesvg.selectAll("g.boundary.department").remove();
+    bubblesvg.selectAll("g.boundary.grantvalue").remove();
     if(this.value == "random") {
-      bubble_force.gravity(0.25).start();
+      bubble_force.start();
     }
     if(this.value == "department") {
-      bubble_force.gravity(0.45).start();
+      border_coords_sampled = true;
+      bubble_force.start();
+      setTimeout(function() {
+        border_coords_sampled = false;
+        tick();
+        arrangementBoundaries("department");
+      }, sampletime);
     }
     if(this.value == "grantvalue") {
-      bubble_force.gravity(0.45).start();
+      border_coords_sampled = true;
+      bubble_force.start();
+      setTimeout(function() {
+        border_coords_sampled = false;
+        tick();
+        arrangementBoundaries("grantvalue");
+      }, sampletime);
     }
   })
 
@@ -1680,10 +1702,20 @@ var GRANTS = (function () {
             i++;
           }
           d3.select(this).attr("cx", function(d) {
-            return d.x += (grantValueCenters[i].focuscoords[0]) * 0.12 * bubble_force.alpha();
+            d.x += (grantValueCenters[i].focuscoords[0] - d.x) * 0.12 * bubble_force.alpha();
+            if(!border_coords_sampled) {
+              grantvalue_border_coords[i].min_x = d.x < grantvalue_border_coords[i].min_x ? d.x : grantvalue_border_coords[i].min_x;
+              grantvalue_border_coords[i].max_x = d.x > grantvalue_border_coords[i].max_x ? d.x : grantvalue_border_coords[i].max_x;
+            }
+            return d.x;
           });
           d3.select(this).attr("cy", function(d) {
-            return d.y += (grantValueCenters[i].focuscoords[1]) * 0.12 * bubble_force.alpha();
+            d.y += (grantValueCenters[i].focuscoords[1] - d.y) * 0.12 * bubble_force.alpha();
+            if(!border_coords_sampled) {
+              grantvalue_border_coords[i].min_y = d.y < grantvalue_border_coords[i].min_y ? d.y : grantvalue_border_coords[i].min_y;
+              grantvalue_border_coords[i].max_y = d.y > grantvalue_border_coords[i].max_y ? d.y : grantvalue_border_coords[i].max_y;
+            }
+            return d.y;
           });
         });
     } else if($('#arrangebubble').val() == "department") {
@@ -1692,20 +1724,31 @@ var GRANTS = (function () {
           var i = 0;
           //there are only 8 grants that have a nested department object, it does not matter how to put these bubbles
           //the random center at each tick allows thses bubbles to stay in between department areas they belong to
-          var dept = ($.isArray(d.Department) ? d.Department[parseInt(Math.random()*d.Department.length)] : d.Department).substring(0, 5);
+          //var dept = ($.isArray(d.Department) ? d.Department[parseInt(Math.random()*d.Department.length)] : d.Department).substring(0, 4);
+          var dept = ($.isArray(d.Department) ? d.Department[0] : d.Department).substring(0, 4);
           //find matched center index
           while(i < departmentCenters.length) {
-            if(departmentCenters[i].name.substring(0, 5) == dept)
+            if(departmentCenters[i].name.substring(0, 4) == dept)
               break;
             i++;
           }
           if(i == departmentCenters.length)
             i--;
           d3.select(this).attr("cx", function(d) {
-            return d.x += (departmentCenters[i].focuscoords[0]) * 0.12 * bubble_force.alpha();
+            d.x += (departmentCenters[i].focuscoords[0] - d.x) * 0.12 * bubble_force.alpha();
+            if(!border_coords_sampled) {
+              department_border_coords[i].min_x = d.x < department_border_coords[i].min_x ? d.x : department_border_coords[i].min_x;
+              department_border_coords[i].max_x = d.x > department_border_coords[i].max_x ? d.x : department_border_coords[i].max_x;
+            }
+            return d.x;
           });
           d3.select(this).attr("cy", function(d) {
-            return d.y += (departmentCenters[i].focuscoords[1]) * 0.12 * bubble_force.alpha();
+            d.y += (departmentCenters[i].focuscoords[1] - d.y) * 0.12 * bubble_force.alpha();
+            if(!border_coords_sampled) {
+              department_border_coords[i].min_y = d.y < department_border_coords[i].min_y ? d.y : department_border_coords[i].min_y;
+              department_border_coords[i].max_y = d.y > department_border_coords[i].max_y ? d.y : department_border_coords[i].max_y;
+            }
+            return d.y;
           });
         });
     } else {
@@ -1744,6 +1787,7 @@ var GRANTS = (function () {
     //var numpoints = parseInt(Math.log(max_grant_value) / Math.LN10) + 2;
     var numpoints = 9;
     var slice = 2 * Math.PI / numpoints;
+
     var radius = circleOutline[0][0].r.animVal.value;
     var centerx = circleOutline[0][0].cx.animVal.value;
     var centery = circleOutline[0][0].cy.animVal.value;
@@ -1752,6 +1796,7 @@ var GRANTS = (function () {
       var newX = (centerx + radius * Math.cos(angle));
       var newY = (centery + radius * Math.sin(angle));
       grantValueCenters.push({"amount": Math.pow(10, i), "focuscoords": [newX, newY]});
+      grantvalue_border_coords.push({"min_x": width, "max_x": 0, "min_y": height, "max_y": 0});
     }
 
     //calculate department centers.
@@ -1784,6 +1829,7 @@ var GRANTS = (function () {
         var newX = (centerx + radius * Math.cos(angle));
         var newY = (centery + radius * Math.sin(angle));
         departmentCenters[i].focuscoords = [newX, newY];
+        department_border_coords.push({"min_x": width, "max_x": 0, "min_y": height, "max_y": 0});
       }
     }
     
@@ -1976,6 +2022,216 @@ var GRANTS = (function () {
     });
 
     return finallist;
+  }
+
+  /* 
+  Calculate and show boundaries polygons when arranging nodes
+  @params: type: the property used to arrange nodes
+  @returns: 
+  */
+  function arrangementBoundaries(type) {
+    var border_coords, rectangles = [], polygons = [], r = 10;
+    border_coords_sampled = true;
+    if(type == "department")
+      border_coords = department_border_coords;
+    else //grant value
+      border_coords = grantvalue_border_coords;
+    //calculate boundary rectangles
+    for(var i = 0; i < border_coords.length; i++) {
+      rectangles.push([[parseInt(border_coords[i].min_x - r), parseInt(border_coords[i].min_y - r)]
+        , [parseInt(border_coords[i].min_x - r), parseInt(border_coords[i].max_y + r)]
+        , [parseInt(border_coords[i].max_x + r), parseInt(border_coords[i].max_y + r)]
+        , [parseInt(border_coords[i].max_x + r), parseInt(border_coords[i].min_y - r)]]);
+      polygons.push([[parseInt(border_coords[i].min_x - r), parseInt(border_coords[i].min_y - r)]
+        , [parseInt(border_coords[i].min_x - r), parseInt(border_coords[i].max_y + r)]
+        , [parseInt(border_coords[i].max_x + r), parseInt(border_coords[i].max_y + r)]
+        , [parseInt(border_coords[i].max_x + r), parseInt(border_coords[i].min_y - r)]]);
+    }
+    //calculate the diagonals of overlapping parts
+    //calculate boundary polygons
+    for(var i = 0; i < rectangles.length - 1; i++) {
+      var interrectangle = d3.geom.polygon(rectangles[i]).clip(rectangles[i+1].slice(0));
+      if(interrectangle.length) {
+        //process the interrectangle
+        var min_x = width, min_y = height, max_x = 0, max_y = 0;
+        for(var j = 0; j < 4; j++) {
+          min_x = interrectangle[j][0] < min_x ? interrectangle[j][0] : min_x;
+          min_y = interrectangle[j][1] < min_y ? interrectangle[j][1] : min_y;
+          max_x = interrectangle[j][0] > max_x ? interrectangle[j][0] : max_x;
+          max_y = interrectangle[j][1] > max_y ? interrectangle[j][1] : max_y;
+        }
+        interrectangle[0] = [min_x, min_y];
+        interrectangle[1] = [min_x, max_y];
+        interrectangle[2] = [max_x, max_y];
+        interrectangle[3] = [max_x, min_y];
+
+        //intersected vertice by vertice
+        //  _______________
+        // |               |
+        // |               |
+        // |          _____|______
+        // |         |     |      |
+        // |_________|_____|      |
+        //           |            |
+        //           |____________|
+
+        if(interrectangle[0][0] == rectangles[i][0][0] && interrectangle[0][1] == rectangles[i][0][1]
+          && interrectangle[2][0] == rectangles[i+1][2][0] && interrectangle[2][1] == rectangles[i+1][2][1]) {
+
+          polygons[i] = [interrectangle[3], interrectangle[1]].concat(polygons[i].slice(1));
+
+          var j;
+          for(j = 0; j < polygons[i+1].length; j++)
+            if(polygons[i+1][j][1] == interrectangle[1][1])
+              break;
+          polygons[i+1] = polygons[i+1].slice(0, j+1).concat([interrectangle[1], interrectangle[3]]).concat(polygons[i+1].slice(j+2));
+
+        } else if(interrectangle[0][0] == rectangles[i+1][0][0] && interrectangle[0][1] == rectangles[i+1][0][1]
+          && interrectangle[2][0] == rectangles[i][2][0] && interrectangle[2][1] == rectangles[i][2][1]) {
+
+          var j;
+          for(j = 0; j < polygons[i].length; j++)
+            if(polygons[i][j][1] == interrectangle[1][1])
+              break;
+          polygons[i] = polygons[i].slice(0, j+1).concat([interrectangle[1], interrectangle[3]]).concat(polygons[i].slice(j+2));
+
+          polygons[i+1] = [interrectangle[3], interrectangle[1]].concat(polygons[i+1].slice(1));
+
+        } else if(interrectangle[1][0] == rectangles[i][1][0] && interrectangle[1][1] == rectangles[i][1][1]
+          && interrectangle[3][0] == rectangles[i+1][3][0] && interrectangle[3][1] == rectangles[i+1][3][1]) {
+
+          var j;
+          for(j = 0; j < polygons[i].length; j++)
+            if(polygons[i][j][0] == interrectangle[0][0])
+              break;
+          polygons[i] = polygons[i].slice(0, j+1).concat([interrectangle[0], interrectangle[2]]).concat(polygons[i].slice(j+2));
+
+          var j;
+          for(j = 0; j < polygons[i+1].length; j++)
+            if(polygons[i+1][j][0] == interrectangle[2][0])
+              break;
+          polygons[i+1] = polygons[i+1].slice(0, j+1).concat([interrectangle[2], interrectangle[0]]).concat(j+2 >= polygons[i].length ? [] : polygons[i+1].slice(j+2));
+
+        } else if(interrectangle[1][0] == rectangles[i+1][1][0] && interrectangle[1][1] == rectangles[i+1][1][1]
+          && interrectangle[3][0] == rectangles[i][3][0] && interrectangle[3][1] == rectangles[i][3][1]) {
+
+          var j;
+          for(j = 0; j < polygons[i+1].length; j++)
+            if(polygons[i+1][j][0] == interrectangle[0][0])
+              break;
+          polygons[i+1] = polygons[i+1].slice(0, j+1).concat([interrectangle[0], interrectangle[2]]).concat(polygons[i+1].slice(j+2));
+
+          var j;
+          for(j = 0; j < polygons[i].length; j++)
+            if(polygons[i][j][0] == interrectangle[2][0])
+              break;
+          polygons[i] = polygons[i].slice(0, j+1).concat([interrectangle[2], interrectangle[0]]).concat(j+2 >= polygons[i].length ? [] : polygons[i].slice(j+2));
+
+        } else {
+          //intersected side by side
+          //  _______________
+          // |           ____|_____
+          // |          |    |     |
+          // |          |    |     |
+          // |          |____|_____|
+          // |               |
+          // |_______________|
+
+          var j, k;
+          for(j = 0; j < 4; j++)
+            if(interrectangle[j][0] == polygons[i][j][0] && interrectangle[j][1] == polygons[i][j][1])
+              break;
+          for(k = 0; k < 4; k++)
+            if(interrectangle[k][0] == polygons[i+1][k][0] && interrectangle[k][1] == polygons[i+1][k][1])
+              break;
+          //polygons[i] is bigger than polygons[i+1]
+          if(j == 4 && k != 4) {
+
+            for(j = 0; j < 4; j++)
+              if(interrectangle[j][0] == rectangles[i][j][0] || (j && interrectangle[j][1] == rectangles[i][j][1]))
+                break;
+            for(k = 0; k < polygons[i].length; k++)
+              if(interrectangle[j][0] == polygons[i][k][0] || (k && interrectangle[j][1] == polygons[i][k][1]))
+                break;
+            var p;
+            if(interrectangle[j][0] == interrectangle[(j+1)%4][0])
+              p = [interrectangle[(j+2)%4][0], polygons[i][(k+1)%4][1]];
+            else
+              p = [polygons[i][(k+1)%4][0], interrectangle[(j+2)%4][1]];
+            polygons[i] = polygons[i].slice((k+2 >= polygons[i].length ? (k+2)%polygons[i].length : 0), k+1).concat([interrectangle[j], interrectangle[(j+2)%4], p]).concat(k+2 >= polygons[i].length ? [] : polygons[i].slice(k+2));
+
+            polygons[i+1] = polygons[i+1].reverse();
+            var n = 3 - j;
+            for(k = 0; k < polygons[i+1].length; k++)
+              if(interrectangle[n][0] == polygons[i+1][k][0] && interrectangle[n][1] == polygons[i+1][k][1])
+                break;
+            polygons[i+1] = polygons[i+1].slice((k+2 >= polygons[i+1].length ? (k+2)%polygons[i+1].length : 0), k).concat([interrectangle[j], interrectangle[(j+2)%4]]).concat(k+2 >= polygons[i+1].length ? [] : polygons[i+1].slice(k+2));
+            polygons[i+1] = polygons[i+1].reverse();
+
+          //polygons[i+1] is bigger than polygons[i]
+          } else if(j != 4 && k == 4) {
+
+            polygons[i+1] = polygons[i+1].reverse();
+            for(j = 0; j < 4; j++)
+              if(interrectangle[3-j][0] == rectangles[i+1][3-j][0] || (j && interrectangle[3-j][1] == rectangles[i+1][3-j][1]))
+                break;
+            for(k = 0; k < polygons[i+1].length; k++)
+              if(interrectangle[3-j][0] == polygons[i+1][k][0] || (k && interrectangle[3-j][1] == polygons[i+1][k][1]))
+                break;
+            var p;
+            if(interrectangle[3-j][0] == interrectangle[(6-j)%4][0])
+              p = [interrectangle[(5-j)%4][0], polygons[i+1][(k+1)%4][1]];
+            else
+              p = [polygons[i+1][(k+1)%4][0], interrectangle[(5-j)%4][1]];
+            polygons[i+1] = polygons[i+1].slice((k+2 >= polygons[i+1].length ? (k+2)%polygons[i+1].length : 0), k+1).concat([interrectangle[3-j], interrectangle[(5-j)%4], p]).concat(k+2 >= polygons[i+1].length ? [] : polygons[i+1].slice(k+2));
+            polygons[i+1].reverse();
+
+            var n = (4 - j) % 4;
+            for(k = 0; k < polygons[i].length; k++)
+              if(interrectangle[n][0] == polygons[i][k][0] && interrectangle[n][1] == polygons[i][k][1])
+                break;
+            polygons[i] = polygons[i].slice((k+2 >= polygons[i].length ? (k+2)%polygons[i].length : 0), k).concat([interrectangle[3-j], interrectangle[(5-j)%4]]).concat(k+2 >= polygons[i].length ? [] : polygons[i].slice(k+2));
+
+          } else {
+            //should be no more
+          }
+        }
+      }
+    }
+    //show goundaries
+    for(var i = 0; i < polygons.length; i++) {
+      var polysvg = bubblesvg.append("g")
+        .attr("class", "boundary " + type)
+        .style("visibility", "hidden")
+        .on("mouseover", function() {
+          this.style.visibility = "visible";
+        })
+        .on("mouseout", function() {
+          this.style.visibility = "hidden";
+        });
+      polysvg.append("path")
+        .attr("d", function() {
+          var str = "M " + polygons[i][0][0] + " " + polygons[i][0][1] + " ";
+          for(var j = 1; j < polygons[i].length; j++)
+            str += "L " + polygons[i][j][0] + " " + polygons[i][j][1] + " ";
+          str += "z";
+          return str;
+        })
+        .attr("fill", "white")
+        .attr("stroke", "black")
+        .attr("stroke-width", "2")
+        .style("opacity", 0.3);
+      polysvg.append("text")
+        .attr("x", d3.geom.polygon(polygons[i]).centroid()[0])
+        .attr("y", polygons[i].centroid()[1])
+        .attr("text-anchor", "middle")
+        .text(function() {
+          if(type == "department")
+            return departmentCenters[i].name;
+          else
+            return "$ " + (i ? grantValueCenters[i-1].amount + " - " + grantValueCenters[i].amount : "0 - " + grantValueCenters[i].amount);
+        });
+    }
   }
 
   /* 
