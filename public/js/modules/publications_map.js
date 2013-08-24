@@ -59,6 +59,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	var network_constructed = false;
 	var matrix_constructed = false;
 	var currentlySearchingMatrix = false;
+	var bartransduration = 1000;
 
 	var envandsusCluster = ["Bernards,Mark A", "Branfireun,Brian Andrew", "Creed,Irena F.", "Cumming,Robert", 
 	"Damjanovski,Sashko", "Grbic,Miodrag", "Grbic,Vojislava", "Guglielmo,Christopher G.", "Henry,Hugh A.L.", 
@@ -2074,7 +2075,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 			//four possibilities for the combination of checkboxes
 
-			//neither grants or supervisions is checked
+			//neither grants nor supervisions is checked
 			if ($('input#matrixFilterCo_grants').is(':checked')==false && $('input#matrixFilterCo_sups').is(':checked')==false) {
 				//hide multiple and show options for single filtering (exclusive/inclusive)
 				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').show(0);
@@ -2086,6 +2087,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')) {
 						if(d.copub > 0 && d.grant == 0 && d.cosup == 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.P_S_G*4; });
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
@@ -2100,6 +2102,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}
 					else {
 						if(d.copub > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.copubs*4; });
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
@@ -2127,6 +2130,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 						updateMatrixCollabLegend([0,0,0,1,0,0,0]);
 
 						if(d.copub > 0 && d.grant == 0 && d.cosup > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.PS_G*4; });
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
 							//only make it visible if it is not currently filtered
@@ -2142,7 +2146,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([1,1,0,1,0,0,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.copubs+d.cosups)*4; });
+
 						if(d.copub > 0 && d.cosup > 0) {
+
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_copub]); return matrix_z(d.cosup+d.copub); });	
 							//only make it visible if it is not currently filtered
@@ -2185,6 +2192,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,0,0,1,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.P_SG)*4; });
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup == 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
@@ -2200,6 +2209,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([1,0,1,0,0,1,0]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.copubs+d.grants)*4; });
 
 						if(d.copub > 0 && d.grant > 0) {
 							d3.select(this).style("fill", "#F0A487")
@@ -2242,6 +2253,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,0,0,0,1]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.PSG)*4; });
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -2257,6 +2270,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([1,1,1,1,1,1,1]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.copubs+d.cosups+d.grants)*4; });
 
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
@@ -2343,6 +2358,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 				updateMatrixCollabLegend([0,0,0,0,0,0,0]);
 
+				d3.selectAll(".matrixrowbar").attr("width", function(d) { return 0; });
+
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					if(d.copub > 0) 
 						d3.select(this).style("visibility", "hidden");	 
@@ -2360,6 +2377,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')){
 						if(d.cosup > 0 && d.grant == 0 && d.copub == 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._PS_G*4; });
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
@@ -2374,6 +2392,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}	
 					else {
 						if(d.cosup > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.cosups*4; });
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
@@ -2399,6 +2418,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')){
 						if(d.grant > 0 && d.cosup == 0 && d.copub == 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._P_SG*4; });
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
@@ -2413,6 +2433,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}
 					else {
 						if(d.grant > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.grants*4; });
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
@@ -2437,6 +2458,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,0,1,0,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._PSG*4; });
+
 						if(d.copub == 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
@@ -2454,6 +2477,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([0,1,1,0,1,0,0]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.grants+d.cosups)*4; });
 
 						if(d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#A0E191")
@@ -2510,6 +2535,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')){
 						if(d.cosup > 0 && d.grant == 0 && d.copub == 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._PS_G*4; });
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
@@ -2524,6 +2550,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}	
 					else {
 						if(d.cosup > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.cosups*4; });
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
@@ -2549,6 +2576,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,1,0,0,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.PS_G*4; });
+
 						if(d.cosup > 0 && d.grant == 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
@@ -2564,6 +2593,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([1,1,0,1,0,1,0]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.cosup+d.copub)*4; });
 
 						if(d.cosup > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
@@ -2607,6 +2638,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,0,1,0,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._PSG*4; });
+
 						if(d.cosup > 0 && d.grant > 0 && d.copub == 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
@@ -2622,6 +2655,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([0,1,1,0,1,0,0]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return(d.cosups+d.grants)*4; });
 
 						if(d.cosup > 0 && d.grant > 0) {
 							d3.select(this).style("fill", "#A0E191")
@@ -2662,6 +2697,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,0,0,0,1]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.PSG*4; });
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -2677,6 +2714,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([1,1,1,1,1,1,1]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.grants+d.cosups+d.copubs)*4; });
 
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
@@ -2761,7 +2800,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				//hide multiple and single show options for filtering
 				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').hide(0);	
 
-				updateMatrixCollabLegend([0,0,0,0,0,0,0]);			
+				updateMatrixCollabLegend([0,0,0,0,0,0,0]);	
+
+				d3.selectAll(".matrixrowbar").attr("width", function(d) { return 0; });		
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					if(d.cosup > 0) 
@@ -2780,6 +2821,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')) {
 						if(d.copub > 0 && d.grant == 0 && d.cosup == 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.P_S_G*4; });
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
@@ -2794,6 +2836,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}
 					else {
 						if(d.copub > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.copubs*4; });
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
@@ -2819,6 +2862,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')){
 						if(d.grant > 0 && d.cosup == 0 && d.copub == 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._P_SG*4; });
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
@@ -2834,6 +2878,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}
 					else {
 						if(d.grant > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.grants*4; });
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
@@ -2854,6 +2899,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,1,0,0,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.P_SG*4; });
+
 						if(d.cosup == 0 && d.grant > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
@@ -2871,6 +2918,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([1,0,1,0,0,1,0]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.grants+d.copubs)*4; });
 
 						if(d.grant > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#F0A487")
@@ -2926,6 +2975,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')){
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._P_SG*4; });
 						if(d.grant > 0 && d.cosup == 0 && d.copub == 0) {
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
@@ -2941,6 +2991,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}
 					else {
 						if(d.grant > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.grants*4; });
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
@@ -2966,6 +3017,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,0,0,1,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.P_SG*4; });
+
 						if(d.grant > 0 && d.cosup == 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
@@ -2981,6 +3034,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([1,0,1,0,0,1,0]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.copubs+d.grants)*4; });
 
 						if(d.grant > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#F0A487")
@@ -3024,6 +3079,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,0,1,0,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._PSG*4; });
+
 						if(d.grant > 0 && d.cosup > 0 && d.copub == 0) {
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
@@ -3039,6 +3096,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([0,1,1,0,1,0,0]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.grants+d.cosups)*4; });
 
 						if(d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#A0E191")
@@ -3079,6 +3138,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,0,0,0,1]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.PSG*4; });
+
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
@@ -3094,6 +3155,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([1,1,1,1,1,1,1]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.grants+d.cosups+d.copubs)*4; });
 
 						if(d.copub > 0 && d.grant > 0 && d.cosup > 0) {
 							d3.select(this).style("fill", "#DCBE6B")
@@ -3178,7 +3241,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				//hide multiple and single show options for filtering
 				$('#matrixFilterTypeMultiple').hide(0);$('#matrixFilterTypeSingle').hide(0);
 
-				updateMatrixCollabLegend([0,0,0,0,0,0,0]);				
+				updateMatrixCollabLegend([0,0,0,0,0,0,0]);
+
+				d3.selectAll(".matrixrowbar").attr("width", function(d) { return 0; });				
 
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					if(d.grant > 0) 
@@ -3197,6 +3262,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')) {
 						if(d.copub > 0 && d.grant == 0 && d.cosup == 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.P_S_G*4; });
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
@@ -3211,6 +3277,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}
 					else {
 						if(d.copub > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.copubs*4; });
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
@@ -3235,7 +3302,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				d3.selectAll("rect.matrixcell").each(function(d) {
 					var notfiltered = (this.attributes.labelfiltered == null || this.attributes.labelfiltered.value == 0) && (this.attributes.searchfiltered == null || this.attributes.searchfiltered.value == 0);
 					if ($('input#matrixFilterEXCLUSIVE').is(':checked')){
+
 						if(d.cosup > 0 && d.grant == 0 && d.copub == 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d._PS_G*4; });
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
@@ -3251,6 +3320,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					}	
 					else {
 						if(d.cosup > 0) {
+							d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.cosups*4; });
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
@@ -3271,6 +3341,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 						updateMatrixCollabLegend([0,0,0,1,0,0,0]);
 
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return d.PS_G*4; });
+
 						if(d.grant == 0 && d.cosup > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
@@ -3288,6 +3360,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					else{
 
 						updateMatrixCollabLegend([1,1,0,1,0,0,0]);
+
+						d3.selectAll(".matrixrowbar").attr("width", function(d) { return (d.cosups+d.copubs)*4; });
 
 						if(d.cosup > 0 && d.copub > 0) {
 							d3.select(this).style("fill", "#9BD0E3")
@@ -4274,7 +4348,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    node.P_SG = 0;
 	    node.PS_G = 0;
 	    node.PSG = 0;
-	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, copub: 0, cosup: 0, grant: 0}; });
+	    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, copub: 0, cosup: 0, grant: 0 }; });
 	  });
 
 	    if (store.session.has("links_grants_exclusive"))
@@ -4321,7 +4395,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  });
 
 	  //loop through again now that the counts are done for exclusive AND operations (e.g., filtering)
-	  links_combined.forEach(function(link) {
+	  links_combined.forEach(function(link, i) {
 		  	if (matrix[link.source][link.target].copub==0 && matrix[link.source][link.target].cosup==0 && matrix[link.source][link.target].grant>0) {
 		  		matrixnodes[link.source]._P_SG += 1;
 		   		matrixnodes[link.target]._P_SG += 1;
@@ -4376,6 +4450,14 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      .attr("id", function(d, i) { return "row-" + i})
 	      .each(row);
 
+	    // var rowbar = matrixsvg.selectAll('.matrixrowbar')
+	    // 	.data(matrixnodes)
+	    //   	.enter().append("rect")
+	    //     	.attr("class", "matrixrowbar")
+	    //     	.attr("transform", function(d, i) { return "translate(0," + matrix_x(i) + ")"; })
+	    //     	.attr("id", function(d, i) { return "rowbar-" + i})
+	    //     	.each(rowbar);	 
+
 	  row.append("line")
 	      .attr("x2", matrix_width);
 
@@ -4386,6 +4468,16 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      .attr("text-anchor", "end")
 	      .style("fill", function(d, i) { return color20(matrixnodes[i].Department) })
 	      .text(function(d, i) { return matrixnodes[i].Name; });
+
+	  row.append("rect")
+	  	.data(matrixnodes)
+	  	.attr("class", "matrixrowbar")  
+			.attr("x", function(d) { return matrix_x(d.x); })
+	    	.attr("width", function(d) {
+	    		return d.count*4; //union of all three (d.count) is default to start 
+	    	})
+	    	.attr("height", matrix_x.rangeBand())
+	    	.style("fill", "rgb(36,137,197)");
 
 	  var column = matrixsvg.selectAll(".matrixcolumn")
 	      .data(matrix)
@@ -4437,6 +4529,32 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        .on("mouseover", mouseover)
 	        .on("mouseout", mouseout);
 
+	    // function rowbar(rowbar) {   	
+	    //     	.attr("x", function(d) { return matrix_x(d.x); })
+	    //     	.attr("width", function(d) {
+	    //     		return d.count;
+	    //     	})
+	    //     	.attr("height", matrix_x.rangeBand())
+	    //     	.style("opacity", 1 )
+	    //     	.style("fill", "blue");function(d) {
+		   //      	//the colors used here have been selected to be optimally distinct from one another based on their hue
+		   //      	if (d.copub > 0 && d.cosup == 0 && d.grant == 0)
+		   //      		return "#E1B2D7";
+		   //      	else if (d.cosup > 0 && d.copub == 0 && d.grant == 0)
+		   //      		return "#D5E067";	
+		   //      	else if (d.grant > 0 && d.copub == 0 && d.cosup == 0)
+		   //      		return "#79DEC0";		        		        	
+		   //      	else if (d.cosup == 0 && d.copub > 0 && d.grant > 0)
+		   //      		return "#F0A487";
+		   //      	else if (d.grant == 0 && d.cosup > 0 && d.copub > 0)
+		   //      		return "#9BD0E3";
+		   //      	else if (d.copub == 0 && d.cosup > 0 && d.grant > 0)
+		   //      		return "#A0E191";	
+		   //      	else if (d.copub > 0 && d.cosup > 0 && d.grant > 0)
+		   //      		return "#DCBE6B";	        			        	
+	    //     //});	    
+	    //     } 
+
 
 	    cell.append("name1").text(function(d) { return "<b>" + matrixnodes[d.x].Name + " & </b>" + "<br>"; });
 	    cell.append("name2").text(function(d) { return "<b>" + matrixnodes[d.y].Name + "</b>" + "<br>" + "<hr>"; });
@@ -4444,6 +4562,16 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    cell.append("value2").text(function(d) {return "supervisions: " + d.cosup + "<br>"; });
 	    cell.append("value3").text(function(d) {return "grants: " + d.grant + "<br>"; });
 	    cell.append("value4").text(function(d) { return "total: " + (d.grant + d.cosup + d.copub); });
+
+	    var rowtotal = {grant:0, cosup:0, copub:0};
+
+	    //go through each cell
+	    _.each(row, function(collab) {
+	    	rowtotal.grant = rowtotal.grant + collab.grant;
+	    	rowtotal.cosup = rowtotal.cosup + collab.cosup;
+	    	rowtotal.copub = rowtotal.copub + collab.copub;
+	    });
+
 	  }
 
 	  //for the matrix

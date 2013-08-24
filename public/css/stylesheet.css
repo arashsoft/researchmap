@@ -2225,6 +2225,11 @@ form.signin input::-webkit-input-placeholder {
   cursor: pointer;
 }
 
+#matrixrowbar {
+  background: "rgb(36,137,197)";
+  border-radius: 0px 2px 2px 0px;
+}
+
 #actionpaneltoggle {
   position: relative;
   display: inline-block;
