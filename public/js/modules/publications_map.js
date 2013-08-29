@@ -344,6 +344,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		$('#gatheringArea').hide();
 		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false, drag: function() { network_force.start(); } });
 
+		$('#comparingArea').hide();
+		$('#comparingArea').draggable({ containment: "#vizcontainer", scroll: false });
+		$('#comparingArea a').click(function() { $('#comparingArea svg').remove(); $('#comparingArea').hide('slow'); });
+
 		$('#animateYearPlaceholder').hide();
 
 /*		$( "#gatheringArea" ).droppable({
@@ -841,6 +845,45 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    });
 	});
 
+	$('#discardSelectedNodes').click(function() {
+		d3.selectAll('circle.node.selected')
+			.transition().duration(1000)
+			.style("opacity", 0).attr("r", 0);
+		d3.selectAll('circle.node.selected')
+			.transition().delay(1000)
+			.remove();
+    	d3.selectAll('line.link').each(function(d) {
+    		if(_.contains(selectedNodes, d.source) || _.contains(selectedNodes, d.target)) {
+    			d3.select(this).transition().duration(1000).style("opacity", 0);
+    			d3.select(this).transition().delay(1000).remove();
+    		}
+    	});
+    	selectedNodes = []; //empty the array
+    	selectedLinks = [];
+    	updateSelectionArea("empty"); //update the selection area by emptying it
+    	//hide the selectionArea div
+    	$('#selectionArea').hide('slow');
+    	$('#cloningArea').hide('slow');
+    	$('#comparingArea').hide('slow');
+    	//return to the defaul for the radios (i.e., check the 'none' option)
+    	$('input#selectNone').iCheck('check');
+	});
+
+	$('#discardUnselectedNodes').click(function() {
+		d3.selectAll('circle.node').each(function() {
+    		if(!_.contains(this.classList, "selected")) {
+	    		d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0);
+	    		d3.select(this).transition().delay(1000).remove();
+	    	}
+    	});
+    	d3.selectAll('line.link').each(function(d) {
+    		if(!_.contains(selectedLinks, d)) {
+    			d3.select(this).transition().duration(1000).style("opacity", 0);
+    			d3.select(this).transition().delay(1000).remove();
+    		}
+    	});
+	});
+
 	$('input#selectLasso').on('ifChecked', function() {
 		brush = d3.svg.polybrush()
 	    .x(d3.scale.linear().range([0, svgwidth]))
@@ -849,6 +892,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      networksvg.selectAll(".selected").classed("selected", false);
 	    })
 	    .on("brush", function() {
+	    	//reset actions
+	    	$('#selectionNone').iCheck('check');
 	    	//update the div that lists the current selections
 	    	updateSelectionArea();
 	      // iterate through all circle.node
@@ -919,6 +964,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
       		//hide the selectionArea div
     		$('#selectionArea').hide('slow'); 
     		$('#cloningArea').hide('slow');
+    		$('#comparingArea').hide('slow');
     	}
     })
     .on('ifUnchecked', function() {
@@ -928,17 +974,85 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
     //if the user clicks the button to remove all selections
     $('#selectionRemove').click(function() {
+    	$('#selectionNone').iCheck('check');
     	selectedNodes = []; //empty the array
     	selectedLinks = [];
     	updateSelectionArea("empty"); //update the selection area by emptying it
     	//hide the selectionArea div
     	$('#selectionArea').hide('slow');
     	$('#cloningArea').hide('slow');
+    	$('#comparingArea').hide('slow');
     	//return to the defaul for the radios (i.e., check the 'none' option)
     	$('input#selectNone').iCheck('check');
     	//reset the style of the nodes
     	d3.selectAll("circle.node").each(function() {
     		d3.select(this).classed("selected", false).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Department); });
+    	});
+    });
+
+    $('#selectionHide').on('ifChecked', function() {
+    	d3.selectAll('circle.node.selected').each(function() {
+    		var r = d3.select(this).attr("r");
+    		d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0)
+    		d3.select(this).transition().delay(1000).style("visibility", "hidden").attr("r", r);
+    	});
+    	d3.selectAll('line.link').each(function(d) {
+    		if(_.contains(selectedNodes, d.source) || _.contains(selectedNodes, d.target)) {
+    			d3.select(this).transition().duration(1000).style("opacity", 0);
+    			d3.select(this).transition().delay(1000).style("visibility", "hidden");
+    		}
+    	});
+    });
+
+    $('#selectionHide').on('ifUnchecked', function() {
+    	d3.selectAll('circle.node.selected').each(function() {
+    		var r = d3.select(this).attr("r");
+    		d3.select(this).style("visibility", "visible").attr("r", 0);
+    		d3.select(this).transition().duration(1000).style("opacity", 1).attr("r", r);
+    	});
+    	d3.selectAll('line.link').each(function(d) {
+    		if(_.contains(selectedNodes, d.source) || _.contains(selectedNodes, d.target)) {
+    			d3.select(this).style("visibility", "visible").style("opacity", 0);
+    			d3.select(this).transition().duration(1000).style("opacity", 1);
+    		}
+    	});
+    });
+
+    $('#selectionShow').on('ifChecked', function() {
+    	d3.selectAll('circle.node').each(function() {
+    		if(!_.contains(this.classList, "selected")) {
+	    		var r = d3.select(this).attr("r");
+	    		d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0)
+	    		d3.select(this).transition().delay(1000).style("visibility", "hidden").attr("r", r);
+	    	} else {
+	    		d3.select(this).style("stroke", "gray").style("stroke-width", 1)
+	    			.style("fill", function(d) { return color20(d.Department); });
+	    	}
+    	});
+    	d3.selectAll('line.link').each(function(d) {
+    		if(!_.contains(selectedLinks, d)) {
+    			d3.select(this).transition().duration(1000).style("opacity", 0);
+    			d3.select(this).transition().delay(1000).style("visibility", "hidden");
+    		}
+    	});
+    });
+
+    $('#selectionShow').on('ifUnchecked', function() {
+    	d3.selectAll('circle.node').each(function() {
+    		if(!_.contains(this.classList, "selected")) {
+	    		var r = d3.select(this).attr("r");
+	    		d3.select(this).style("visibility", "visible").attr("r", 0);
+	    		d3.select(this).transition().duration(1000).style("opacity", 1).attr("r", r);
+	    	} else {
+	    		d3.select(this).style("stroke", "red").style("stroke-width", 4)
+	    			.style("fill", "white");
+	    	}
+    	});
+    	d3.selectAll('line.link').each(function(d) {
+    		if(!_.contains(selectedLinks, d)) {
+    			d3.select(this).style("visibility", "visible").style("opacity", 0);
+    			d3.select(this).transition().duration(1000).style("opacity", 1);
+    		}
     	});
     });
 
@@ -1069,9 +1183,159 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    cloning_network_force.start();
     }) //end of selectionClone click
 
+	$('#itemsClear').click(function() {
+		d3.select("#selectionList").selectAll(".item")
+			.classed("chosen", false)
+			.style("background-color", "white")
+			.style("color", function(d) { return color20(d.Department); } );
+	});
+
+	$('#itemsCompare').click(function() {
+
+		$('#comparingArea svg').remove();
+		$('#comparingArea').show('slow');
+
+		var color = d3.scale.ordinal()
+		    .domain(d3.range(n))
+		    .range(["#9E5845", "#91BA6D", "#966FAD"]);
+
+		var label = d3.select('#barLegend').selectAll(".label")
+			.data(["publications", "supervisions", "grants"])
+	    	.enter().append("div")
+	    	.attr("class", "label")
+		    .style("border", "1px dashed")
+		    .style("border-color", "rgba(255,255,255,0)")
+		    .text(function(d) { return d; });
+
+		label
+		    .append("div")
+		    .attr("class", "labelcolor")
+		    .style("background-color", function(d, i) { return color(i); });
+
+		var data = [];
+		var chosenItems = d3.select('#selectionList').selectAll('.item.chosen')
+			.each(function(itemData) {
+				d3.selectAll("circle.node").each(function(d) {
+					if(itemData == d) {
+						data.push({
+							name: d.Name,
+							department: d.Department,
+							publications: $(this).attr("publications"),
+							supervisions: $(this).attr("supervisions"),
+							grants: $(this).attr("grants")
+						});
+					}
+				});
+			});
+		
+		var n = 3, // number of layers
+	    m = data.length; // number of samples per layer
+	    stack = d3.layout.stack(),
+	    layers = stack(d3.range(n).map(function(d) {
+	    	var result = [];
+	    	switch(d) {
+				case 0:
+	    			data.forEach(function(d, i) { result.push({x: i, y: parseInt(d.publications)}); });
+					break;
+				case 1:
+					data.forEach(function(d, i) { result.push({x: i, y: parseInt(d.supervisions)}); });
+					break;
+				case 2:
+	    			data.forEach(function(d, i) { result.push({x: i, y: parseInt(d.grants)}); });
+	    			break;
+	    	}
+	    	return result;
+	    })),
+		yGroupMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); }),
+		yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
+
+	    var margin = {top: 40, right: 10, bottom: 80, left: 10},
+			width = 700 - margin.left - margin.right,
+			height = 500 - margin.top - margin.bottom;
+
+		var x = d3.scale.ordinal()
+			.domain(d3.range(m))
+			.rangeRoundBands([0, width], 0.3);
+
+		var y = d3.scale.linear()
+			.domain([0, yStackMax])
+			.range([height, 0]);
+
+		var xAxis = d3.svg.axis()
+			.scale(x)
+			.tickSize(0)
+			.tickPadding(6)
+			.orient("bottom")
+			.tickFormat(function(d) { return data[d].name; });
+
+		var svg = d3.select("#comparingArea").append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		  .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var layer = svg.selectAll(".layer")
+		    .data(layers)
+		  .enter().append("g")
+		    .attr("class", "layer")
+		    .style("fill", function(d, i) { return color(i); });
+
+		var rect = layer.selectAll("rect")
+		    .data(function(d) { return d; })
+		  .enter().append("rect")
+		    .attr("x", function(d) { return x(d.x); })
+		    .attr("y", height)
+		    .attr("width", x.rangeBand())
+		    .attr("height", 0);
+
+		rect.transition()
+		    .delay(function(d, i) { return i * 10; })
+		    .attr("y", function(d) { return y(d.y0 + d.y); })
+		    .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });
+
+		svg.append("g")
+		    .attr("class", "x axis")
+		    .attr("transform", "translate(0," + height + ")")
+		    .call(xAxis)
+		  .selectAll("text")  
+			.style("text-anchor", "start")
+			.attr("fill", function(d, i) { return color20(data[i].department); })
+			.attr("dx", ".8em")
+			.attr("dy", ".15em")
+			.attr("transform", function(d) {
+				return "rotate(30)";
+			});
+
+		$('#groupedBar').on('ifChecked', function() {
+			y.domain([0, yGroupMax]);
+
+			rect.transition()
+			    .duration(500)
+			    .delay(function(d, i) { return i * 10; })
+			    .attr("x", function(d, i, j) { return x(d.x) + x.rangeBand() / n * j; })
+			    .attr("width", x.rangeBand() / n)
+			  .transition()
+			    .attr("y", function(d) { return y(d.y); })
+			    .attr("height", function(d) { return height - y(d.y); });
+		});
+
+		$('#stackedBar').on('ifChecked', function() {
+			y.domain([0, yStackMax]);
+
+			rect.transition()
+			    .duration(500)
+			    .delay(function(d, i) { return i * 10; })
+			    .attr("y", function(d) { return y(d.y0 + d.y); })
+			    .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
+			  .transition()
+			    .attr("x", function(d) { return x(d.x); })
+			    .attr("width", x.rangeBand());
+		});
+	});
+
 	$('input#motionFreeze').on('ifUnchecked', function() {
 		network_force.resume();
-	})
+	});
 
 	/*
 	filters (hides) all nodes that do not have links connected to them
@@ -1771,22 +2035,22 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			case "publications":
 				countLinks("publication");
 				sizeNodes("publication");
-				break;			
+				break;
 			case "supervisions":
 				countLinks("supervision");
 				sizeNodes("supervision");
-				break;			
+				break;
 			case "grants":
 				countLinks("grant");
 				sizeNodes("grant");
-				break;	
+				break;
 			case "uniform":
 				sizeNodes("uniform");		
 				break;
 			default:
 				countLinks("publication");
 				sizeNodes("publication");
-				break;			
+				break;
 		}
 	});
 
@@ -1797,7 +2061,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    d.fixed = false;
 	  	//set it to visible, but with an opacity of 0 so that it can be gradually faded in
 	    d3.select(this).style("visibility", "visible").style("opacity", 0);
-	    d3.select(this).transition().duration(1000).style("opacity", 1).style("stroke", "gray").style("stroke-width", 1).attr("r", 10);
+	    d3.select(this).transition().duration(1000).style("opacity", 1).style("stroke", "gray").style("stroke-width", 1).attr("r", 10).style("fill", function(d) { return color20(d.Department); });
 	  });
 
 	  //show all links
@@ -1821,6 +2085,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  $('#selectionArea').hide('slow');
 	  $('#gatheringArea').hide('slow');
 	  $('#cloningArea').hide('slow');
+	  $('#comparingArea').hide('slow');
 
 	  //reset the network
 	  
@@ -3800,6 +4065,34 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		  		}
 		  		//update the div that lists the current selections
 		  		updateSelectionArea();	
+		  		
+		  		//update the visibility according to the actions radios
+		  		if($('#selectionHide').is(":checked")) {
+		  			var r = d3.select(this).attr("r");
+		    		d3.select(this).transition().duration(1000).style("opacity", 0).attr("r", 0)
+		    		d3.select(this).transition().delay(1000).style("visibility", "hidden").attr("r", r);
+
+		    		var that = this;
+		    		d3.selectAll('line.link').each(function(d) {
+			    		if(d.source == that.__data__ || d.target == that.__data__) {
+			    			d3.select(this).transition().duration(1000).style("opacity", 0);
+    						d3.select(this).transition().delay(1000).style("visibility", "hidden");
+    					}
+		    		});
+		  		} else if($('#selectionShow').is(":checked")) {
+		  			d3.select(this).style("stroke", "gray").style("stroke-width", 1)
+	    				.style("fill", function(d) { return color20(d.Department); });
+	    			var r = d3.select(this).attr("r");
+	    			d3.select(this).style("visibility", "visible").style("opacity", 0).attr("r", 0);
+	    			d3.select(this).transition().duration(1000).style("opacity", 1).attr("r", r);
+
+		    		d3.selectAll('line.link').each(function(d) {
+			    		if(_.contains(selectedLinks, d)) {
+			    			d3.select(this).style("visibility", "visible").style("opacity", 0);
+    						d3.select(this).transition().duration(1000).style("opacity", 1);
+    					}
+		    		});
+		  		}
 			}
 		  })
 		  .on("contextmenu", function(d){
@@ -5395,14 +5688,65 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 				.text(function(d) { return d.Name; } )
 				.style("color", function(d) { return color20(d.Department); } );
 
-			items.on("mouseover", function() {
-				d3.select(this)
-					.style("background-color", "rgb(36,137,197)")//function(d) { return color20(d.Department) })
-					.style("color", "white");
-			})
-				.on("mouseout", function() {
-					d3.select(this).style("background-color", "white")
-					.style("color", function(d) { return color20(d.Department); } );	
+			items
+				.on("mouseover", function(d) {
+					d3.select(this)
+						.style("background-color", "rgb(36,137,197)")//function(d) { return color20(d.Department) })
+						.style("color", "white");
+					
+					var datum = d;
+					var collaborations;
+					d3.selectAll("circle.node").each(function(d) {
+						if(d == datum) {
+							d3.select(this).style("fill", "gray");
+							collaborations = {
+								"publications": $(this).attr("publications"), 
+								"supervisions": $(this).attr("supervisions"), 
+								"grants": $(this).attr("grants")};
+						}
+					});
+
+					var top = $(this).position().top + $('#selectionArea').position().top;
+					var left = $(this).position().left + $(this).width() + $('#selectionArea').position().left + 35;
+
+					$('#networkviz').append('<div class="itemDetails" id="itemDetails-' + d.ID + '"></div>');
+					$('#itemDetails-' + d.ID)
+						.css({
+							top: top + "px",
+							left: left + "px"
+						})
+						.html('<b>Name: </b>' + d.Name + '<br>'
+							+ '<b>ID: </b>' + d.ID + '<br>'
+							+ '<b>Department: </b>' + d.Department + '<br>'
+							+ '<b>Rank: </b>' + d.Rank + '<br>'
+							+ '<b>Co-Publications: </b>' + collaborations.publications + '<br>'
+							+ '<b>Co-Supervisions: </b>' + collaborations.supervisions + '<br>'
+							+ '<b>Co-Grants: </b>' + collaborations.grants);
+					$('#itemDetails-' + d.ID).show('slow');
+				})
+				.on("mouseout", function(d) {
+					if(!d3.select(this).classed("chosen")) {
+						d3.select(this).style("background-color", "white")
+						.style("color", function(d) { return color20(d.Department); } );	
+					}
+
+					var datum = d;
+					d3.selectAll("circle.node").each(function(d) {
+						if(d == datum) {
+							if($('#selectionShow').is(':checked'))
+								d3.select(this).style("fill", function(d) { return color20(d.Department); });
+							else
+								d3.select(this).style("fill", "white");
+						}
+					});
+					$('#itemDetails-' + d.ID).hide(100, function() { this.remove(); });
+				})
+				.on("click", function(d) {
+					if(d3.select(this).classed("chosen")) {
+						d3.select(this).classed("chosen", false);
+					} else {
+						d3.select(this).classed("chosen", true);
+					}
 				});
 
 			items.exit().remove();
