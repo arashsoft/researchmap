@@ -60,6 +60,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	var matrix_constructed = false;
 	var currentlySearchingMatrix = false;
 	var bartransduration = 1000;
+	var hinttranslatecount = 0; //keep track of number of times actionhinttranslate displayed
+
 
 	var envandsusCluster = ["Bernards,Mark A", "Branfireun,Brian Andrew", "Creed,Irena F.", "Cumming,Robert", 
 	"Damjanovski,Sashko", "Grbic,Miodrag", "Grbic,Vojislava", "Guglielmo,Christopher G.", "Henry,Hugh A.L.", 
@@ -1144,12 +1146,12 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			if ($('#matrixviz').is(':visible')){
 				$('#matrixviz').css('width', $(window).width()-50);			
 				$('#matrixviz svg').css('width', $(window).width()-50);
-				$('#matrixdepartmentlegendtoggle').css('left', $('#matrixdepartmentlegend').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);
+				$('#matrixdepartmentlegendtoggle').css('left', $('#matrixbar').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);
 			}
 			else if ($('#networkviz').is(':visible')){
 				$('#networkviz').css('width', $(window).width()-50);			
 				$('#networkviz svg').css('width', $(window).width()-50);
-				$('#networkdepartmentlegendtoggle').css('left', $('#networkdepartmentlegend').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
+				$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
 			}
 		}
 		else {
@@ -1160,12 +1162,12 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			if ($('#matrixviz').is(':visible')){
 				$('#matrixviz').css('width', $('#vizcontainer').width());
 				$('#matrixviz svg').css('width', $('#vizcontainer').width());			
-				$('#matrixdepartmentlegendtoggle').css('left', $('#matrixdepartmentlegend').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);				
+				$('#matrixdepartmentlegendtoggle').css('left', $('#matrixbar').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);				
 			}
 			else if ($('#networkviz').is(':visible')){
 				$('#networkviz').css('width', $('#vizcontainer').width());
 				$('#networkviz svg').css('width', $('#vizcontainer').width());			
-				$('#networkdepartmentlegendtoggle').css('left', $('#networkdepartmentlegend').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);	
+				$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);	
 			}		
 		}
 		//resizeViz();
@@ -2007,12 +2009,63 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    $('#networkviz').show();
 	    $('#matrixactions').hide('slow');
 	    $('#networkactions').show('slow');
+	    $('#matrixdepartmentlegend').hide();
+	  	$('#matrixcollaborationlegend').hide();
 	    //if network is not yet constructed, construct it
 	    if(!network_constructed)
 	      constructNetwork();
 	    else
 	      network_force.start();
 	    $('#translatematrix').val('').trigger('liszt:updated'); 
+
+	  }
+
+	  else if (this.value == "bar"){
+	  	//hide the matrix (some of it, anyway) and show the bar graph
+	  	d3.selectAll("rect.matrixcell").each(function() {
+	  		d3.select(this).transition().duration(1000).style("visibility", "hidden");
+	  	});
+	  	d3.selectAll(".matrixcolumn text").each(function() {
+	  		d3.select(this).transition().duration(1000).style("visibility", "hidden");
+	  	});
+	  	d3.selectAll(".matrixcolumn line").each(function() {
+	  		d3.select(this).transition().duration(1000).style("visibility", "hidden");
+	  	});
+	  	d3.selectAll(".matrixrowbar").each(function() {
+	  		d3.select(this).transition().delay(1000).duration(1000).style("visibility", "visible");
+	  	});
+	  	d3.select(".x.axis").transition().delay(1000).duration(1000).style("visibility", "visible");
+
+	  	$('#matrixdepartmentlegend').hide();
+	  	$('#matrixcollaborationlegend').hide();
+
+	  	//update translation options
+	  	$('#translatematrix').html("<option value=\"bar\">bar (current)</option><option value=\"matrix\">matrix</option><option value=\"network\">network</option>");
+	  	$('#translatematrix').val('bar').trigger('liszt:updated');
+	  }
+
+	  else if (this.value == "matrix"){
+	  	d3.selectAll("rect.matrixcell").each(function() {
+	  		d3.select(this).style("visibility", "visible");
+	  	});
+	  	d3.selectAll(".matrixcolumn text").each(function() {
+	  		d3.select(this).style("visibility", "visible");
+	  	});
+	  	d3.selectAll(".matrixcolumn line").each(function() {
+	  		d3.select(this).style("visibility", "visible");
+	  	});	  	
+	  	d3.selectAll(".matrixrowbar").each(function() {
+	  		d3.select(this).style("visibility", "hidden");
+	  	});
+
+	  	d3.select(".x.axis").style("visibility", "hidden");	 
+
+	  	$('#matrixdepartmentlegend').show(); 
+	  	$('#matrixcollaborationlegend').show();	
+
+	  	//update translation options
+	  	$('#translatematrix').html("<option value=\"matrix\">matrix (current)</option><option value=\"bar\">bar graph</option><option value=\"network\">network</option>");
+	  	$('#translatematrix').val('matrix').trigger('liszt:updated');	  	
 	  }
 	});
 
@@ -2091,7 +2144,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2106,7 +2159,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2134,7 +2187,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden");	 					
@@ -2153,7 +2206,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_copub]); return matrix_z(d.cosup+d.copub); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2162,7 +2215,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_copub]); return matrix_z(d.copub); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2171,7 +2224,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_copub]); return matrix_z(d.cosup); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2198,7 +2251,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");							
@@ -2216,7 +2269,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2225,7 +2278,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2234,7 +2287,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.grant); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2259,7 +2312,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");													
@@ -2277,7 +2330,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2286,7 +2339,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2296,7 +2349,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden");							 
@@ -2306,7 +2359,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup+d.copub); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden");							 
@@ -2316,7 +2369,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden");							 
@@ -2325,7 +2378,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2334,7 +2387,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.grant); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2381,7 +2434,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2396,7 +2449,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2422,7 +2475,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden"); 
@@ -2437,7 +2490,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden"); 
@@ -2464,7 +2517,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else //if currently filtered
 								d3.select(this).style("visibility", "hidden");
@@ -2484,7 +2537,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2493,7 +2546,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2503,7 +2556,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2539,7 +2592,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2554,7 +2607,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2582,7 +2635,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");													
@@ -2600,7 +2653,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2609,7 +2662,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.cosup); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2618,7 +2671,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2644,7 +2697,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");														
@@ -2662,7 +2715,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2671,7 +2724,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2680,7 +2733,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.grant); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2703,7 +2756,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");														
@@ -2721,7 +2774,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2730,7 +2783,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2740,7 +2793,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2750,7 +2803,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup+d.copub); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2760,7 +2813,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2769,7 +2822,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden");							 
@@ -2778,7 +2831,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.grant); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");						
@@ -2825,7 +2878,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2840,7 +2893,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -2866,7 +2919,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden"); 
@@ -2882,7 +2935,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden"); 
@@ -2905,7 +2958,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 						else //if currently filtered
 							d3.select(this).style("visibility", "hidden");							
@@ -2925,7 +2978,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else //if currently filtered
 								d3.select(this).style("visibility", "hidden");							
@@ -2934,7 +2987,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else //if currently filtered
 									d3.select(this).style("visibility", "hidden");						
@@ -2944,7 +2997,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 									d3.select(this).style("visibility", "visible");
 							else //if currently filtered
 									d3.select(this).style("visibility", "hidden");							 
@@ -2980,7 +3033,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden"); 
@@ -2995,7 +3048,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_grant]); return matrix_z(d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden"); 
@@ -3023,7 +3076,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");														
@@ -3041,7 +3094,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 							else
 								d3.select(this).style("visibility", "hidden");							 
@@ -3050,7 +3103,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.grant); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3059,7 +3112,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_grant]); return matrix_z(d.copub); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3085,7 +3138,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");							
@@ -3103,7 +3156,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3112,7 +3165,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.grant); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3121,7 +3174,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup+max_grant]); return matrix_z(d.cosup); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3144,7 +3197,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");							
@@ -3162,7 +3215,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#DCBE6B")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.cosup+d.grant); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3171,7 +3224,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#F0A487")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3181,7 +3234,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 								else
 								d3.select(this).style("visibility", "hidden"); 
@@ -3191,7 +3244,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup+d.copub); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3201,7 +3254,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#A0E191")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.cosup+d.grant); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3210,7 +3263,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.copub); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3219,7 +3272,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#79DEC0")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup+max_grant]); return matrix_z(d.grant); });						
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3266,7 +3319,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3281,7 +3334,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub]); return matrix_z(d.copub); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3308,7 +3361,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3324,7 +3377,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_cosup]); return matrix_z(d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else
 								d3.select(this).style("visibility", "hidden");
@@ -3347,7 +3400,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 						else //if currently filtered
 								d3.select(this).style("visibility", "hidden");						
@@ -3367,7 +3420,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#9BD0E3")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub+d.cosup); });					
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else //if currently filtered
 									d3.select(this).style("visibility", "hidden");						
@@ -3376,7 +3429,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#D5E067")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.cosup); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible"); 
 							else //if currently filtered
 										d3.select(this).style("visibility", "hidden");							
@@ -3386,7 +3439,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 							d3.select(this).style("fill", "#E1B2D7")
 											.style("opacity", function(d) { matrix_z.domain([0,max_copub+max_cosup]); return matrix_z(d.copub); });	
 							//only make it visible if it is not currently filtered
-							if (notfiltered)
+							if (notfiltered && $('#translatematrix').val()=="matrix")
 								d3.select(this).style("visibility", "visible");
 						else //if currently filtered
 										d3.select(this).style("visibility", "hidden");								 
@@ -4473,11 +4526,18 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  	.data(matrixnodes)
 	  	.attr("class", "matrixrowbar")  
 			.attr("x", function(d) { return matrix_x(d.x); })
+			.attr("y", 1)
 	    	.attr("width", function(d) {
 	    		return d.count*4; //union of all three (d.count) is default to start 
 	    	})
-	    	.attr("height", matrix_x.rangeBand())
-	    	.style("fill", "rgb(36,137,197)");
+	    	.attr("height", matrix_x.rangeBand()-2)
+	    	.style("fill", "rgb(36,137,197)")
+	    	.style("visibility", "hidden"); //hide to start
+
+
+	   
+	   addBarCounts(); 	
+
 
 	  var column = matrixsvg.selectAll(".matrixcolumn")
 	      .data(matrix)
@@ -4497,6 +4557,25 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	      .style("fill", function(d, i) { return color20(matrixnodes[i].Department) })
 	      .text(function(d, i) { return matrixnodes[i].Name; });
 
+
+	    var x = d3.scale.linear().domain([150,0])
+    		.range([550, 0]);
+
+		var xAxis = d3.svg.axis()
+		    .scale(x)
+		    .orient("top")
+		    .ticks(15);
+
+		matrixsvg.append("g")
+	      .attr("class", "x axis")
+	      .attr("transform", "translate(0,0)")
+	      .style("visibility", "hidden")
+	      .call(xAxis)
+	      .append("text")
+		      .attr("y", -30)
+		      .attr("dy", ".71em")
+		      .style("text-anchor", "end")
+		      .text("count");
 
 	  //for the matrix
 	  function row(row, index) {
@@ -4599,7 +4678,40 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    clearTimeout(timeout);
 	    order(this.value);
 
-	    if(this.value == "department") {
+	    if(this.value == "count"){
+	    	if (hinttranslatecount == 0 && $('#translatematrix').val()!="bar") {
+		    	var message = "Hint: translate from the matrix to the bar graph to facilitate quantitative comparisons.";
+	    		$('#order_chzn').parent().append( "<div class='actionhinttranslate'>" + message + "</div>" );
+	    		//hide it and then show it gradually
+	    		$('#order_chzn').next().next().hide();
+	    		$('#order_chzn').next().next().show('blind', 1500);
+
+			    
+			    //set the height so it is constant for mouseover	
+			    $('#matrixactions .actionhinttranslate').css("min-height", $('#matrixactions .actionhinttranslate').height());
+			    hinttranslatecount = 1;
+			}
+
+		    //set the mouseover behavior	
+			$('#matrixactions .actionhinttranslate').mouseover(function() {
+		  		$(this).css("opacity", 0.2);
+		  		$(this).css("cursor", "pointer");
+		  		$(this).css("font-size", "5em");
+		  		$(this).css("font-weight", 200);
+		  		$(this).text("dismiss");
+		  	}).mouseout(function() {
+		  		$(this).css("opacity", 1);
+		  		$(this).css("cursor", "auto");
+		  		$(this).text(message);
+		  		$(this).css("font-size", "1.3em");
+		  		$(this).css("font-weight", 500);
+		  	});  
+			  
+			//for the user to dismiss an action warning
+			$('#matrixactions .actionhinttranslate').click(function() { $(this).hide('blind', 500); } );
+	    }
+
+	    else if(this.value == "department") {
 	    	for(var i = 0; i < n - 1; i++) {
 	    		if(d3.ascending(matrixnodes[orders[this.value][i]].Department, matrixnodes[orders[this.value][i+1]].Department)) {
 	    			matrixsvg.transition().delay(9700).selectAll("#row-" + orders[this.value][i+1] + " > line").style("stroke", "#b8b8b8");
@@ -4694,7 +4806,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		  		$(this).css("cursor", "pointer");
 		  		$(this).css("font-size", "5em");
 		  		$(this).css("font-weight", 200);
-		  		$(this).text("CLOSE");
+		  		$(this).text("dismiss");
 		  	}).mouseout(function() {
 		  		$(this).css("opacity", 1);
 		  		$(this).css("cursor", "auto");
@@ -4735,6 +4847,19 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        d.x += (normal_center.x - d.x) * 0.12 * tick.alpha;
 
 	      };
+	}
+
+	//adds text to the matrix bars
+	function addBarCounts() {
+		// _.each($('.matrixrowbar'), function() {
+	 //    		.append("text") 
+	 //    		.data(matrixnodes)
+	 //    		.attr("x", function(d) {
+	 //    			return d.width.animVal.value; } )
+	 //    		.attr("fill", "white")
+	 //    		.text(function(d2) { 
+	 //    			return d.count; } );
+		// });
 	}
 
 
