@@ -38,6 +38,8 @@
         </div>
         <div id="selectionArea">
           <h2>selections</h2>
+          <button id="itemsCompare" style="margin: 5px; height: 2em; left:120px;">compare</button>
+          <button id="itemsClear" style="margin: 5px; height: 2em; left:130px;">clear</button>
           <ul id="selectionList"></ul>
         </div>
         <div id="gatheringArea">
@@ -46,6 +48,21 @@
         <div id="cloningArea">
           <h2>Clone</h2>
         </div>        
+        <div id="comparingArea">
+          <a style="float: right;">CLOSE</a>
+          <h2>Comparison</h2>
+          <ul class="actionlist"> 
+            <li>
+              <input type="radio" name="barmode" value="grouped" id="groupedBar"></input>
+              <label for="groupedBar">Grouped</label>
+            </li>
+            <li>
+              <input type="radio" name="barmode" value="stacked" id="stackedBar" checked></input>
+              <label for="stackedBar">Stacked</label>
+            </li>
+          </ul>
+          <div id="barLegend" style="float: right;"></div>
+        </div>
       </div>
       <div id="matrixviz" style="display: none;">
         <div id="matrixbar">
@@ -115,6 +132,8 @@
         <h3>discard</h3><hr>
         <div class="action">
           <button id="discardUnlinkedNodes" style="margin-top: 30px; position:relative; left:12%">discard nodes without links</button>  
+          <button id="discardSelectedNodes" style="margin-top: 30px; position:relative; left:12%">discard selected nodes</button>  
+          <button id="discardUnselectedNodes" style="margin-top: 30px; position:relative; left:12%">discard unselected nodes</button>  
         </div>        
         
         <h3>filter</h3><hr>
@@ -236,6 +255,8 @@
         
         <h3>select</h3><hr>
         <div class="action">
+
+          <p>methods</p>
           <ul class="actionlist"> 
             <li>
               <input type="radio" name="iCheck" id="selectNone" checked></input> 
@@ -250,9 +271,26 @@
               <label for="selectIndividual">individual</label>
             </li>            
           </ul>
-            <hr>
-            <button id="selectionClone" style="margin-top: 30px; position:relative; left:36%">clone selections</button>
-            <button id="selectionRemove" style="margin-top: 30px; position:relative; left:36%">remove all selections</button>      
+          <hr>
+
+          <p>actions</p>
+          <ul class="actionlist"> 
+            <li>
+              <input type="radio" name="selectionAction" id="selectionNone" checked></input> 
+              <label for="selectionNone">none</label>
+            </li>
+            <li>
+              <input type="radio" name="selectionAction" id="selectionHide"></input> 
+              <label for="selectionHide">hide selections</label>
+            </li>
+            <li>
+              <input type="radio" name="selectionAction" id="selectionShow"></input> 
+              <label for="selectionShow">show selections</label>
+            </li>
+          </ul>
+          <button id="selectionClone" style="margin-top: 30px; position:relative; left:36%">clone selections</button>
+          <button id="selectionRemove" style="margin-top: 30px; position:relative; left:36%">remove all selections</button>      
+          
         </div>
 
         <h3>transform</h3><hr>
