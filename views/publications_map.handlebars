@@ -38,12 +38,16 @@
         </div>
         <div id="selectionArea">
           <h2>selections</h2>
-          <div id="itemActions" style="height: 2.5em;">
-            <button id="itemsCompare" style="margin: 5px; position: absolute; height: 2em; left: 120px; display: none;">compare</button>
-            <button id="itemLinechart" style="margin: 5px; position: absolute; height: 2em; left: 120px; display: none;">detail</button>
-            <button id="itemsClear" style="margin: 5px; position: absolute; height: 2em; left: 220px; display: none;">clear</button>
-            <button id="itemsAll" style="margin: 5px; position: absolute; height: 2em; left: 200px;">select all</button>
-          </div>
+          <div style="width:100%; display:block; margin:auto; padding-bottom:15px; display:none;">
+            <button id="itemsChooseAll" style="height: 2em; left:15%;">choose all</button>       
+            <button id="itemsChooseNone" style="height: 2em; left:20%;">choose none</button>
+          </div>          
+          <div style="width:100%; padding-bottom:15px;">
+            <button id="itemLinechart" 
+            style="margin: 5px; height: 2em; display:none; margin:auto; left: 35%;">detail</button>
+            <button id="itemsCompare" 
+            style="margin: 5px; height: 2em; display:none; margin:auto; left: 35%;">compare</button>
+          </div>         
           <ul id="selectionList"></ul>
         </div>
         <div id="gatheringArea">
@@ -53,8 +57,8 @@
           <h2>Clone</h2>
         </div>        
         <div id="comparingArea">
-          <a style="float: right;">CLOSE</a>
           <h2>Comparison</h2>
+          <div style="display:inline-block; float:left">
           <ul class="actionlist"> 
             <li>
               <input type="radio" name="barmode" value="grouped" id="groupedBar"></input>
@@ -65,6 +69,7 @@
               <label for="stackedBar">Stacked</label>
             </li>
           </ul>
+        </div>
           <div id="barLegend" style="float: right;"></div>
         </div>
         <div id="detailLineArea">
@@ -316,8 +321,8 @@
         <h3>translate</h3><hr>
         <div class="action">  
           <select id="translate" class="chzn-select" style="width:90%">
-            <option value="network" selected>network</option>
-            <option value="matrix">co-matrix</option>
+            <option value="network" selected>network (current)</option>
+            <option value="matrix">matrix</option>
           </select><br>
         </div>
 
@@ -376,9 +381,10 @@
 
         <h3>translate</h3><hr>
         <div class="action">
-          <select id="translatematrix" data-placeholder="Translate to..." class="chzn-select" style="width:150px;" tabindex="4">
-            <option value=""></option>
+          <select id="translatematrix" class="chzn-select" style="width:90%;">
+            <option value="matrix" selected>matrix (current)</option>
             <option value="network">network</option>
+            <option value="bar">bar graph</option>
           </select><br> 
         </div>
     </div>
