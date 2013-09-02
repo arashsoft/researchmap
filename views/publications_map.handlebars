@@ -38,8 +38,12 @@
         </div>
         <div id="selectionArea">
           <h2>selections</h2>
-          <button id="itemsCompare" style="margin: 5px; height: 2em; left:120px;">compare</button>
-          <button id="itemsClear" style="margin: 5px; height: 2em; left:130px;">clear</button>
+          <div id="itemActions" style="height: 2.5em;">
+            <button id="itemsCompare" style="margin: 5px; position: absolute; height: 2em; left: 120px; display: none;">compare</button>
+            <button id="itemLinechart" style="margin: 5px; position: absolute; height: 2em; left: 120px; display: none;">detail</button>
+            <button id="itemsClear" style="margin: 5px; position: absolute; height: 2em; left: 220px; display: none;">clear</button>
+            <button id="itemsAll" style="margin: 5px; position: absolute; height: 2em; left: 200px;">select all</button>
+          </div>
           <ul id="selectionList"></ul>
         </div>
         <div id="gatheringArea">
@@ -62,6 +66,10 @@
             </li>
           </ul>
           <div id="barLegend" style="float: right;"></div>
+        </div>
+        <div id="detailLineArea">
+          <a style="float: right;">CLOSE</a>
+          <h2></h2>
         </div>
       </div>
       <div id="matrixviz" style="display: none;">

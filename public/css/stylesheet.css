@@ -522,7 +522,16 @@ for matrix
   color: rgb(80,80,80);
   font-family: 'Fjalla One', sans-serif;
   background: white;
-  opacity: 0.95;
+}
+
+#detailLineArea {
+  position: absolute;
+  left: 1%;
+  top: 10%;
+  padding: 10px;
+  color: rgb(80,80,80);
+  font-family: 'Fjalla One', sans-serif;
+  background: white;
 }
 
 #bubbleviz #cloningArea {
@@ -584,6 +593,15 @@ for matrix
 }
 
 #comparingArea h2 {
+  font-family: 'Fjalla One', sans-serif;
+  padding-bottom: 15px;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  text-align: center;  
+  color: black;
+}
+
+#detailLineArea h2 {
   font-family: 'Fjalla One', sans-serif;
   padding-bottom: 15px;
   font-size: 1.5em;

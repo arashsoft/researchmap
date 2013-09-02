@@ -348,6 +348,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		$('#comparingArea').draggable({ containment: "#vizcontainer", scroll: false });
 		$('#comparingArea a').click(function() { $('#comparingArea svg').remove(); $('#comparingArea').hide('slow'); });
 
+		$('#detailLineArea').hide('slow');
+		$('#detailLineArea').draggable({ containment: "#vizcontainer", scroll: false });
+		$('#detailLineArea a').click(function() { $('#detailLineArea svg').remove(); $('#detailLineArea').hide('slow'); });
+
 		$('#animateYearPlaceholder').hide();
 
 /*		$( "#gatheringArea" ).droppable({
@@ -865,6 +869,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
     	$('#selectionArea').hide('slow');
     	$('#cloningArea').hide('slow');
     	$('#comparingArea').hide('slow');
+    	$('#detailLineArea').hide('slow');
     	//return to the defaul for the radios (i.e., check the 'none' option)
     	$('input#selectNone').iCheck('check');
 	});
@@ -965,6 +970,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
     		$('#selectionArea').hide('slow'); 
     		$('#cloningArea').hide('slow');
     		$('#comparingArea').hide('slow');
+    		$('#detailLineArea').hide('slow');
     	}
     })
     .on('ifUnchecked', function() {
@@ -982,6 +988,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
     	$('#selectionArea').hide('slow');
     	$('#cloningArea').hide('slow');
     	$('#comparingArea').hide('slow');
+    	$('#detailLineArea').hide('slow');
     	//return to the defaul for the radios (i.e., check the 'none' option)
     	$('input#selectNone').iCheck('check');
     	//reset the style of the nodes
@@ -1188,6 +1195,10 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			.classed("chosen", false)
 			.style("background-color", "white")
 			.style("color", function(d) { return color20(d.Department); } );
+		$('#itemsAll').show();
+		$('#itemsClear').hide();
+		$('#itemsCompare').hide();
+		$('#itemLinechart').hide();
 	});
 
 	$('#itemsCompare').click(function() {
@@ -1297,7 +1308,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		    .attr("class", "x axis")
 		    .attr("transform", "translate(0," + height + ")")
 		    .call(xAxis)
-		  .selectAll("text")  
+		  .selectAll("text")
 			.style("text-anchor", "start")
 			.attr("fill", function(d, i) { return color20(data[i].department); })
 			.attr("dx", ".8em")
@@ -1332,6 +1343,114 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			    .attr("width", x.rangeBand());
 		});
 	});
+
+	$('#itemLinechart').click(function() {
+		
+		var data = $("#selectionList li.item.chosen")[0].__data__;
+		$('#detailLineArea svg').remove();
+		$('#detailLineArea h2').text(data.Name);
+		$('#detailLineArea').show('slow');
+
+		//fetch data
+        var science_faculty_data;
+        if(store.session.has("science_faculty_data")){
+          console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
+          science_faculty_data = store.session("science_faculty_data");        
+        }
+        var index;
+        for(index = 0; index < science_faculty_data.length; index++)
+        	if(science_faculty_data[index].ID == data.ID)
+        		break;
+
+        var links_combined;
+		if(store.session.has("links_combined")){
+          console.log("links_combined is already in sessionStorage...no need to fetch again");
+          links_combined = store.session("links_combined");       
+        }
+
+        //process data
+        links_combined = _.filter(links_combined, function(d) {
+        	var flag = false;
+        	if(d.source == index || d.target == index) {
+        		flag = true;
+        	}
+        	return flag;
+        });
+
+        var links_publication = _.filter(links_combined, function(d) {
+        	return d.type == "publication";
+        }).sort(function(a, b) {
+        	return a.year - b.year;
+        });
+        var publicationData = links_publication.length ? 
+        	d3.range(links_publication[0].year, links_publication[links_publication.length-1].year + 1).map(function(d) { return {x: d, y: 0}; }) : [];
+        links_publication.forEach(function(d) {
+        	for(var i = 0; i < publicationData.length; i++)
+        		if(publicationData[i].x == d.year) {
+        			publicationData[i].y++;
+        			break;
+        		}
+        });
+
+        var links_grant = _.filter(links_combined, function(d) {
+        	return d.type == "grant" && d.status != "";
+        });
+        var min = 9999; max = 0;
+        links_grant.forEach(function(d) {
+        	var begin = parseInt(d.begin.substring(0, 4));
+        	var end = parseInt(d.end.substring(0, 4));
+        	min = begin < min ? begin : min;
+        	max = end > max ? end : max;
+        });
+        var grantData = links_grant.length ? d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; }) : [];
+        links_grant.forEach(function(d) {
+        	var begin = parseInt(d.begin.substring(0, 4));
+        	var end = parseInt(d.end.substring(0, 4));
+        	for(var i = 0; i < grantData.length; i++) {
+        		if(grantData[i].x == begin) {
+        			for(var j = i; j < grantData.length && grantData[j].x <= end; j++)
+        				grantData[j].y++;
+        			break;
+        		}
+        	}
+        });
+
+        combined_data = [{key: "publication", values: publicationData, color: "#9D6187"}, {key: "grant", values: grantData, color: "#97A861"}];
+        
+        //draw graph
+        var margin = {top: 40, right: 10, bottom: 40, left: 10},
+			width = 700 - margin.left - margin.right,
+			height = 500 - margin.top - margin.bottom;
+
+        nv.addGraph(function() {
+        	var chart = nv.models.lineWithFocusChart();
+
+        	chart.xAxis.tickFormat(d3.format('d'));
+        	chart.x2Axis.tickFormat(d3.format('d'));
+        	chart.yAxis.tickFormat(d3.format('d'));
+        	chart.y2Axis.tickFormat(d3.format('d'));
+
+        	d3.select('#detailLineArea').append("svg")
+        		.attr("width", width + margin.left + margin.right)
+		    	.attr("height", height + margin.top + margin.bottom)
+        		.datum(combined_data)
+        		.transition().duration(500).call(chart);
+        	nv.utils.windowResize(chart.update);
+
+        	return chart;
+        });
+	});
+
+	$('#itemsAll').click(function() {
+		d3.select("#selectionList").selectAll("li.item")
+			.classed("chosen", true)
+			.style("background-color", "rgb(36,137,197)")
+			.style("color", "white");
+		$('#itemsAll').hide();
+		$('#itemsClear').show();
+		$('#itemsCompare').show();
+		$('#itemLinechart').hide();
+	})
 
 	$('input#motionFreeze').on('ifUnchecked', function() {
 		network_force.resume();
@@ -2086,6 +2205,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  $('#gatheringArea').hide('slow');
 	  $('#cloningArea').hide('slow');
 	  $('#comparingArea').hide('slow');
+	  $('#detailLineArea').hide('slow');
 
 	  //reset the network
 	  
@@ -5746,6 +5866,23 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 						d3.select(this).classed("chosen", false);
 					} else {
 						d3.select(this).classed("chosen", true);
+					}
+					var counts = d3.select("#selectionList").selectAll("li.item.chosen")[0].length;
+					if(counts == 0) {
+						$('#itemsAll').show();
+						$('#itemsClear').hide();
+						$('#itemsCompare').hide();
+						$('#itemLinechart').hide();
+					} else if(counts == 1) {
+						$('#itemsAll').hide();
+						$('#itemsClear').show();
+						$('#itemsCompare').hide();
+						$('#itemLinechart').show();
+					} else {
+						$('#itemsAll').hide();
+						$('#itemsClear').show();
+						$('#itemsCompare').show();
+						$('#itemLinechart').hide();
 					}
 				});
 
