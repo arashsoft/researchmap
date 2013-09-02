@@ -38,8 +38,14 @@
         </div>
         <div id="selectionArea">
           <h2>selections</h2>
-          <button id="itemsCompare" style="margin: 5px; height: 2em; left:120px;">compare</button>
-          <button id="itemsClear" style="margin: 5px; height: 2em; left:130px;">clear</button>
+          <div style="width:100%; display:block; margin:auto; padding-bottom:15px; display:none;">
+            <button id="itemsChooseAll" style="height: 2em; left:15%;">choose all</button>       
+            <button id="itemsChooseNone" style="height: 2em; left:20%;">choose none</button>
+          </div>          
+          <div style="width:100%; padding-bottom:15px;">
+            <button id="itemsCompare" 
+            style="margin: 5px; height: 2em; display:block; margin:auto;">compare</button>
+          </div>         
           <ul id="selectionList"></ul>
         </div>
         <div id="gatheringArea">

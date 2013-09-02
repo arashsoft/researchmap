@@ -338,7 +338,6 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		//hide the selectionArea div
 		$('#selectionArea').hide();
 		$('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });
-		//$('#selectionList').sortable();
 
 		$('#cloningArea').hide();
 		$('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false, handle: "h2" });
@@ -1185,12 +1184,30 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	    cloning_network_force.start();
     }) //end of selectionClone click
 
-	$('#itemsClear').click(function() {
+	$('#itemsChooseNone').click(function() {
 		d3.select("#selectionList").selectAll(".item")
 			.classed("chosen", false)
-			.style("background-color", "white")
+			.transition().duration(400).style("background-color", "white")
 			.style("color", function(d) { return color20(d.Department); } );
+
+		$('#itemsChooseNone').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+		$('#itemsChooseAll').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+
+		$('#itemsCompare').hide('fast')
 	});
+
+	$('#itemsChooseAll').click(function() {
+		d3.select("#selectionList").selectAll(".item")
+			.classed("chosen", true)
+			.transition().duration(400).style("background-color", "rgb(36, 137, 197)")
+			.style("color", "white" );
+
+		$('#itemsChooseAll').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+		$('#itemsChooseNone').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+
+
+		$('#itemsCompare').show('fast')	
+	});	
 
 	$('#itemsCompare').click(function() {
 
@@ -5881,18 +5898,41 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 					} else {
 						d3.select(this).classed("chosen", true);
 					}
+
+					if(selectedNodes.length > 1)
+						$('#itemsChooseAll').parent().slideDown('fast');
+					else
+						$('#itemsChooseAll').parent().slideUp('fast');
+
+					if(d3.selectAll('.item.chosen')[0].length > 1)
+						$('#itemsCompare').show('fast');
+					else 
+						$('#itemsCompare').hide('fast');
+
+					if(d3.selectAll('.item.chosen')[0].length == selectedNodes.length)
+						$('#itemsChooseAll').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+					else
+						$('#itemsChooseAll').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+
+					if (d3.selectAll('.item.chosen')[0].length == 0)
+						$('#itemsChooseNone').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+					else
+						$('#itemsChooseNone').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
 				});
 
 			items.exit().remove();
-
-
-			// selectedNodes.forEach(function (node) {
-			// 	var name = node.Name;
-		 //      	var depart = node.Department;
-		 //      	var output = "<div>" + name + "<br>Department: " + depart + "</div>";
-			// 	$('#selectionArea').append(output);
-			//});
 		}
+
+			if(selectedNodes.length > 1)
+				$('#itemsChooseAll').parent().slideDown('fast');
+			else
+				$('#itemsChooseAll').parent().slideUp('fast');
+
+			if(d3.selectAll('.item.chosen')[0].length > 1)
+				$('#itemsCompare').show('fast');
+			else 
+				$('#itemsCompare').hide('fast');
+
 	}
 
 	/* 
