@@ -515,14 +515,10 @@ for matrix
 }
 
 #comparingArea {
-  position: absolute;
-  left: 1%;
-  top: 10%;
   padding: 10px;
   color: rgb(80,80,80);
   font-family: 'Fjalla One', sans-serif;
   background: white;
-  opacity: 0.95;
 }
 
 #bubbleviz #cloningArea {

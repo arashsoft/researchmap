@@ -347,8 +347,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		$('#gatheringArea').draggable({ containment: "#vizcontainer", scroll: false, drag: function() { network_force.start(); } });
 
 		$('#comparingArea').hide();
-		$('#comparingArea').draggable({ containment: "#vizcontainer", scroll: false });
-		$('#comparingArea a').click(function() { $('#comparingArea svg').remove(); $('#comparingArea').hide('slow'); });
+		//$('#comparingArea').draggable({ containment: "#vizcontainer", scroll: false });
+		//$('#comparingArea a').click(function() { $('#comparingArea svg').remove(); $('#comparingArea').hide('slow'); });
 
 		$('#animateYearPlaceholder').hide();
 
@@ -1195,7 +1195,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	$('#itemsCompare').click(function() {
 
 		$('#comparingArea svg').remove();
-		$('#comparingArea').show('slow');
+
 
 		var color = d3.scale.ordinal()
 		    .domain(d3.range(n))
@@ -1302,10 +1302,12 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		  .selectAll("text")  
 			.style("text-anchor", "start")
 			.attr("fill", function(d, i) { return color20(data[i].department); })
-			.attr("dx", ".8em")
-			.attr("dy", ".15em")
+			.attr("x", function() {
+				var w = rect[0][0].width.animVal.value //get the width of one of the bars
+				return -(w/10); }) //return an x value that is relative to the width...10 seems about right
+			.attr("y", 10)
 			.attr("transform", function(d) {
-				return "rotate(30)";
+				return "rotate(30, " + this.attributes.x.value + "," + this.attributes.y.value + ")";
 			});
 
 		$('#groupedBar').on('ifChecked', function() {
@@ -1333,7 +1335,16 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			    .attr("x", function(d) { return x(d.x); })
 			    .attr("width", x.rangeBand());
 		});
+
+		$('#comparingArea').show(0, function(){
+		    $.colorbox({inline:true, width:"65%", height:"98%", href:"#comparingArea", opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, onClosed:function() {
+		    	$('#comparingArea svg').remove();
+		    	$('#comparingArea').hide(0);
+		    	} 
+			});			
+		});
 	});
+
 
 	$('input#motionFreeze').on('ifUnchecked', function() {
 		network_force.resume();
@@ -1884,9 +1895,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 	  //load the lightbox option for data loading progress
 	  //when that finishes, VRchoice is loaded in the lightbox (new lightbox)
-	  //$('#htmltest').colorbox({iframe:true, open:true, width: "80%", height:"80%"});
-	  // $('#dataLoader').colorbox({inline:true, width:"30%", href:"#dataLoader", opacity:0.98, scrolling:false, open:true, overlayClose: false, fadeOut: 300, onClosed:function(){ 
-	    $('#VRchoice').colorbox({inline:true, width:"60%", href:"#VRchoice", scrolling:false, open:true, overlayClose:false, closeButton:false, fadeOut:300 })//; } }); 
+	    $('#VRchoice').colorbox({inline:true, width:"60%", href:"#VRchoice", scrolling:false, open:true, overlayClose:false, closeButton:false, fadeOut:300 });
 
 
 	var filterPopulated = false;
