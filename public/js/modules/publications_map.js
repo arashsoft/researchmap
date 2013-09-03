@@ -350,8 +350,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		//$('#comparingArea a').click(function() { $('#comparingArea svg').remove(); $('#comparingArea').hide('slow'); });
 
 		$('#detailLineArea').hide('slow');
-		$('#detailLineArea').draggable({ containment: "#vizcontainer", scroll: false });
-		$('#detailLineArea a').click(function() { $('#detailLineArea svg').remove(); $('#detailLineArea').hide('slow'); });
+		//$('#detailLineArea').draggable({ containment: "#vizcontainer", scroll: false });
+		//$('#detailLineArea a').click(function() { $('#detailLineArea svg').remove(); $('#detailLineArea').hide('slow'); });
 
 		$('#animateYearPlaceholder').hide();
 
@@ -1383,7 +1383,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		var data = $("#selectionList li.item.chosen")[0].__data__;
 		$('#detailLineArea svg').remove();
 		$('#detailLineArea h2').text(data.Name);
-		$('#detailLineArea').show('slow');
+		//$('#detailLineArea').show('slow');
 
 		//fetch data
         var science_faculty_data;
@@ -1472,6 +1472,14 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
         	nv.utils.windowResize(chart.update);
 
         	return chart;
+        }, function() {
+			$('#detailLineArea').show(0, function(){
+			    $.colorbox({inline:true, width:"85%", height:"98%", href:"#detailLineArea", opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, onClosed:function() {
+			    	$('#detailLineArea svg').remove();
+			    	$('#detailLineArea').hide(0);
+			    	} 
+				});			
+			});          	
         });
 	});
 /*
