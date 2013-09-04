@@ -733,7 +733,7 @@ window.nv.tooltip.* also has various helper methods.
                 break;
               case 's':
                 left = pos[0] - (width / 2);
-                top = pos[1] - height - dist;
+                top = pos[1] - dist;
                 var tLeft = tooltipLeft(container);
                 var tTop = tooltipTop(container);
                 if (tLeft < scrollLeft) left = scrollLeft + 5;
@@ -4745,7 +4745,9 @@ nv.models.indentedTree = function() {
 
 
   return chart;
-};nv.models.legend = function() {
+};
+
+nv.models.legend = function() {
   "use strict";
   //============================================================
   // Public Variables with Default Settings
@@ -6407,12 +6409,12 @@ nv.models.lineWithFocusChart = function() {
       //------------------------------------------------------------
 
 
-      /*
+      
       var focusLinesWrap = g.select('.nv-focus .nv-linesWrap')
           .datum(data.filter(function(d) { return !d.disabled }))
 
       d3.transition(focusLinesWrap).call(lines);
-     */
+     
 
 
       //------------------------------------------------------------

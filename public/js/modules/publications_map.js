@@ -1370,7 +1370,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		});
 
 		$('#comparingArea').show(0, function(){
-		    $.colorbox({inline:true, width:"65%", height:"98%", href:"#comparingArea", opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, onClosed:function() {
+		    $.colorbox({inline:true, href:"#comparingArea", opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, onCleanup:function() {
 		    	$('#comparingArea svg').remove();
 		    	$('#comparingArea').hide(0);
 		    	} 
@@ -1384,103 +1384,113 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		$('#detailLineArea svg').remove();
 		$('#detailLineArea h2').text(data.Name);
 		//$('#detailLineArea').show('slow');
-
-		//fetch data
-        var science_faculty_data;
-        if(store.session.has("science_faculty_data")){
-          console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
-          science_faculty_data = store.session("science_faculty_data");        
-        }
-        var index;
-        for(index = 0; index < science_faculty_data.length; index++)
-        	if(science_faculty_data[index].ID == data.ID)
-        		break;
-
-        var links_combined;
-		if(store.session.has("links_combined")){
-          console.log("links_combined is already in sessionStorage...no need to fetch again");
-          links_combined = store.session("links_combined");       
-        }
-
-        //process data
-        links_combined = _.filter(links_combined, function(d) {
-        	var flag = false;
-        	if(d.source == index || d.target == index) {
-        		flag = true;
-        	}
-        	return flag;
-        });
-
-        var links_publication = _.filter(links_combined, function(d) {
-        	return d.type == "publication";
-        }).sort(function(a, b) {
-        	return a.year - b.year;
-        });
-        var publicationData = links_publication.length ? 
-        	d3.range(links_publication[0].year, links_publication[links_publication.length-1].year + 1).map(function(d) { return {x: d, y: 0}; }) : [];
-        links_publication.forEach(function(d) {
-        	for(var i = 0; i < publicationData.length; i++)
-        		if(publicationData[i].x == d.year) {
-        			publicationData[i].y++;
-        			break;
-        		}
-        });
-
-        var links_grant = _.filter(links_combined, function(d) {
-        	return d.type == "grant" && d.status != "";
-        });
-        var min = 9999; max = 0;
-        links_grant.forEach(function(d) {
-        	var begin = parseInt(d.begin.substring(0, 4));
-        	var end = parseInt(d.end.substring(0, 4));
-        	min = begin < min ? begin : min;
-        	max = end > max ? end : max;
-        });
-        var grantData = links_grant.length ? d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; }) : [];
-        links_grant.forEach(function(d) {
-        	var begin = parseInt(d.begin.substring(0, 4));
-        	var end = parseInt(d.end.substring(0, 4));
-        	for(var i = 0; i < grantData.length; i++) {
-        		if(grantData[i].x == begin) {
-        			for(var j = i; j < grantData.length && grantData[j].x <= end; j++)
-        				grantData[j].y++;
-        			break;
-        		}
-        	}
-        });
-
-        combined_data = [{key: "publication", values: publicationData, color: "#9D6187"}, {key: "grant", values: grantData, color: "#97A861"}];
-        
-        //draw graph
-        var margin = {top: 40, right: 10, bottom: 40, left: 10},
-			width = 700 - margin.left - margin.right,
-			height = 500 - margin.top - margin.bottom;
-
-        nv.addGraph(function() {
-        	var chart = nv.models.lineWithFocusChart();
-
-        	chart.xAxis.tickFormat(d3.format('d'));
-        	chart.x2Axis.tickFormat(d3.format('d'));
-        	chart.yAxis.tickFormat(d3.format('d'));
-        	chart.y2Axis.tickFormat(d3.format('d'));
-
-        	d3.select('#detailLineArea').append("svg")
-        		.attr("width", width + margin.left + margin.right)
-		    	.attr("height", height + margin.top + margin.bottom)
-        		.datum(combined_data)
-        		.transition().duration(500).call(chart);
-        	nv.utils.windowResize(chart.update);
-
-        	return chart;
-        }, function() {
-			$('#detailLineArea').show(0, function(){
-			    $.colorbox({inline:true, width:"85%", height:"98%", href:"#detailLineArea", opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, onClosed:function() {
+		//the light box has to be shown first or functions like getComputedLength() cannot return the expected value in NVD3.
+		$('#detailLineArea').show(0, function(){
+		    $.colorbox({inline:true, href:"#detailLineArea", width:1060, height:560, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
+		    	onCleanup:function() {
 			    	$('#detailLineArea svg').remove();
 			    	$('#detailLineArea').hide(0);
-			    	} 
-				});			
-			});          	
-        });
+		    	},
+		    	onComplete:function() {
+		    		drawChart();
+		    	}
+			});
+		});
+
+		function drawChart() {
+			//fetch data
+	        var science_faculty_data;
+	        if(store.session.has("science_faculty_data")){
+	          console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
+	          science_faculty_data = store.session("science_faculty_data");        
+	        }
+	        var index;
+	        for(index = 0; index < science_faculty_data.length; index++)
+	        	if(science_faculty_data[index].ID == data.ID)
+	        		break;
+
+	        var links_combined;
+			if(store.session.has("links_combined")){
+	          console.log("links_combined is already in sessionStorage...no need to fetch again");
+	          links_combined = store.session("links_combined");       
+	        }
+
+	        //process data
+	        links_combined = _.filter(links_combined, function(d) {
+	        	var flag = false;
+	        	if(d.source == index || d.target == index) {
+	        		flag = true;
+	        	}
+	        	return flag;
+	        });
+
+	        var links_publication = _.filter(links_combined, function(d) {
+	        	return d.type == "publication";
+	        }).sort(function(a, b) {
+	        	return a.year - b.year;
+	        });
+	        var publicationData = links_publication.length ? 
+	        	d3.range(links_publication[0].year, links_publication[links_publication.length-1].year + 1).map(function(d) { return {x: d, y: 0}; }) : [];
+	        links_publication.forEach(function(d) {
+	        	for(var i = 0; i < publicationData.length; i++)
+	        		if(publicationData[i].x == d.year) {
+	        			publicationData[i].y++;
+	        			break;
+	        		}
+	        });
+
+	        var links_grant = _.filter(links_combined, function(d) {
+	        	return d.type == "grant" && d.status != "";
+	        });
+	        var min = 9999; max = 0;
+	        links_grant.forEach(function(d) {
+	        	var begin = parseInt(d.begin.substring(0, 4));
+	        	var end = parseInt(d.end.substring(0, 4));
+	        	min = begin < min ? begin : min;
+	        	max = end > max ? end : max;
+	        });
+	        var grantData = links_grant.length ? d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; }) : [];
+	        links_grant.forEach(function(d) {
+	        	var begin = parseInt(d.begin.substring(0, 4));
+	        	var end = parseInt(d.end.substring(0, 4));
+	        	for(var i = 0; i < grantData.length; i++) {
+	        		if(grantData[i].x == begin) {
+	        			for(var j = i; j < grantData.length && grantData[j].x <= end; j++)
+	        				grantData[j].y++;
+	        			break;
+	        		}
+	        	}
+	        });
+
+	        combined_data = [{key: "publication", values: publicationData, color: "#9D6187"}, {key: "grant", values: grantData, color: "#97A861"}];
+	        
+	        //draw graph
+	        var margin = {top: 40, right: 10, bottom: 40, left: 10},
+				width = 960 - margin.left - margin.right,
+				height = 400 - margin.top - margin.bottom;
+
+	        nv.addGraph(function() {
+	        	var chart = nv.models.lineWithFocusChart();
+
+	        	chart.xAxis.tickFormat(d3.format('d'));
+	        	chart.x2Axis.tickFormat(d3.format('d'));
+	        	chart.yAxis.tickFormat(d3.format('d'));
+	        	chart.y2Axis.tickFormat(d3.format('d'));
+
+	        	d3.select('#detailLineArea').append("svg")
+	        		.attr("width", width + margin.left + margin.right)
+			    	.attr("height", height + margin.top + margin.bottom)
+			    	//the NVD3 uses style width and height to decide the children width and height
+			    	.style("width", width + margin.left + margin.right)
+			    	.style("height", height + margin.top + margin.bottom)
+	        		.datum(combined_data)
+	        		.transition().duration(500).call(chart);
+	        	nv.utils.windowResize(chart.update);
+
+	        	return chart;
+	        });
+	    }
+	    
 	});
 /*
 	$('#itemsAll').click(function() {
