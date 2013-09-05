@@ -1225,11 +1225,30 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		$('#itemLinechart').hide();
 	});	
 
+
+	var barDrawn = false, lineDrawn = false;
+	var selectedData = [], processedBarData, processedLineData = [];
+
 	$('#itemsCompare').click(function() {
 
 		$('#comparingArea svg').remove();
 
+		$('#comparingArea').show(0, function(){
+		    $.colorbox({inline:true, href:"#comparingArea", width:1060, height:580, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
+		    	onCleanup:function() {
+			    	$('#comparingArea svg').remove();
+			    	$('#barchart').iCheck('check');
+			    	barDrawn = false;
+			    	lineDrawn = false;
+			    	$('#comparingArea').hide(0);
+			    },
+			    onComplete:function() {
+			    	drawBarchart();
+			    }
+			});
+		});
 
+/*
 		var color = d3.scale.ordinal()
 		    .domain(d3.range(n))
 		    .range(["#9E5845", "#91BA6D", "#966FAD"]);
@@ -1368,14 +1387,201 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			    .attr("x", function(d) { return x(d.x); })
 			    .attr("width", x.rangeBand());
 		});
+*/
+		
+	});
 
-		$('#comparingArea').show(0, function(){
-		    $.colorbox({inline:true, href:"#comparingArea", opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, onCleanup:function() {
-		    	$('#comparingArea svg').remove();
-		    	$('#comparingArea').hide(0);
-		    	} 
-			});			
+	function drawBarchart() {
+
+		if(!barDrawn) {
+			//process data if it is the first time to draw bar chart
+			var chosenItems = d3.select('#selectionList').selectAll('.item.chosen')
+				.each(function(itemData) {
+					d3.selectAll("circle.node").each(function(d) {
+						if(itemData == d) {
+							selectedData.push({
+								name: d.Name,
+								department: d.Department,
+								id: d.ID,
+								publications: parseInt($(this).attr("publications")),
+								supervisions: parseInt($(this).attr("supervisions")),
+								grants: parseInt($(this).attr("grants"))
+							});
+						}
+					});
+				});
+			processedBarData = d3.range(3).map(function(d) {
+		    	var result = {};
+		    	switch(d) {
+					case 0:
+						result.key = "publication";
+						result.color = "#9E5845";
+						result.values = [];
+		    			selectedData.forEach(function(d, i) { result.values.push({x: i, y:d.publications }); });
+						break;
+					case 1:
+						result.key = "supervision";
+						result.color = "#91BA6D";
+						result.values = [];
+						selectedData.forEach(function(d, i) { result.values.push({x: i, y: d.supervisions }); });
+						break;
+					case 2:
+						result.key = "grant";
+						result.color = "#966FAD";
+						result.values = [];
+		    			selectedData.forEach(function(d, i) { result.values.push({x: i, y: d.grants }); });
+		    			break;
+		    	}
+		    	return result;
+		    });
+
+		    barDrawn = true;
+		}
+
+	    //draw graph
+	    var margin = {top: 40, right: 10, bottom: 40, left: 10},
+			width = 960 - margin.left - margin.right,
+			height = 400 - margin.top - margin.bottom;
+
+	    nv.addGraph(function() {
+	    	
+	    	var chart = nv.models.multiBarChart();
+
+	    	chart.xAxis.tickFormat(function(d) { return selectedData[d].name; });
+        	chart.yAxis.tickFormat(d3.format('d'));
+        	chart.xAxis.rotateLabels(30);
+        	chart.reduceXTicks(false);
+
+        	d3.select("#comparingArea").append("svg")
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+			    .style("width", width + margin.left + margin.right)
+		    	.style("height", height + margin.top + margin.bottom)
+        		.datum(processedBarData)
+        		.transition().duration(500).call(chart).call(function() {
+        			d3.select("#comparingArea svg")
+	        			.selectAll('g.nv-x.nv-axis text')
+	        			.filter(function(d) { return $(this).prev().is('line'); })
+						.attr("fill", function(d, i) { return color20(selectedData[i].department); });
+        		});
+
+        	nv.utils.windowResize(chart.update);
+
+        	return chart;
+	    });
+
+	}
+
+	function drawLinechart() {
+		
+		if(!lineDrawn) {
+			//process data if it is the first time to draw line chart
+			//fetch data
+	        var science_faculty_data;
+	        if(store.session.has("science_faculty_data")){
+	          console.log("science_faculty_data is already in sessionStorage...no need to fetch again");
+	          science_faculty_data = store.session("science_faculty_data");        
+	        }
+	        var links_combined;
+			if(store.session.has("links_combined")){
+	          console.log("links_combined is already in sessionStorage...no need to fetch again");
+	          links_combined = store.session("links_combined");       
+	        }
+
+			selectedData.forEach(function(data) {
+		        var index;
+		        for(index = 0; index < science_faculty_data.length; index++)
+		        	if(science_faculty_data[index].ID == data.id)
+		        		break;
+		        
+		        //process data
+		        var links = _.filter(links_combined, function(d) {
+		        	var flag = false;
+		        	if(d.source == index || d.target == index) {
+		        		if(d.type == "publication" || d.type == "grant" && d.status != "")
+		        			flag = true;
+		        	}
+		        	return flag;
+		        });
+
+		        var min = 9999; max = 0;
+		        links.forEach(function(d) {
+		        	var begin, end;
+		        	if(d.type == "publication") {
+		        		begin = end = d.year;
+		        	} else { // grant
+			        	begin = parseInt(d.begin.substring(0, 4));
+			        	end = parseInt(d.end.substring(0, 4));
+			        }
+		        	min = begin < min ? begin : min;
+		        	max = end > max ? end : max;
+		        });
+		        var combinedData = links.length ? d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; }) : [];
+		        links.forEach(function(d) {
+		        	if(d.type == "publication") {
+		        		for(var i = 0; i < combinedData.length; i++)
+		        			if(combinedData[i].x == d.year) {
+		        				combinedData[i].y++;
+		        				break;
+		        			}
+		        	} else { //grant
+			        	var begin = parseInt(d.begin.substring(0, 4));
+			        	var end = parseInt(d.end.substring(0, 4));
+			        	for(var i = 0; i < combinedData.length; i++) {
+			        		if(combinedData[i].x == begin) {
+			        			for(var j = i; j < combinedData.length && combinedData[j].x <= end; j++)
+			        				combinedData[j].y++;
+			        			break;
+			        		}
+			        	}
+			        }
+		        });
+
+		        processedLineData.push({key: data.name, values: combinedData, color: color20(data.department)});
+		    });
+			
+			lineDrawn = true;
+		}
+
+		//draw graph
+		var margin = {top: 40, right: 10, bottom: 40, left: 10},
+			width = 960 - margin.left - margin.right,
+			height = 400 - margin.top - margin.bottom;
+
+		nv.addGraph(function() {
+			var chart = nv.models.lineChart();
+
+			chart.xAxis
+				.axisLabel('Year')
+				.tickFormat(d3.format('d'));
+			chart.yAxis
+				.axisLabel('Collaborations')
+				.tickFormat(d3.format('d'));
+
+			chart.showLegend(false);
+
+			d3.select('#comparingArea').append("svg")
+        		.attr("width", width + margin.left + margin.right)
+		    	.attr("height", height + margin.top + margin.bottom)
+		    	//the NVD3 uses style width and height to decide the children width and height
+		    	.style("width", width + margin.left + margin.right)
+		    	.style("height", height + margin.top + margin.bottom)
+        		.datum(processedLineData)
+        		.transition().duration(500).call(chart);
+        	nv.utils.windowResize(chart.update);
+
+			return chart;
 		});
+	}
+
+	$('#barchart').on('ifChecked', function() {
+		$('#comparingArea svg').remove();
+		drawBarchart();
+	});
+
+	$('#linechart').on('ifChecked', function() {
+		$('#comparingArea svg').remove();
+		drawLinechart();
 	});
 
 	$('#itemLinechart').click(function() {
@@ -1472,9 +1678,13 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        nv.addGraph(function() {
 	        	var chart = nv.models.lineWithFocusChart();
 
-	        	chart.xAxis.tickFormat(d3.format('d'));
+	        	chart.xAxis
+	        		.tickFormat(d3.format('d'))
+	        		.axisLabel('Year');
 	        	chart.x2Axis.tickFormat(d3.format('d'));
-	        	chart.yAxis.tickFormat(d3.format('d'));
+	        	chart.yAxis
+	        		.tickFormat(d3.format('d'))
+	        		.axisLabel('Collaborations');
 	        	chart.y2Axis.tickFormat(d3.format('d'));
 
 	        	d3.select('#detailLineArea').append("svg")
@@ -1490,7 +1700,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        	return chart;
 	        });
 	    }
-	    
+
 	});
 /*
 	$('#itemsAll').click(function() {
