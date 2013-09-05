@@ -1049,23 +1049,37 @@ var GRANTS = (function () {
       var removed = _.difference(filtersourcesvisible, $("#filtersources").val()); //if a value was removed, this will not be empty
       var added = _.difference($("#filtersources").val(), filtersourcesvisible);   //if a value was added, this will not be empty
       var filtersourceshidden = _.difference(grantDepartments, $("#filtersources").val());
+
       d3.selectAll('.sankeynode').each(function (node) {
-        if (removed == node.name){
+        if (removed == node.name && node.sourceLinks.length){
           d3.select(this).transition().duration(1000).style("opacity", 0);
         }
-        else if (added == node.name){
+        else if (added == node.name && node.sourceLinks.length){
           d3.select(this).transition().duration(1000).style("opacity", 1);
         }
       });
 
       d3.selectAll('.sankeylink').each(function (link) {
-          if (removed == link.source.name){
+        if (removed == link.source.name){
+          d3.select(this).transition().duration(1000).style("opacity", 0);
+        }
+        else if (added == link.source.name && _.contains(filtertargetsvisible, link.target.name)){
+          d3.select(this).transition().duration(1000).style("opacity", 1);
+        }
+      }); 
+
+      if($('#sankeyfragslider').slider("value") == 1) {
+        d3.selectAll('.sankeylink').filter(function(link) { 
+          return link.source.name == "Proposal"; 
+        }).each(function (link) {
+          if (removed == link.target.name){
             d3.select(this).transition().duration(1000).style("opacity", 0);
           }
-          else if (added == link.source.name){
+          else if (added == link.target.name){
             d3.select(this).transition().duration(1000).style("opacity", 1);
           }
-      }); 
+        }); 
+      }
 
       filtersourcesvisible = $("#filtersources").val(); //update which sources are visible now
 
@@ -1076,20 +1090,21 @@ var GRANTS = (function () {
       var removed = _.difference(filtertargetsvisible, $("#filtertargets").val()); //if a value was removed, this will not be empty
       var added = _.difference($("#filtertargets").val(), filtertargetsvisible);   //if a value was added, this will not be empty  
       var filtertargetshidden = _.difference(proposalStatuses, $("#filtertargets").val());
+
       d3.selectAll('.sankeynode').each(function (node) {
-        if (removed == node.name){
+        if (removed == node.name && !node.sourceLinks.length){
           d3.select(this).transition().duration(1000).style("opacity", 0);
         }
-        else if (added == node.name){
+        else if (added == node.name && !node.sourceLinks.length){
           d3.select(this).transition().duration(1000).style("opacity", 1);
         }
       });
 
       d3.selectAll('.sankeylink').each(function (link) {
-        if (removed == link.target.name){
+        if (removed == link.target.name && link.source.name != "Proposal"){
           d3.select(this).transition().duration(1000).style("opacity", 0);
         }
-        else if (added == link.target.name){
+        else if (added == link.target.name && _.contains(filtersourcesvisible, link.source.name)){
           d3.select(this).transition().duration(1000).style("opacity", 1);
         }
       });  
@@ -1101,25 +1116,53 @@ var GRANTS = (function () {
 
   //populates the filter area based on grant data
   //is called from prepareSankeyDepts in processGrantData
-  function populateFilter(grantDepts, proposalStatuses, awardStatuses) {
+  function populateFilter(fragmentationLevel, grantDepts, proposalStatuses, awardStatuses) {
 
-    //loop through each grantDept and append it
-    $.each(grantDepts, function(key, value) {  
-      $('#filtersources')
-        .append($("<option selected></option>")
-        .attr("value",value)
-        .text(value))
-        .trigger("liszt:updated");
-    });
+    //clear old contents
+    $('#filtersources').children().remove();
+    $('#filtertargets').children().remove();
 
-    //loop through each grantDept and append it
-    $.each(proposalStatuses, function(key, value) {  
-      $('#filtertargets')
-        .append($("<option selected></option>")
-        .attr("value",value)
-        .text(value))
-        .trigger("liszt:updated");
-    });  
+    if(fragmentationLevel == "departments") {
+      $('#filtersources').prev().text("sources");
+      $('#filtertargets').prev().text("targets");
+
+      //loop through each grantDept and append it
+      $.each(grantDepts, function(key, value) {  
+        $('#filtersources')
+          .append($("<option selected></option>")
+            .attr("value",value)
+            .text(value))
+          .trigger("liszt:updated");
+      });
+
+      //loop through each grantDept and append it
+      $.each(proposalStatuses, function(key, value) {  
+        $('#filtertargets')
+          .append($("<option selected></option>")
+            .attr("value",value)
+            .text(value))
+          .trigger("liszt:updated");
+      });  
+    } else if(fragmentationLevel == "faculty") {
+      $('#filtersources').prev().text("Proposal Statuses");
+      $('#filtertargets').prev().text("Award Statuses");
+
+      $.each(proposalStatuses, function(key, value) {
+        $('#filtersources')
+          .append($("<option selected></option>")
+            .attr("value", value)
+            .text(value))
+          .trigger("liszt:updated");
+      });
+
+      $.each(awardStatuses, function(key, value) {  
+        $('#filtertargets')
+          .append($("<option selected></option>")
+            .attr("value",value)
+            .text(value))
+          .trigger("liszt:updated");
+      });
+    }
 
   // $("#filteryears").RangeSlider("option", "bounds", {min: 10, max: 90});
 
@@ -1158,12 +1201,12 @@ var GRANTS = (function () {
   //@return: none
   function getSankeyData(fragmentationLevel, callback){
 
-    var sankey_data_departments, sankey_data_faculty, grant_departments, proposal_statuses, award_statuses, grant_year_range_begin, grant_year_range_end, grant_sponsors;
+    var sankey_data, grant_departments, proposal_statuses, award_statuses, grant_year_range_begin, grant_year_range_end, grant_sponsors;
 
     if (fragmentationLevel == "departments"){
       if(store.session.has("sankey_data_departments")){
         console.log("sankey_data_departments is already in sessionStorage...no need to fetch again!");
-        fragmentationLevel = store.session("sankey_data_departments");
+        sankey_data = store.session("sankey_data_departments");
         grant_departments = store.session("grant_departments");
         proposal_statuses = store.session("proposal_statuses");
         award_statuses = store.session("award_statuses");
@@ -1171,12 +1214,12 @@ var GRANTS = (function () {
         grant_sponsors = store.session("grant_sponsors");
         grant_year_range_begin = store.session("grant_year_range_begin");
         grant_year_range_end = store.session("grant_year_range_end");      
-        callback(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);      
+        callback(sankey_data, grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);      
       }
       else{
         console.log("fetching sankey_data_departments...");
         $.get('/grants/sankey_data_departments', function(result) {
-          fragmentationLevel = JSON.parse(result.sankey_data_departments);
+          sankey_data = JSON.parse(result.sankey_data_departments);
           grant_departments = JSON.parse(result.grant_departments);
           proposal_statuses = JSON.parse(result.proposal_statuses);
           award_statuses = JSON.parse(result.award_statuses);
@@ -1184,7 +1227,7 @@ var GRANTS = (function () {
           grant_sponsors = JSON.parse(result.grant_sponsors);
           grant_year_range_begin = JSON.parse(result.grant_year_range_begin);
           grant_year_range_end = JSON.parse(result.grant_year_range_end);        
-          store.session("sankey_data_departments", fragmentationLevel);
+          store.session("sankey_data_departments", sankey_data);
           store.session("grant_departments", grant_departments);
           store.session("proposal_statuses", proposal_statuses);
           store.session("award_statuses", award_statuses);
@@ -1192,14 +1235,14 @@ var GRANTS = (function () {
           store.session("grant_sponsors", grant_sponsors);
           store.session("grant_year_range_begin", grant_year_range_begin);
           store.session("grant_year_range_end", grant_year_range_end);        
-          callback(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);        
+          callback(sankey_data, grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);        
         });
       }      
     }
     else if (fragmentationLevel == "faculty"){
       if(store.session.has("sankey_data_faculty")){
         console.log("sankey_data_faculty is already in sessionStorage...no need to fetch again!");
-        fragmentationLevel = store.session("sankey_data_faculty");
+        sankey_data = store.session("sankey_data_faculty");
         grant_departments = store.session("grant_departments");
         proposal_statuses = store.session("proposal_statuses");
         award_statuses = store.session("award_statuses");
@@ -1207,12 +1250,12 @@ var GRANTS = (function () {
         grant_sponsors = store.session("grant_sponsors");      
         grant_year_range_begin = store.session("grant_year_range_begin");
         grant_year_range_end = store.session("grant_year_range_end");
-        callback(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);      
+        callback(sankey_data, grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);      
       }
       else{
         console.log("fetching sankey_data_faculty...");
         $.get('/grants/sankey_data_faculty', function(result) {
-          fragmentationLevel = JSON.parse(result.sankey_data_faculty);
+          sankey_data = JSON.parse(result.sankey_data_faculty);
           grant_departments = JSON.parse(result.grant_departments);
           proposal_statuses = JSON.parse(result.proposal_statuses);
           award_statuses = JSON.parse(result.award_statuses);
@@ -1220,7 +1263,7 @@ var GRANTS = (function () {
           grant_sponsors = JSON.parse(result.grant_sponsors);
           grant_year_range_begin = JSON.parse(result.grant_year_range_begin);
           grant_year_range_end = JSON.parse(result.grant_year_range_end);        
-          store.session("sankey_data_faculty", fragmentationLevel);
+          store.session("sankey_data_faculty", sankey_data);
           store.session("grant_departments", grant_departments);
           store.session("proposal_statuses", proposal_statuses);
           store.session("award_statuses", award_statuses);
@@ -1228,14 +1271,14 @@ var GRANTS = (function () {
           store.session("grant_sponsors", grant_sponsors);        
           store.session("grant_year_range_begin", grant_year_range_begin);
           store.session("grant_year_range_end", grant_year_range_end);
-          callback(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);        
+          callback(sankey_data, grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin);        
         });
       }    
     }
   }
 
 
-  function buildSankey(grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin){
+  function buildSankey(sankey_data, grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin){
 
     grant_year_begin_min = _.min(_.filter(_.uniq(_.map(grant_year_range_begin, function(d){ if (d != "") return parseInt(d); })), function(d) { return d != undefined }));
      grant_year_begin_max = _.max(_.filter(_.uniq(_.map(grant_year_range_begin, function(d){ if (d != "") return parseInt(d); })), function(d) { return d != undefined }));
@@ -1244,7 +1287,7 @@ var GRANTS = (function () {
 
       $('#vizloader').hide();
 
-      populateFilter(grant_departments, proposal_statuses, award_statuses);
+      populateFilter(fragmentationLevel, grant_departments, proposal_statuses, award_statuses);
 
       $( "#sankeyyearbeginrange" ).slider({
         range: true,
@@ -1273,12 +1316,12 @@ var GRANTS = (function () {
       
 
       sankey
-          .nodes(fragmentationLevel.nodes)
-          .links(fragmentationLevel.links)
+          .nodes(sankey_data.nodes)
+          .links(sankey_data.links)
           .layout(32);
 
       var link = sankeysvg.append("g").selectAll(".sankeylink")
-          .data(fragmentationLevel.links)
+          .data(sankey_data.links)
         .enter().append("path")
           .attr("class", "sankeylink")
           .attr("d", sankeyPath)
@@ -1299,7 +1342,7 @@ var GRANTS = (function () {
           .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + format(d.value); });
 
       var node = sankeysvg.append("g").selectAll(".sankeynode")
-          .data(fragmentationLevel.nodes)
+          .data(sankey_data.nodes)
         .enter().append("g")
           .attr("class", "sankeynode")
           .style("opacity", 1)
