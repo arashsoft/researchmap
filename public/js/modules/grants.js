@@ -291,6 +291,52 @@ var GRANTS = (function () {
 
   });
 
+  $('#actionpaneltoggle').on("click", function() {
+    if ($('#actionpanel').is(':visible')){
+      $('#actionpanel').hide('slow');
+      $('#actionpaneltoggle').css('left', '10px').css('width', '20px').css('border-radius', '2px 0px 0px 2px');
+      $('#actionpaneltoggle p').text('<');
+      $('#vizcontainer').css('width', $(window).width()-50);
+      if ($('#treemapviz').is(':visible')){
+        $('#treemapviz').css('width', $(window).width()-50);     
+        $('#treemapviz svg').css('width', $(window).width()-50);
+        //$('#matrixdepartmentlegendtoggle').css('left', $('#matrixbar').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);
+      }
+      else if ($('#sankeyviz').is(':visible')){
+        $('#sankeyviz').css('width', $(window).width()-50);      
+        $('#sankeyviz svg').css('width', $(window).width()-50);
+        //$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
+      }
+      else if ($('#bubbleviz').is(':visible')){
+        $('#bubbleviz').css('width', $(window).width()-50);      
+        $('#bubbleviz svg').css('width', $(window).width()-50);
+        //$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
+      }      
+    }
+    else {
+      $('#vizcontainer').css('width', '72%'); 
+      $('#actionpanel').show();
+      $('#actionpaneltoggle').css('left', '10px').css('top', '6px').css('width', '20px').css('border-radius', '0px 2px 2px 0px'); 
+      $('#actionpaneltoggle p').text('>');  
+      if ($('#treemapviz').is(':visible')){
+        $('#treemapviz').css('width', $('#vizcontainer').width());
+        $('#treemapviz svg').css('width', $('#vizcontainer').width());     
+        //$('#matrixdepartmentlegendtoggle').css('left', $('#matrixbar').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);       
+      }
+      else if ($('#sankeyviz').is(':visible')){
+        $('#sankeyviz').css('width', $('#vizcontainer').width());
+        $('#sankeyviz svg').css('width', $('#vizcontainer').width());      
+        //$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);  
+      }   
+      else if ($('#bubbleviz').is(':visible')){
+        $('#bubbleviz').css('width', $('#vizcontainer').width());
+        $('#bubbleviz svg').css('width', $('#vizcontainer').width());      
+        //$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);  
+      }        
+    }
+  });
+
+
   $( "#grantbeginyearrange" ).slider({
     range: true,
     //min: 0,  //TODO: populate dynamically
