@@ -476,6 +476,7 @@ for matrix
   position: absolute;
   min-height: 100px;
   min-width: 300px;
+  max-width: 300px;
   max-height: 500px;
   left: 1%;
   top: 10%;
@@ -563,10 +564,11 @@ for matrix
 
 #selectionArea li{
   font-family: 'Oswald', sans-serif;
-  font-size: 1em;
+  font-size: 0.8em;
   padding: 8px 5px;
   font-weight: bold;
   border-bottom: 1px solid #ebebeb;
+  text-transform: lowercase;
 }
 
 #cloningArea h2 {

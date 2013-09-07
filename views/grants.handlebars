@@ -52,6 +52,20 @@
       <div id="cloningArea">
         <h2>Clone</h2>
       </div>
+      <div id="selectionArea">
+        <h2>selections</h2>
+        <div style="width:100%; display:block; margin:auto; padding-bottom:15px; display:none;">
+          <button id="itemsChooseAll" style="height: 2em; left:15%;">choose all</button>       
+          <button id="itemsChooseNone" style="height: 2em; left:20%;">choose none</button>
+        </div>          
+        <div style="width:100%; padding-bottom:15px;">
+          <button id="itemLinechart" 
+          style="margin: 5px; height: 2em; display:none; margin:auto; left: 39%;">detail</button>
+          <button id="itemsCompare" 
+          style="margin: 5px; height: 2em; display:none; margin:auto; left: 37%;">compare</button>
+        </div>         
+        <ul id="selectionList"></ul>
+      </div>      
     </div>    
   </div>
 
@@ -106,9 +120,9 @@
     <div id="treemapactions">
       <h3>arrange</h3><img src="img/info.png"></img><hr>
       <div class="action">
-        <select id="arrangetreemap" data-placeholder="Sort by..." class="chzn-select" style="width:250px;" tabindex="1"> 
-          <option value=""></option>
-          <option value="department">Department</option>
+        <p>sort and categorize according to</p>        
+        <select id="arrangetreemap" class="chzn-select" style="width:50%;"> 
+          <option value="department" selected>Department</option>
           <option value="sponsor">Sponsor</option>
         </select>
       </div>
@@ -229,9 +243,11 @@
             <label for="selectIndividual">individual</label>
           </li>            
         </ul>
+        <div id="bubbleselectactions">
           <hr>
-          <button id="selectionClone" style="margin-top: 30px; position:relative; left:36%">clone selections</button>
-          <button id="selectionRemove" style="margin-top: 30px; position:relative; left:36%">remove all selections</button>      
+          <button id="selectionClone" style="margin: 10px auto; display:block;">clone selections</button>
+          <button id="selectionRemove" style="margin: 10px auto; display:block;">reset</button>  
+          </div>    
       </div>    
 
       <h3>translate</h3><img src="img/info.png"></img><hr>

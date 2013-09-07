@@ -23,6 +23,7 @@ var GRANTS = (function () {
   var bubble;
   var top20 = [];
 
+
   var grouped_grants;
   //log scale for the grant request amounts
   var log_scale = d3.scale.log().domain([1,10000000]).range([5,40]);
@@ -179,7 +180,7 @@ var GRANTS = (function () {
   //to be panned
   var bubblesvgbackground = bubblesvg.append("svg:rect").attr("width", width).attr("height", height).style("fill", "aliceblue").style("opacity", 0);
     //this will be used to calculate the positions of the nodes when rearranged
-  var  circleOutline = bubblesvg.append("svg:circle").attr("cx", width/2).attr("cy", height/2).attr("r", width/3).style("stroke", "gray").style("stroke-width", "1px").style("fill", "none");//.style("opacity", 0);
+  var  circleOutline = bubblesvg.append("svg:circle").attr("cx", width/2).attr("cy", height/2).attr("r", width/3).style("stroke", "gray").style("stroke-width", "1px").style("fill", "none").style("opacity", 0);
 
 
   //this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
@@ -285,6 +286,10 @@ var GRANTS = (function () {
       constructTreemap("department");
       $('#treemapactions').delay(800).show(800);
     });  
+
+    //hide the selectionArea div
+    $('#selectionArea').hide();
+    $('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });    
 
     $('#cloningArea').hide();
     $('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false, handle: "h2" });
@@ -699,7 +704,7 @@ var GRANTS = (function () {
             d3.select(this).classed("selected", true).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
           }
           //update the div that lists the current selections
-          //updateSelectionArea();  
+          updateSelectionArea();  
         }
       })
       .each(function() {
@@ -757,7 +762,7 @@ var GRANTS = (function () {
       })
       .on("brush", function() {
         //update the div that lists the current selections
-        //updateSelectionArea();
+        updateSelectionArea();
         // iterate through all circle.node
         bubblesvg.selectAll("circle.bubble").each(function(d) {
           // if the circle in the current iteration is within the brush's selected area
@@ -792,12 +797,12 @@ var GRANTS = (function () {
     .on('ifUnchecked', function() {
       individualSelect = false;
     }); 
-/*
+
     //if the user turns off the select action
     $('input#selectNone').on('ifChecked', function() {
       var noneSelected = true;
       // iterate through all circle.node
-        networksvg.selectAll("circle.node").each(function(d) {
+        bubblesvg.selectAll("circle.node").each(function(d) {
           // if the circle in the current iteration is within the brush's selected area
           if (this.style.strokeWidth == "4px") {
             noneSelected = false;
@@ -808,21 +813,23 @@ var GRANTS = (function () {
         if (noneSelected == true){   
           //hide the selectionArea div
         $('#selectionArea').hide('slow'); 
-        $('#cloningArea').hide('slow');
+        //$('#cloningArea').hide('slow');
       }
     })
     .on('ifUnchecked', function() {
       //show the selectionArea div
       $('#selectionArea').show('slow');
     }); 
-*/
+
   //if the user clicks the button to remove all selections
   $('#selectionRemove').click(function() {
+    $('#selectionNone').iCheck('check');
     selectedBubbles = []; //empty the array
-    cloningSvg.selectAll('*').remove();
+    //cloningSvg.selectAll('*').remove();
     //hide the selectionArea div
-    //$('#selectionArea').hide('slow');
-    $('#cloningArea').hide('slow');
+    $('#selectionArea').hide('slow');
+    $('#bubbleselectactions').slideUp();
+    //$('#cloningArea').hide('slow');
     //return to the defaul for the radios (i.e., check the 'none' option)
     $('input#selectNone').iCheck('check');
     //reset the style of the nodes
@@ -1458,7 +1465,7 @@ var GRANTS = (function () {
 
   /*
   gets the data for the bubbleviz (either from the sessionStorage or from the db on the server) and then builds the viz by passing the buildBubble function as a callback to getBubbleData
-  @params: callback: a callback function--in this case buildBubble--that builds the network visualization
+  @params: callback: a callback function--in this case buildBubble--that builds the bubble visualization
   @returns: none
   */
   function getBubbleData (callback) {
@@ -1495,6 +1502,8 @@ var GRANTS = (function () {
   function buildBubble(all_grants) {
     //hide the loading gif
     $('#vizloader').hide();
+
+    $('#bubbleselectactions').slideUp();
 
     //group grants by the proposal number (i.e., group multiple records of the same grant)
     grouped_grants = _.groupBy(all_grants, function(x) { return x.Proposal; });
@@ -1547,7 +1556,7 @@ var GRANTS = (function () {
             d3.select(this).classed("selected", true).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
           }
           //update the div that lists the current selections
-          //updateSelectionArea();  
+          updateSelectionArea();  
         }
       });
 
@@ -2358,6 +2367,155 @@ var GRANTS = (function () {
       });
     };
   } 
+
+  /*
+  updates the selectionArea div, which displays the names of the currently selected nodes
+
+  @params: command: function can be called with special commands such as "empty"
+  @returns: none
+  */
+  function updateSelectionArea (command) {
+    if (command == "empty") {
+      //empty the selection area by removing div elements
+      //keeps the h3 element
+      $('#selectionList').contents().filter('li').remove();
+      //$('#cloningArea').contents().filter('svg').remove();
+      //cloningSvg.selectAll('*').remove();
+      $('#bubbleselectactions').slideUp();
+    }
+    else {
+      var items = d3.select("#selectionList").selectAll(".item")
+
+        .data(selectedBubbles, function(d) { 
+          return d.Title; } ); //<--this "key function" replaces the default bind-by-index behavior 
+
+        //show selection actions
+        if(selectedBubbles.length > 0)
+          $('#bubbleselectactions').slideDown();
+        else
+          $('#bubbleselectactions').slideUp();
+
+      items.enter()
+        .append("li")
+        .attr("class", "item")
+        .text(function(d) { return d.Title; } )
+        .style("color", function(d) { return color20(d.Sponsor); } );
+
+      items
+        .on("mouseover", function(d) {
+          d3.select(this)
+            .style("background-color", "rgb(36,137,197)")//function(d) { return color20(d.Department) })
+            .style("color", "white");
+          
+          // var datum = d;
+          // var collaborations;
+          // d3.selectAll("circle.node").each(function(d) {
+          //   if(d == datum) {
+          //     d3.select(this).style("fill", "gray");
+          //     collaborations = {
+          //       "publications": $(this).attr("publications"), 
+          //       "supervisions": $(this).attr("supervisions"), 
+          //       "grants": $(this).attr("grants")};
+          //   }
+          // });
+
+          // var top = $(this).position().top + $('#selectionArea').position().top;
+          // var left = $(this).position().left + $(this).width() + $('#selectionArea').position().left + 35;
+
+          // $('#networkviz').append('<div class="itemDetails" id="itemDetails-' + d.ID + '"></div>');
+          // $('#itemDetails-' + d.ID)
+          //   .css({
+          //     top: top + "px",
+          //     left: left + "px"
+          //   })
+          //   .html('<b>Name: </b>' + d.Name + '<br>'
+          //     + '<b>ID: </b>' + d.ID + '<br>'
+          //     + '<b>Department: </b>' + d.Department + '<br>'
+          //     + '<b>Rank: </b>' + d.Rank + '<br>'
+          //     + '<b>Co-Publications: </b>' + collaborations.publications + '<br>'
+          //     + '<b>Co-Supervisions: </b>' + collaborations.supervisions + '<br>'
+          //     + '<b>Co-Grants: </b>' + collaborations.grants);
+          // $('#itemDetails-' + d.ID).show('slow');
+        })
+        .on("mouseout", function(d) {
+          if(!d3.select(this).classed("chosen")) {
+            d3.select(this).style("background-color", "white")
+            .style("color", function(d) { return color20(d.Department); } );  
+          }
+
+          var datum = d;
+          d3.selectAll("circle.node").each(function(d) {
+            if(d == datum) {
+              if($('#selectionShow').is(':checked'))
+                d3.select(this).style("fill", function(d) { return color20(d.Department); });
+              else
+                d3.select(this).style("fill", "white");
+            }
+          });
+          //$('#itemDetails-' + d.ID).hide(100, function() { this.remove(); });
+        })
+        .on("click", function(d) {
+          if(d3.select(this).classed("chosen")) {
+            d3.select(this).classed("chosen", false);
+          } else {
+            d3.select(this).classed("chosen", true);
+          }
+
+          var counts = d3.select("#selectionList").selectAll("li.item.chosen")[0].length;
+          // if(counts == 0) {
+          //   $('#itemsCompare').parent().hide('fast');
+          //   $('#itemsCompare').hide();
+          //   $('#itemLinechart').hide();
+          // } else if(counts == 1) {
+          //   $('#itemsCompare').parent().show('fast');
+          //   $('#itemsCompare').hide();
+          //   $('#itemLinechart').show();
+          // } else {
+          //   $('#itemsCompare').parent().show('fast');
+          //   $('#itemsCompare').show();
+          //   $('#itemLinechart').hide();
+          // }
+
+          if(counts == selectedBubbles.length)
+            $('#itemsChooseAll').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+          else
+            $('#itemsChooseAll').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+
+          if (counts == 0)
+            $('#itemsChooseNone').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+          else
+            $('#itemsChooseNone').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+        });
+
+      items.exit().remove();
+    }
+
+      if(selectedBubbles.length > 1)
+        $('#itemsChooseAll').parent().slideDown('fast');
+      else
+        $('#itemsChooseAll').parent().slideUp('fast');
+      $('#itemsChooseAll').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+      $('#itemsChooseNone').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+      // if(d3.selectAll('.item.chosen')[0].length > 1)
+      //  $('#itemsCompare').show('fast');
+      // else 
+      //  $('#itemsCompare').hide('fast');
+      // var counts = d3.select("#selectionList").selectAll("li.item.chosen")[0].length;
+      // if(counts == 0) {
+      //   $('#itemsCompare').parent().hide('fast');
+      //   $('#itemsCompare').hide();
+      //   $('#itemLinechart').hide();
+      // } else if(counts == 1) {
+      //   $('#itemsCompare').parent().show('fast');
+      //   $('#itemsCompare').hide();
+      //   $('#itemLinechart').show();
+      // } else {
+      //   $('#itemsCompare').parent().show('fast');
+      //   $('#itemsCompare').show();
+      //   $('#itemLinechart').hide();
+      // }
+
+  }
 
 
   // function constructTreemapLegend() {
