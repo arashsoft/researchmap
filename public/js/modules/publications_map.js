@@ -4376,6 +4376,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  	$('#networkactions').show(800);
 	  	$('#networkdepartmentlegendtoggle').show();
 
+	  	$('#selectactions').slideUp();//hide until selections are made
+
 	  	//construct the legend
 	  	constructnetworkdepartmentlegend(science_departments);
 
@@ -6184,11 +6186,18 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			$('#selectionList').contents().filter('li').remove();
 			//$('#cloningArea').contents().filter('svg').remove();
 			cloningSvg.selectAll('*').remove();
+			$('#selectactions').slideUp();
 		}
 		else {
 			var items = d3.select("#selectionList").selectAll(".item")
 
 				.data(selectedNodes, function(d) { return d.Name; } ); //<--this "key function" replaces the default bind-by-index behavior 
+
+				//show selection actions
+				if(selectedNodes.length > 0)
+					$('#selectactions').slideDown();
+				else
+					$('#selectactions').slideUp();
 
 			items.enter()
 				.append("li")

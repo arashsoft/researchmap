@@ -474,8 +474,9 @@ for matrix
 
 #selectionArea {
   position: absolute;
-  height: 450px;
-  width: 300px;
+  min-height: 100px;
+  min-width: 300px;
+  max-height: 500px;
   left: 1%;
   top: 10%;
   color: rgb(200,200,200);
@@ -575,6 +576,7 @@ for matrix
   text-transform: uppercase;
   text-align: center;  
   color: black;
+  cursor: move;
 }
 
 #gatheringArea h2 {
