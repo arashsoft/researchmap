@@ -587,7 +587,7 @@ for matrix
 }
 
 #comparingArea h2 {
-  font-family: 'Fjalla One', sans-serif;
+  font-family: 'Helvetica Neue', sans-serif;
   padding-bottom: 15px;
   font-size: 1.5em;
   text-transform: uppercase;
@@ -596,10 +596,17 @@ for matrix
 }
 
 #detailLineArea h2 {
-  font-family: 'Fjalla One', sans-serif;
-  padding-bottom: 15px;
+  font-family: 'Helvetica Neue', sans-serif;
+  padding-bottom: 10px;
   font-size: 1.5em;
   text-transform: uppercase;
+  text-align: center;  
+  color: black;
+}
+
+#detailLineArea h3 {
+  font-family: 'Helvetica Neue', sans-serif;
+  padding-bottom: 5px;
   text-align: center;  
   color: black;
 }
