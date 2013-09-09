@@ -38,7 +38,7 @@ var GRANTS = (function () {
   var department_border_coords = [];
   var department_border_coords = [];
   var border_coords_sampled = true; //when set to false, start updating the border coords arrays in the tick function
-  var sampletime = 15000;
+  var sampletime = 1000;
 
   var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 
@@ -728,30 +728,56 @@ var GRANTS = (function () {
   $('input#filterOthers').on('ifUnchecked', filterBubblesByStatus);
 
   $('#arrangebubble').chosen().change(function() {
-    bubblesvg.selectAll("g.boundary.department").remove();
-    bubblesvg.selectAll("g.boundary.grantvalue").remove();
+    // bubblesvg.selectAll("g.boundary.department").remove();
+    // bubblesvg.selectAll("g.boundary.grantvalue").remove();
     if(this.value == "random") {
       bubble_force.start();
     }
-    if(this.value == "department") {
-      border_coords_sampled = true;
-      bubble_force.start();
-      setTimeout(function() {
-        border_coords_sampled = false;
-        tick();
-        arrangementBoundaries("department");
-      }, sampletime);
+    // if(this.value == "department") {
+    //   border_coords_sampled = true;
+    //   bubble_force.start();
+    //   setTimeout(function() {
+    //     border_coords_sampled = false;
+    //     tick();
+    //     arrangementBoundaries("department");
+    //   }, sampletime);
+    // }
+    // if(this.value == "grantvalue") {
+    //   border_coords_sampled = true;
+    //   bubble_force.start();
+    //   setTimeout(function() {
+    //     border_coords_sampled = false;
+    //     tick();
+    //     arrangementBoundaries("grantvalue");
+    //   }, sampletime);
+    // }
+  });
+
+  $('#fragmentationbubble').chosen().change(function() {
+    bubblesvg.selectAll("g.boundary.department").remove();
+    bubblesvg.selectAll("g.boundary.grantvalue").remove();  
+    if(this.value == "department"){  
+      if($('#arrangebubble').val() == "department") {
+        border_coords_sampled = true;
+        //bubble_force.start();
+        setTimeout(function() {
+          border_coords_sampled = false;
+          tick();
+          arrangementBoundaries("department");
+        }, sampletime);
+      }
+
+      if($('#arrangebubble').val() == "grantvalue") {
+        border_coords_sampled = true;
+        //bubble_force.start();
+        setTimeout(function() {
+          border_coords_sampled = false;
+          tick();
+          arrangementBoundaries("grantvalue");
+        }, sampletime);
+      }
     }
-    if(this.value == "grantvalue") {
-      border_coords_sampled = true;
-      bubble_force.start();
-      setTimeout(function() {
-        border_coords_sampled = false;
-        tick();
-        arrangementBoundaries("grantvalue");
-      }, sampletime);
-    }
-  })
+  });
 
   $('input#selectLasso').on('ifChecked', function() {
     brush = d3.svg.polybrush()
@@ -2296,16 +2322,16 @@ var GRANTS = (function () {
         }
       }
     }
-    //show goundaries
+    //show boundaries
     for(var i = 0; i < polygons.length; i++) {
       var polysvg = bubblesvg.append("g")
         .attr("class", "boundary " + type)
-        .style("visibility", "hidden")
+        //.style("visibility", "hidden")
         .on("mouseover", function() {
-          this.style.visibility = "visible";
+          //this.style.visibility = "visible";
         })
         .on("mouseout", function() {
-          this.style.visibility = "hidden";
+          //this.style.visibility = "hidden";
         });
       polysvg.append("path")
         .attr("d", function() {
@@ -2316,13 +2342,18 @@ var GRANTS = (function () {
           return str;
         })
         .attr("fill", "white")
-        .attr("stroke", "black")
-        .attr("stroke-width", "2")
-        .style("opacity", 0.3);
+        .attr("stroke", "gray")
+        .attr("stroke-dasharray", "5,5")
+        .attr("stroke-width", "5")
+        .style("opacity", 0.7);
       polysvg.append("text")
         .attr("x", d3.geom.polygon(polygons[i]).centroid()[0])
         .attr("y", polygons[i].centroid()[1])
         .attr("text-anchor", "middle")
+        .style("font-family", "Oswald")
+        .style("font-size", "1em")   
+        .style("font-weight", 800)
+        .style("fill", "gray")     
         .text(function() {
           if(type == "department")
             return departmentCenters[i].name;

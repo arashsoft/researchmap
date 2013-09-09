@@ -175,14 +175,11 @@
     <div id="bubbleactions">
       <h3>arrange</h3><img src="img/info.png"></img><hr>
       <div class="action">        
-        <div id="selectcontainer">
-          <select id="arrangebubble" data-placeholder="Sort by..." class="chzn-select" style="width:250px;" tabindex="1"> 
-            <option value=""></option>
-            <option value="random">Random</option>
+          <select id="arrangebubble" class="chzn-select" style="width:75%;" tabindex="1"> 
+            <option value="random" selected>Random</option>
             <option value="department">Department</option>
             <option value="grantvalue">Grant Value</option>
           </select>
-        </div>
       </div>
 
       <h3>filter</h3><img src="img/info.png"></img><hr>
@@ -226,6 +223,14 @@
         </div>
 
       </div>  
+
+      <h3>fragmentation</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+          <select id="fragmentationbubble" class="chzn-select" style="width:75%;" tabindex="1"> 
+            <option value="individual" selected>individual</option>
+            <option value="department">department</option>
+          </select>        
+      </div>
 
       <h3>select</h3><img src="img/info.png"></img><hr>
       <div class="action">
