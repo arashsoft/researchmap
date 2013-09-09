@@ -868,7 +868,7 @@ function processData (res, results) {
 				sankeyData["nodes"].push({"name":"Proposal"});
 				sankeyData["nodes"].push({"name":"Accepted"});
 				sankeyData["nodes"].push({"name":"Declined"});
-				sankeyData["nodes"].push({"name":"Inst. Approval"});
+				sankeyData["nodes"].push({"name":"Inst. Approved"});
 				sankeyData["nodes"].push({"name":"Pending Approval"});
 				sankeyData["nodes"].push({"name":"Draft"});
 				sankeyData["nodes"].push({"name":"Withdrawn"});

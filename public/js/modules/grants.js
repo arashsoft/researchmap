@@ -179,7 +179,7 @@ var GRANTS = (function () {
   //to be panned
   var bubblesvgbackground = bubblesvg.append("svg:rect").attr("width", width).attr("height", height).style("fill", "aliceblue").style("opacity", 0);
     //this will be used to calculate the positions of the nodes when rearranged
-  var  circleOutline = bubblesvg.append("svg:circle").attr("cx", width/2).attr("cy", height/2).attr("r", width/3).style("stroke", "gray").style("stroke-width", "1px").style("fill", "none");//.style("opacity", 0);
+  var  circleOutline = bubblesvg.append("svg:circle").attr("cx", width/2).attr("cy", height/2).attr("r", width/3).style("stroke", "gray").style("stroke-width", "1px").style("fill", "none").style("opacity", 0);
 
 
   //this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
