@@ -57,22 +57,21 @@
           <h2>Clone</h2>
         </div>        
         <div id="comparingArea">
-          <h2>Comparison</h2>
+          <h2>Collaborations</h2>
           <div style="display:inline-block; float:left">
           <ul class="actionlist"> 
             <li>
               <input type="radio" name="chartchoice" value="barchart" id="barchart" checked></input>
-              <label for="barchart">Bar Chart</label>
+              <label for="barchart">cumulative</label>
             </li>
             <li>
               <input type="radio" name="chartchoice" value="linechart" id="linechart"></input>
-              <label for="linechart">Line Chart</label>
+              <label for="linechart">over time</label>
             </li>
           </ul>
         </div>
         </div>
         <div id="detailLineArea">
-          <h2></h2>
         </div>
       </div>
       <div id="matrixviz" style="display: none;">
@@ -267,7 +266,7 @@
         <h3>select</h3><hr>
         <div class="action">
 
-          <p>methods</p>
+          <p>selection type</p>
           <ul class="actionlist"> 
             <li>
               <input type="radio" name="iCheck" id="selectNone" checked></input> 
@@ -275,32 +274,40 @@
             </li>
             <li>
               <input type="radio" name="iCheck" id="selectLasso"></input>
-              <label for="selectLasso">group (lasso)</label>
+              <label for="selectLasso">group</label>
             </li>
             <li>
               <input type="radio" name="iCheck" id="selectIndividual"></input>
               <label for="selectIndividual">individual</label>
             </li>            
           </ul>
-          <hr>
 
-          <p>actions</p>
-          <ul class="actionlist"> 
-            <li>
-              <input type="radio" name="selectionAction" id="selectionNone" checked></input> 
-              <label for="selectionNone">none</label>
-            </li>
-            <li>
-              <input type="radio" name="selectionAction" id="selectionHide"></input> 
-              <label for="selectionHide">hide selections</label>
-            </li>
-            <li>
-              <input type="radio" name="selectionAction" id="selectionShow"></input> 
-              <label for="selectionShow">show selections</label>
-            </li>
-          </ul>
-          <button id="selectionClone" style="margin-top: 30px; position:relative; left:36%">clone selections</button>
-          <button id="selectionRemove" style="margin-top: 30px; position:relative; left:36%">remove all selections</button>      
+<!--            <p>further actions</p>         
+ -->            <div id="selectactions">
+              <hr style="margin:15px auto;">
+              <ul class="actionlist"> 
+                <p>hide</p>
+              <li>
+                <input type="radio" name="selectionAction" id="selectionNone" checked></input> 
+                <label for="selectionNone">none</label>
+              </li>
+              <li>
+                <input type="radio" name="selectionAction" id="selectionHide"></input> 
+                <label for="selectionHide">selections</label>
+              </li>
+              <li>
+                <input type="radio" name="selectionAction" id="selectionShow"></input> 
+                <label for="selectionShow">all but selections</label>
+              </li>
+            </ul>
+            <hr style="margin:15px auto;">
+            <div>
+              <button id="selectionClone" style="margin: 10px auto; display:block">clone selections</button>
+            </div>
+            <div>
+              <button id="selectionRemove" style="margin: 10px auto; display:block">reset</button>
+            </div> 
+          </div>     
           
         </div>
 

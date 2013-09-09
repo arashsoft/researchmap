@@ -1588,7 +1588,11 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		
 		var data = $("#selectionList li.item.chosen")[0].__data__;
 		$('#detailLineArea svg').remove();
-		$('#detailLineArea h2').text(data.Name);
+		$('#detailLineArea').append("<h2>" + data.Name + "</h2>");
+		$('#detailLineArea').append("<h3>" + data.Rank + "</h3>");
+		$('#detailLineArea').append("<h3>" + data.Department + "</h3>");
+		//$('#detailLineArea').children()[1].text(data.Rank);
+		//$('#detailLineArea').children()[2].text(data.Department);
 		//$('#detailLineArea').show('slow');
 		//the light box has to be shown first or functions like getComputedLength() cannot return the expected value in NVD3.
 		$('#detailLineArea').show(0, function(){
@@ -1671,9 +1675,9 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	        combined_data = [{key: "publication", values: publicationData, color: "#9D6187"}, {key: "grant", values: grantData, color: "#97A861"}];
 	        
 	        //draw graph
-	        var margin = {top: 40, right: 10, bottom: 40, left: 10},
-				width = 960 - margin.left - margin.right,
-				height = 400 - margin.top - margin.bottom;
+	        var margin = {top: 40, right: 10, bottom: 60, left: 10},
+				width = 960,// - margin.left - margin.right,
+				height = 400;// - margin.top - margin.bottom;
 
 	        nv.addGraph(function() {
 	        	var chart = nv.models.lineWithFocusChart();
@@ -4372,6 +4376,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	  	$('#networkactions').show(800);
 	  	$('#networkdepartmentlegendtoggle').show();
 
+	  	$('#selectactions').slideUp();//hide until selections are made
+
 	  	//construct the legend
 	  	constructnetworkdepartmentlegend(science_departments);
 
@@ -6180,11 +6186,18 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			$('#selectionList').contents().filter('li').remove();
 			//$('#cloningArea').contents().filter('svg').remove();
 			cloningSvg.selectAll('*').remove();
+			$('#selectactions').slideUp();
 		}
 		else {
 			var items = d3.select("#selectionList").selectAll(".item")
 
 				.data(selectedNodes, function(d) { return d.Name; } ); //<--this "key function" replaces the default bind-by-index behavior 
+
+				//show selection actions
+				if(selectedNodes.length > 0)
+					$('#selectactions').slideDown();
+				else
+					$('#selectactions').slideUp();
 
 			items.enter()
 				.append("li")

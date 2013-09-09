@@ -474,8 +474,10 @@ for matrix
 
 #selectionArea {
   position: absolute;
-  height: 450px;
-  width: 300px;
+  min-height: 100px;
+  min-width: 300px;
+  max-width: 300px;
+  max-height: 500px;
   left: 1%;
   top: 10%;
   color: rgb(200,200,200);
@@ -562,10 +564,11 @@ for matrix
 
 #selectionArea li{
   font-family: 'Oswald', sans-serif;
-  font-size: 1em;
+  font-size: 0.8em;
   padding: 8px 5px;
   font-weight: bold;
   border-bottom: 1px solid #ebebeb;
+  text-transform: lowercase;
 }
 
 #cloningArea h2 {
@@ -575,6 +578,7 @@ for matrix
   text-transform: uppercase;
   text-align: center;  
   color: black;
+  cursor: move;
 }
 
 #gatheringArea h2 {
@@ -587,7 +591,7 @@ for matrix
 }
 
 #comparingArea h2 {
-  font-family: 'Fjalla One', sans-serif;
+  font-family: 'Helvetica Neue', sans-serif;
   padding-bottom: 15px;
   font-size: 1.5em;
   text-transform: uppercase;
@@ -596,10 +600,17 @@ for matrix
 }
 
 #detailLineArea h2 {
-  font-family: 'Fjalla One', sans-serif;
-  padding-bottom: 15px;
+  font-family: 'Helvetica Neue', sans-serif;
+  padding-bottom: 10px;
   font-size: 1.5em;
   text-transform: uppercase;
+  text-align: center;  
+  color: black;
+}
+
+#detailLineArea h3 {
+  font-family: 'Helvetica Neue', sans-serif;
+  padding-bottom: 5px;
   text-align: center;  
   color: black;
 }

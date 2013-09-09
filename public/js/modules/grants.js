@@ -23,6 +23,7 @@ var GRANTS = (function () {
   var bubble;
   var top20 = [];
 
+
   var grouped_grants;
   //log scale for the grant request amounts
   var log_scale = d3.scale.log().domain([1,10000000]).range([5,40]);
@@ -37,7 +38,7 @@ var GRANTS = (function () {
   var department_border_coords = [];
   var department_border_coords = [];
   var border_coords_sampled = true; //when set to false, start updating the border coords arrays in the tick function
-  var sampletime = 15000;
+  var sampletime = 1000;
 
   var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 
@@ -286,10 +287,60 @@ var GRANTS = (function () {
       $('#treemapactions').delay(800).show(800);
     });  
 
+    //hide the selectionArea div
+    $('#selectionArea').hide();
+    $('#selectionArea').draggable({ containment: "#vizcontainer", scroll: false });    
+
     $('#cloningArea').hide();
     $('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false, handle: "h2" });
 
   });
+
+  $('#actionpaneltoggle').on("click", function() {
+    if ($('#actionpanel').is(':visible')){
+      $('#actionpanel').hide('slow');
+      $('#actionpaneltoggle').css('left', '10px').css('width', '20px').css('border-radius', '2px 0px 0px 2px');
+      $('#actionpaneltoggle p').text('<');
+      $('#vizcontainer').css('width', $(window).width()-50);
+      if ($('#treemapviz').is(':visible')){
+        $('#treemapviz').css('width', $(window).width()-50);     
+        $('#treemapviz svg').css('width', $(window).width()-50);
+        //$('#matrixdepartmentlegendtoggle').css('left', $('#matrixbar').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);
+      }
+      else if ($('#sankeyviz').is(':visible')){
+        $('#sankeyviz').css('width', $(window).width()-50);      
+        $('#sankeyviz svg').css('width', $(window).width()-50);
+        //$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
+      }
+      else if ($('#bubbleviz').is(':visible')){
+        $('#bubbleviz').css('width', $(window).width()-50);      
+        $('#bubbleviz svg').css('width', $(window).width()-50);
+        //$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
+      }      
+    }
+    else {
+      $('#vizcontainer').css('width', '72%'); 
+      $('#actionpanel').show();
+      $('#actionpaneltoggle').css('left', '10px').css('top', '6px').css('width', '20px').css('border-radius', '0px 2px 2px 0px'); 
+      $('#actionpaneltoggle p').text('>');  
+      if ($('#treemapviz').is(':visible')){
+        $('#treemapviz').css('width', $('#vizcontainer').width());
+        $('#treemapviz svg').css('width', $('#vizcontainer').width());     
+        //$('#matrixdepartmentlegendtoggle').css('left', $('#matrixbar').width()/2 + $('#matrixdepartmentlegendtoggle').width()/2);       
+      }
+      else if ($('#sankeyviz').is(':visible')){
+        $('#sankeyviz').css('width', $('#vizcontainer').width());
+        $('#sankeyviz svg').css('width', $('#vizcontainer').width());      
+        //$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);  
+      }   
+      else if ($('#bubbleviz').is(':visible')){
+        $('#bubbleviz').css('width', $('#vizcontainer').width());
+        $('#bubbleviz svg').css('width', $('#vizcontainer').width());      
+        //$('#networkdepartmentlegendtoggle').css('left', $('#networkbar').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);  
+      }        
+    }
+  });
+
 
   $( "#grantbeginyearrange" ).slider({
     range: true,
@@ -653,7 +704,7 @@ var GRANTS = (function () {
             d3.select(this).classed("selected", true).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
           }
           //update the div that lists the current selections
-          //updateSelectionArea();  
+          updateSelectionArea();  
         }
       })
       .each(function() {
@@ -677,30 +728,56 @@ var GRANTS = (function () {
   $('input#filterOthers').on('ifUnchecked', filterBubblesByStatus);
 
   $('#arrangebubble').chosen().change(function() {
-    bubblesvg.selectAll("g.boundary.department").remove();
-    bubblesvg.selectAll("g.boundary.grantvalue").remove();
+    // bubblesvg.selectAll("g.boundary.department").remove();
+    // bubblesvg.selectAll("g.boundary.grantvalue").remove();
     if(this.value == "random") {
       bubble_force.start();
     }
-    if(this.value == "department") {
-      border_coords_sampled = true;
-      bubble_force.start();
-      setTimeout(function() {
-        border_coords_sampled = false;
-        tick();
-        arrangementBoundaries("department");
-      }, sampletime);
+    // if(this.value == "department") {
+    //   border_coords_sampled = true;
+    //   bubble_force.start();
+    //   setTimeout(function() {
+    //     border_coords_sampled = false;
+    //     tick();
+    //     arrangementBoundaries("department");
+    //   }, sampletime);
+    // }
+    // if(this.value == "grantvalue") {
+    //   border_coords_sampled = true;
+    //   bubble_force.start();
+    //   setTimeout(function() {
+    //     border_coords_sampled = false;
+    //     tick();
+    //     arrangementBoundaries("grantvalue");
+    //   }, sampletime);
+    // }
+  });
+
+  $('#fragmentationbubble').chosen().change(function() {
+    bubblesvg.selectAll("g.boundary.department").remove();
+    bubblesvg.selectAll("g.boundary.grantvalue").remove();  
+    if(this.value == "department"){  
+      if($('#arrangebubble').val() == "department") {
+        border_coords_sampled = true;
+        //bubble_force.start();
+        setTimeout(function() {
+          border_coords_sampled = false;
+          tick();
+          arrangementBoundaries("department");
+        }, sampletime);
+      }
+
+      if($('#arrangebubble').val() == "grantvalue") {
+        border_coords_sampled = true;
+        //bubble_force.start();
+        setTimeout(function() {
+          border_coords_sampled = false;
+          tick();
+          arrangementBoundaries("grantvalue");
+        }, sampletime);
+      }
     }
-    if(this.value == "grantvalue") {
-      border_coords_sampled = true;
-      bubble_force.start();
-      setTimeout(function() {
-        border_coords_sampled = false;
-        tick();
-        arrangementBoundaries("grantvalue");
-      }, sampletime);
-    }
-  })
+  });
 
   $('input#selectLasso').on('ifChecked', function() {
     brush = d3.svg.polybrush()
@@ -711,7 +788,7 @@ var GRANTS = (function () {
       })
       .on("brush", function() {
         //update the div that lists the current selections
-        //updateSelectionArea();
+        updateSelectionArea();
         // iterate through all circle.node
         bubblesvg.selectAll("circle.bubble").each(function(d) {
           // if the circle in the current iteration is within the brush's selected area
@@ -746,12 +823,12 @@ var GRANTS = (function () {
     .on('ifUnchecked', function() {
       individualSelect = false;
     }); 
-/*
+
     //if the user turns off the select action
     $('input#selectNone').on('ifChecked', function() {
       var noneSelected = true;
       // iterate through all circle.node
-        networksvg.selectAll("circle.node").each(function(d) {
+        bubblesvg.selectAll("circle.node").each(function(d) {
           // if the circle in the current iteration is within the brush's selected area
           if (this.style.strokeWidth == "4px") {
             noneSelected = false;
@@ -762,21 +839,23 @@ var GRANTS = (function () {
         if (noneSelected == true){   
           //hide the selectionArea div
         $('#selectionArea').hide('slow'); 
-        $('#cloningArea').hide('slow');
+        //$('#cloningArea').hide('slow');
       }
     })
     .on('ifUnchecked', function() {
       //show the selectionArea div
       $('#selectionArea').show('slow');
     }); 
-*/
+
   //if the user clicks the button to remove all selections
   $('#selectionRemove').click(function() {
+    $('#selectionNone').iCheck('check');
     selectedBubbles = []; //empty the array
-    cloningSvg.selectAll('*').remove();
+    //cloningSvg.selectAll('*').remove();
     //hide the selectionArea div
-    //$('#selectionArea').hide('slow');
-    $('#cloningArea').hide('slow');
+    $('#selectionArea').hide('slow');
+    $('#bubbleselectactions').slideUp();
+    //$('#cloningArea').hide('slow');
     //return to the defaul for the radios (i.e., check the 'none' option)
     $('input#selectNone').iCheck('check');
     //reset the style of the nodes
@@ -1412,7 +1491,7 @@ var GRANTS = (function () {
 
   /*
   gets the data for the bubbleviz (either from the sessionStorage or from the db on the server) and then builds the viz by passing the buildBubble function as a callback to getBubbleData
-  @params: callback: a callback function--in this case buildBubble--that builds the network visualization
+  @params: callback: a callback function--in this case buildBubble--that builds the bubble visualization
   @returns: none
   */
   function getBubbleData (callback) {
@@ -1449,6 +1528,8 @@ var GRANTS = (function () {
   function buildBubble(all_grants) {
     //hide the loading gif
     $('#vizloader').hide();
+
+    $('#bubbleselectactions').slideUp();
 
     //group grants by the proposal number (i.e., group multiple records of the same grant)
     grouped_grants = _.groupBy(all_grants, function(x) { return x.Proposal; });
@@ -1501,7 +1582,7 @@ var GRANTS = (function () {
             d3.select(this).classed("selected", true).style("stroke", "red").style("stroke-width", "4px").style("fill", "white");
           }
           //update the div that lists the current selections
-          //updateSelectionArea();  
+          updateSelectionArea();  
         }
       });
 
@@ -2241,16 +2322,16 @@ var GRANTS = (function () {
         }
       }
     }
-    //show goundaries
+    //show boundaries
     for(var i = 0; i < polygons.length; i++) {
       var polysvg = bubblesvg.append("g")
         .attr("class", "boundary " + type)
-        .style("visibility", "hidden")
+        //.style("visibility", "hidden")
         .on("mouseover", function() {
-          this.style.visibility = "visible";
+          //this.style.visibility = "visible";
         })
         .on("mouseout", function() {
-          this.style.visibility = "hidden";
+          //this.style.visibility = "hidden";
         });
       polysvg.append("path")
         .attr("d", function() {
@@ -2261,13 +2342,18 @@ var GRANTS = (function () {
           return str;
         })
         .attr("fill", "white")
-        .attr("stroke", "black")
-        .attr("stroke-width", "2")
-        .style("opacity", 0.3);
+        .attr("stroke", "gray")
+        .attr("stroke-dasharray", "5,5")
+        .attr("stroke-width", "5")
+        .style("opacity", 0.7);
       polysvg.append("text")
         .attr("x", d3.geom.polygon(polygons[i]).centroid()[0])
         .attr("y", polygons[i].centroid()[1])
         .attr("text-anchor", "middle")
+        .style("font-family", "Oswald")
+        .style("font-size", "1em")   
+        .style("font-weight", 800)
+        .style("fill", "gray")     
         .text(function() {
           if(type == "department")
             return departmentCenters[i].name;
@@ -2312,6 +2398,155 @@ var GRANTS = (function () {
       });
     };
   } 
+
+  /*
+  updates the selectionArea div, which displays the names of the currently selected nodes
+
+  @params: command: function can be called with special commands such as "empty"
+  @returns: none
+  */
+  function updateSelectionArea (command) {
+    if (command == "empty") {
+      //empty the selection area by removing div elements
+      //keeps the h3 element
+      $('#selectionList').contents().filter('li').remove();
+      //$('#cloningArea').contents().filter('svg').remove();
+      //cloningSvg.selectAll('*').remove();
+      $('#bubbleselectactions').slideUp();
+    }
+    else {
+      var items = d3.select("#selectionList").selectAll(".item")
+
+        .data(selectedBubbles, function(d) { 
+          return d.Title; } ); //<--this "key function" replaces the default bind-by-index behavior 
+
+        //show selection actions
+        if(selectedBubbles.length > 0)
+          $('#bubbleselectactions').slideDown();
+        else
+          $('#bubbleselectactions').slideUp();
+
+      items.enter()
+        .append("li")
+        .attr("class", "item")
+        .text(function(d) { return d.Title; } )
+        .style("color", function(d) { return color20(d.Sponsor); } );
+
+      items
+        .on("mouseover", function(d) {
+          d3.select(this)
+            .style("background-color", "rgb(36,137,197)")//function(d) { return color20(d.Department) })
+            .style("color", "white");
+          
+          // var datum = d;
+          // var collaborations;
+          // d3.selectAll("circle.node").each(function(d) {
+          //   if(d == datum) {
+          //     d3.select(this).style("fill", "gray");
+          //     collaborations = {
+          //       "publications": $(this).attr("publications"), 
+          //       "supervisions": $(this).attr("supervisions"), 
+          //       "grants": $(this).attr("grants")};
+          //   }
+          // });
+
+          // var top = $(this).position().top + $('#selectionArea').position().top;
+          // var left = $(this).position().left + $(this).width() + $('#selectionArea').position().left + 35;
+
+          // $('#networkviz').append('<div class="itemDetails" id="itemDetails-' + d.ID + '"></div>');
+          // $('#itemDetails-' + d.ID)
+          //   .css({
+          //     top: top + "px",
+          //     left: left + "px"
+          //   })
+          //   .html('<b>Name: </b>' + d.Name + '<br>'
+          //     + '<b>ID: </b>' + d.ID + '<br>'
+          //     + '<b>Department: </b>' + d.Department + '<br>'
+          //     + '<b>Rank: </b>' + d.Rank + '<br>'
+          //     + '<b>Co-Publications: </b>' + collaborations.publications + '<br>'
+          //     + '<b>Co-Supervisions: </b>' + collaborations.supervisions + '<br>'
+          //     + '<b>Co-Grants: </b>' + collaborations.grants);
+          // $('#itemDetails-' + d.ID).show('slow');
+        })
+        .on("mouseout", function(d) {
+          if(!d3.select(this).classed("chosen")) {
+            d3.select(this).style("background-color", "white")
+            .style("color", function(d) { return color20(d.Department); } );  
+          }
+
+          var datum = d;
+          d3.selectAll("circle.node").each(function(d) {
+            if(d == datum) {
+              if($('#selectionShow').is(':checked'))
+                d3.select(this).style("fill", function(d) { return color20(d.Department); });
+              else
+                d3.select(this).style("fill", "white");
+            }
+          });
+          //$('#itemDetails-' + d.ID).hide(100, function() { this.remove(); });
+        })
+        .on("click", function(d) {
+          if(d3.select(this).classed("chosen")) {
+            d3.select(this).classed("chosen", false);
+          } else {
+            d3.select(this).classed("chosen", true);
+          }
+
+          var counts = d3.select("#selectionList").selectAll("li.item.chosen")[0].length;
+          // if(counts == 0) {
+          //   $('#itemsCompare').parent().hide('fast');
+          //   $('#itemsCompare').hide();
+          //   $('#itemLinechart').hide();
+          // } else if(counts == 1) {
+          //   $('#itemsCompare').parent().show('fast');
+          //   $('#itemsCompare').hide();
+          //   $('#itemLinechart').show();
+          // } else {
+          //   $('#itemsCompare').parent().show('fast');
+          //   $('#itemsCompare').show();
+          //   $('#itemLinechart').hide();
+          // }
+
+          if(counts == selectedBubbles.length)
+            $('#itemsChooseAll').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+          else
+            $('#itemsChooseAll').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+
+          if (counts == 0)
+            $('#itemsChooseNone').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+          else
+            $('#itemsChooseNone').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+        });
+
+      items.exit().remove();
+    }
+
+      if(selectedBubbles.length > 1)
+        $('#itemsChooseAll').parent().slideDown('fast');
+      else
+        $('#itemsChooseAll').parent().slideUp('fast');
+      $('#itemsChooseAll').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+      $('#itemsChooseNone').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+      // if(d3.selectAll('.item.chosen')[0].length > 1)
+      //  $('#itemsCompare').show('fast');
+      // else 
+      //  $('#itemsCompare').hide('fast');
+      // var counts = d3.select("#selectionList").selectAll("li.item.chosen")[0].length;
+      // if(counts == 0) {
+      //   $('#itemsCompare').parent().hide('fast');
+      //   $('#itemsCompare').hide();
+      //   $('#itemLinechart').hide();
+      // } else if(counts == 1) {
+      //   $('#itemsCompare').parent().show('fast');
+      //   $('#itemsCompare').hide();
+      //   $('#itemLinechart').show();
+      // } else {
+      //   $('#itemsCompare').parent().show('fast');
+      //   $('#itemsCompare').show();
+      //   $('#itemLinechart').hide();
+      // }
+
+  }
 
 
   // function constructTreemapLegend() {
