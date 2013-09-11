@@ -1395,6 +1395,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 
 		if(!barDrawn) {
 			//process data if it is the first time to draw bar chart
+			selectedData = [];
 			var chosenItems = d3.select('#selectionList').selectAll('.item.chosen')
 				.each(function(itemData) {
 					d3.selectAll("circle.node").each(function(d) {
@@ -1476,6 +1477,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		
 		if(!lineDrawn) {
 			//process data if it is the first time to draw line chart
+			processedLineData = [];
 			//fetch data
 	        var science_faculty_data;
 	        if(store.session.has("science_faculty_data")){
@@ -1487,6 +1489,21 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	          console.log("links_combined is already in sessionStorage...no need to fetch again");
 	          links_combined = store.session("links_combined");       
 	        }
+
+	        var min = 9999, max = 0;
+	        _.filter(links_combined, function(d) {
+	        	return d.type == "publication" || d.type == "grant" && d.status != "";
+	        }).forEach(function(d) {
+	        	var begin, end;
+	        	if(d.type == "publication") {
+	        		begin = end = d.year;
+	        	} else { // grant
+		        	begin = parseInt(d.begin.substring(0, 4));
+		        	end = parseInt(d.end.substring(0, 4));
+		        }
+	        	min = begin < min ? begin : min;
+	        	max = end > max ? end : max;
+	        });
 
 			selectedData.forEach(function(data) {
 		        var index;
@@ -1503,7 +1520,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		        	}
 		        	return flag;
 		        });
-
+/*
 		        var min = 9999; max = 0;
 		        links.forEach(function(d) {
 		        	var begin, end;
@@ -1516,7 +1533,8 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		        	min = begin < min ? begin : min;
 		        	max = end > max ? end : max;
 		        });
-		        var combinedData = links.length ? d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; }) : [];
+		        var combinedData = links.length ? d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; }) : [];*/
+		        var combinedData = d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; });
 		        links.forEach(function(d) {
 		        	if(d.type == "publication") {
 		        		for(var i = 0; i < combinedData.length; i++)
@@ -1549,14 +1567,16 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 			height = 400 - margin.top - margin.bottom;
 
 		nv.addGraph(function() {
-			var chart = nv.models.lineChart();
+			var chart = nv.models.lineWithFocusChart();
 
 			chart.xAxis
 				.axisLabel('Year')
 				.tickFormat(d3.format('d'));
+			chart.x2Axis.tickFormat(d3.format('d'));
 			chart.yAxis
 				.axisLabel('Collaborations')
 				.tickFormat(d3.format('d'));
+			chart.y2Axis.tickFormat(d3.format('d'));
 
 			chart.showLegend(false);
 
@@ -1587,7 +1607,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 	$('#itemLinechart').click(function() {
 		
 		var data = $("#selectionList li.item.chosen")[0].__data__;
-		$('#detailLineArea svg').remove();
+		$('#detailLineArea').children().remove();
 		$('#detailLineArea').append("<h2>" + data.Name + "</h2>");
 		$('#detailLineArea').append("<h3>" + data.Rank + "</h3>");
 		$('#detailLineArea').append("<h3>" + data.Department + "</h3>");
@@ -1596,7 +1616,7 @@ var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import the
 		//$('#detailLineArea').show('slow');
 		//the light box has to be shown first or functions like getComputedLength() cannot return the expected value in NVD3.
 		$('#detailLineArea').show(0, function(){
-		    $.colorbox({inline:true, href:"#detailLineArea", width:1060, height:560, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
+		    $.colorbox({inline:true, href:"#detailLineArea", width:1060, height:700, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
 		    	onCleanup:function() {
 			    	$('#detailLineArea svg').remove();
 			    	$('#detailLineArea').hide(0);

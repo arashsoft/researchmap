@@ -523,6 +523,20 @@ for matrix
   background: white;
 }
 
+#barComparingArea {
+  padding: 10px;
+  color: rgb(80,80,80);
+  font-family: 'Fjalla One', sans-serif;
+  background: white;
+}
+
+#lineComparingArea {
+  padding: 10px;
+  color: rgb(80,80,80);
+  font-family: 'Fjalla One', sans-serif;
+  background: white;
+}
+
 #detailLineArea {
   padding: 10px;
   color: rgb(80,80,80);
@@ -591,6 +605,24 @@ for matrix
 }
 
 #comparingArea h2 {
+  font-family: 'Helvetica Neue', sans-serif;
+  padding-bottom: 15px;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  text-align: center;  
+  color: black;
+}
+
+#barComparingArea h2 {
+  font-family: 'Helvetica Neue', sans-serif;
+  padding-bottom: 15px;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  text-align: center;  
+  color: black;
+}
+
+#lineComparingArea h2 {
   font-family: 'Helvetica Neue', sans-serif;
   padding-bottom: 15px;
   font-size: 1.5em;

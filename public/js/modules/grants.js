@@ -294,6 +294,9 @@ var GRANTS = (function () {
     $('#cloningArea').hide();
     $('#cloningArea').draggable({ containment: "#vizcontainer", scroll: false, handle: "h2" });
 
+    $('#barComparingArea').hide();
+    $('#lineComparingArea').hide();
+
   });
 
   $('#actionpaneltoggle').on("click", function() {
@@ -728,10 +731,27 @@ var GRANTS = (function () {
   $('input#filterOthers').on('ifUnchecked', filterBubblesByStatus);
 
   $('#arrangebubble').chosen().change(function() {
-    // bubblesvg.selectAll("g.boundary.department").remove();
-    // bubblesvg.selectAll("g.boundary.grantvalue").remove();
-    if(this.value == "random") {
+    bubblesvg.selectAll("g.boundary.department").remove();
+    bubblesvg.selectAll("g.boundary.grantvalue").remove();
+    border_coords_sampled = true;
+//    if(this.value == "random") {
       bubble_force.start();
+//    }
+    if($('#fragmentationbubble').val() == "department" && this.value != "random") {
+      // bubblesvg.selectAll("g.boundary.department").remove();
+      // bubblesvg.selectAll("g.boundary.grantvalue").remove();
+      
+      var timer = setInterval(function() {
+        if(bubble_force.alpha() < 0.03) {
+          clearInterval(timer);
+          border_coords_sampled = false;
+          tick();
+          arrangementBoundaries($('#arrangebubble').val());
+        }
+      }, 200);
+      //border_coords_sampled = false;
+      // tick();
+      // arrangementBoundaries($('#arrangebubble').val());
     }
     // if(this.value == "department") {
     //   border_coords_sampled = true;
@@ -755,27 +775,53 @@ var GRANTS = (function () {
 
   $('#fragmentationbubble').chosen().change(function() {
     bubblesvg.selectAll("g.boundary.department").remove();
-    bubblesvg.selectAll("g.boundary.grantvalue").remove();  
-    if(this.value == "department"){  
-      if($('#arrangebubble').val() == "department") {
-        border_coords_sampled = true;
-        //bubble_force.start();
-        setTimeout(function() {
+    bubblesvg.selectAll("g.boundary.grantvalue").remove();
+    border_coords_sampled = true;
+    bubble_force.start();
+    if(this.value == "department" && $('#arrangebubble').val() != "random"){
+      var timer = setInterval(function() {
+        if(bubble_force.alpha() < 0.03) {
+          clearInterval(timer);
           border_coords_sampled = false;
           tick();
-          arrangementBoundaries("department");
-        }, sampletime);
+          arrangementBoundaries($('#arrangebubble').val());
+        }
+      }, 200);
+
+      /*
+      if($('#arrangebubble').val() == "department") {
+        // border_coords_sampled = true;
+        // //bubble_force.start();
+        // setTimeout(function() {
+        //   border_coords_sampled = false;
+        //   tick();
+        //   arrangementBoundaries("department");
+        // }, sampletime);
+        border_coords_sampled = true;
+        console.log(bubble_force.alpha());
+        while(bubble_force.alpha() > 0.05)
+          console.log(bubble_force.alpha());
+        border_coords_sampled = false;
+        tick();
+        arrangementBoundaries("department");
       }
 
       if($('#arrangebubble').val() == "grantvalue") {
+        // border_coords_sampled = true;
+        // //bubble_force.start();
+        // setTimeout(function() {
+        //   border_coords_sampled = false;
+        //   tick();
+        //   arrangementBoundaries("grantvalue");
+        // }, sampletime);
         border_coords_sampled = true;
-        //bubble_force.start();
-        setTimeout(function() {
-          border_coords_sampled = false;
-          tick();
-          arrangementBoundaries("grantvalue");
-        }, sampletime);
-      }
+        console.log(bubble_force.alpha());
+        while(bubble_force.alpha() > 0.05)
+          console.log(bubble_force.alpha());
+        border_coords_sampled = false;
+        tick();
+        arrangementBoundaries("grantvalue");
+      }*/
     }
   });
 
@@ -789,7 +835,7 @@ var GRANTS = (function () {
       .on("brush", function() {
         //update the div that lists the current selections
         updateSelectionArea();
-        // iterate through all circle.node
+        // iterate through all circle.bubble
         bubblesvg.selectAll("circle.bubble").each(function(d) {
           // if the circle in the current iteration is within the brush's selected area
           if (brush.isWithinExtent(d.x, d.y)) {
@@ -800,7 +846,7 @@ var GRANTS = (function () {
           } 
           // if the circle in the current iteration is not within the brush's selected area
           else {
-            //if the current node was not selected with the individual selector (i.e., it was selected with the lasso)
+            //if the current bubble was not selected with the individual selector (i.e., it was selected with the lasso)
             if(this.selectedIndividually == false){
               selectedBubbles = _.without(selectedBubbles, this.__data__);          
               //reset the style
@@ -827,19 +873,19 @@ var GRANTS = (function () {
     //if the user turns off the select action
     $('input#selectNone').on('ifChecked', function() {
       var noneSelected = true;
-      // iterate through all circle.node
-        bubblesvg.selectAll("circle.node").each(function(d) {
+      // iterate through all circle.bubble
+        bubblesvg.selectAll("circle.bubble").each(function(d) {
           // if the circle in the current iteration is within the brush's selected area
           if (this.style.strokeWidth == "4px") {
             noneSelected = false;
         }
          });
 
-        //if no nodes are selected
+        //if no bubbles are selected
         if (noneSelected == true){   
           //hide the selectionArea div
         $('#selectionArea').hide('slow'); 
-        //$('#cloningArea').hide('slow');
+        $('#cloningArea').hide('slow');
       }
     })
     .on('ifUnchecked', function() {
@@ -851,14 +897,15 @@ var GRANTS = (function () {
   $('#selectionRemove').click(function() {
     $('#selectionNone').iCheck('check');
     selectedBubbles = []; //empty the array
+    updateSelectionArea("empty"); //update the selection area by emptying it
     //cloningSvg.selectAll('*').remove();
     //hide the selectionArea div
     $('#selectionArea').hide('slow');
     $('#bubbleselectactions').slideUp();
-    //$('#cloningArea').hide('slow');
+    $('#cloningArea').hide('slow');
     //return to the defaul for the radios (i.e., check the 'none' option)
     $('input#selectNone').iCheck('check');
-    //reset the style of the nodes
+    //reset the style of the bubbles
     d3.selectAll("circle.bubble").each(function() {
       d3.select(this).classed("selected", false).style("stroke", "gray").style("stroke-width", "1px").style("fill", function(d){ return color20(d.Sponsor); });
     });
@@ -917,7 +964,455 @@ var GRANTS = (function () {
       })
       .on("tick", cloningAreaTick)
       .start();
-  }) //end of selectionClone click
+  }); //end of selectionClone click
+
+  $('#itemsChooseNone').click(function() {
+    d3.select("#selectionList").selectAll(".item")
+      .classed("chosen", false)
+      .transition().duration(400).style("background-color", "white")
+      .style("color", function(d) { return color20(d.Sponsor); } );
+/*
+    $('#itemsAll').show();
+    $('#itemsClear').hide();
+    $('#itemsBarchart').hide();
+    $('#itemsLinechart').hide();
+
+*/
+    $('#itemsChooseNone').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+    $('#itemsChooseAll').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+
+    $('#itemsBarchart').parent().hide('fast');
+  });
+
+  $('#itemsChooseAll').click(function() {
+    d3.select("#selectionList").selectAll(".item")
+      .classed("chosen", true)
+      .transition().duration(400).style("background-color", "rgb(36, 137, 197)")
+      .style("color", "white" );
+
+    $('#itemsChooseAll').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
+    $('#itemsChooseNone').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
+
+    $('#itemsBarchart').parent().show('fast');
+  }); 
+
+  $('#itemsBarchart').click(function() {
+
+    $('#barComparingArea svg').remove();
+    $('#xvaluechoice').parent().hide();
+    $('#barComparingArea').show(0, function(){
+      $.colorbox({inline:true, href:"#barComparingArea", width:1060, height:580, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
+        onCleanup:function() {
+          $('#barComparingArea svg').remove();
+          $('#individualbar').iCheck('check');
+          $('#barComparingArea').hide(0);
+        },
+        onComplete:function() {
+          drawIndividualBarchart();
+        }
+      });
+    });
+
+  });
+
+  function processSelectedData() {
+    var selectedData = [];
+    var chosenItems = d3.select('#selectionList').selectAll('.item.chosen')
+      .each(function(d) {
+        var req = d.RequestAmt;
+        req = req.replace(/^\s+|\s+$/g, ''); //remove whitespaces
+        req = req.replace(/\$/g,""); //remove dollar sign
+        req = req.replace(/,/g,""); //remove commas
+        req = parseFloat(req); //convert from string to float 
+        selectedData.push({
+          index: d.index,
+          title: d.Title,
+          department: $.isArray(d.Department) ? d.Department[0] : d.Department,
+          sponsor: d.Sponsor,
+          program: d.PgmName,
+          requestamt: req,
+          awardstat: d.AwardStatus,
+          begin: parseInt(d.BeginDate.substring(0, 4)),
+          end: parseInt(d.EndDate.substring(0, 4))
+        });
+      });
+    return selectedData;
+  }
+
+  function drawIndividualBarchart() {
+
+    var selectedData = processSelectedData();
+    var individualData = selectedData.map(function(d, i) {
+      return {label: d.title, value: d.requestamt, color: color20(d.sponsor), index: i};
+    });
+    individualData = [{key: "Individuals", values: individualData}];
+
+    //draw graph
+    var margin = {top: 40, right: 10, bottom: 40, left: 10},
+    width = 960 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+    nv.addGraph(function() {
+      
+      var chart = nv.models.discreteBarChart()
+        .x(function(d) { return d.label })
+        .y(function(d) { return d.value });
+        //.staggerLabels(true)
+        //.tooltips(false)
+        //.showValues(true);
+
+        chart.showXAxis(false);
+        chart.yAxis
+          .axisLabel("Amounts")
+          .tickFormat(d3.format(',d'));
+
+        d3.select("#barComparingArea").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .style("width", width + margin.left + margin.right)
+          .style("height", height + margin.top + margin.bottom)
+          .datum(individualData)
+          .transition().duration(500).call(chart);/*.call(function() {
+            d3.select("#barComparingArea svg")
+              .selectAll('g.nv-x.nv-axis text')
+              .filter(function(d) { return $(this).prev().is('line'); })
+              .attr("fill", function(d, i) { return color20(selectedData[i].sponsor); })
+              .attr("transform", "translate(0,10),rotate(10)")
+              .text(function(d) {
+                var shortstr = d.split(" ");
+                shortstr = shortstr.length > 1 ? shortstr[0] + " " + shortstr[1] : shortstr[0];
+                shortstr += "...";
+                return shortstr;
+              })
+              .style("opacity", function(d, i) { return i % parseInt(selectedData.length / 20 + 1) ? 0 : 1; });
+          });*/
+
+        nv.utils.windowResize(chart.update);
+
+        return chart;
+    });
+
+  }
+
+  function drawGroupBarhart(xValue, yValue) {
+    
+    var selectedData = processSelectedData();
+    var xGroupedData = _.groupBy(selectedData, function(d) { return eval("d." + xValue); });
+    var groupData = [];// = _.uniq(_.keys(xGroupedData)).map(function(d) { return {x: d, y: 0}; });
+    if(yValue == "number") {
+      var count = 0;
+      _.each(xGroupedData, function(value, key) {
+        groupData.push({label: key, value: value.length, color: color20(key), index: count++});
+      });
+    } else if(yValue == "amount") {
+      var count = 0;
+      _.each(xGroupedData, function(value, key) {
+        var sum = 0;
+        for(var i = 0; i < value.length; i++)
+          sum += value[i].requestamt;
+        groupData.push({label: key, value: sum, color: color20(key), index: count++});
+      });
+    }
+    groupData = [{key: "GroupBy" + xValue, values: groupData}];
+
+    //draw graph
+    var margin = {top: 40, right: 10, bottom: 40, left: 10},
+      width = 960 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+    nv.addGraph(function() {
+      var chart = nv.models.discreteBarChart()
+        .x(function(d) { return d.label })
+        .y(function(d) { return d.value });
+
+        if(xValue == "department") {
+          chart.xAxis
+            .axisLabel(xValue)
+            .rotateLabels(30);
+        } else {
+          chart.showXAxis(false);
+        }
+
+        chart.xAxis
+          .axisLabel(xValue);
+        chart.yAxis
+          .axisLabel(yValue)
+          .tickFormat(d3.format(',d'));
+
+        d3.select("#barComparingArea").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .style("width", width + margin.left + margin.right)
+          .style("height", height + margin.top + margin.bottom)
+          .datum(groupData)
+          .transition().duration(500).call(chart);
+
+        nv.utils.windowResize(chart.update);
+
+        return chart;
+    });
+  }
+
+  function sortBars(flag) {
+    var data = $('#barComparingArea svg')[0].__data__;
+    var chart = _.last(nv.graphs);
+    if(flag)
+      data[0].values = data[0].values.sort(function(a, b) { return b.value - a.value; });
+    else
+      data[0].values = data[0].values.sort(function(a, b) { return a.index - b.index; });
+    d3.select("#barComparingArea svg").datum(data);
+    chart.update();
+    d3.select('#barComparingArea svg g.nv-y.nv-axis path').style("stroke", "white");
+  }
+
+  $('#individualbar').on('ifChecked', function() {
+    $('#xvaluechoice').parent().slideUp();
+    $('#xvaluechoice').val("sponsor").trigger("liszt:updated");
+    $('#yvaluechoice').val("number").trigger("liszt:updated");
+    $('#sortBars').text("SORT");
+    $('#barComparingArea svg').remove();
+    drawIndividualBarchart();
+  });
+
+  $('#groupbar').on('ifChecked', function() {
+    $('#xvaluechoice').parent().slideDown();
+    $('#sortBars').text("SORT");
+    $('#barComparingArea svg').remove();
+    drawGroupBarhart("sponsor", "number");
+  });
+
+  $('#xvaluechoice').chosen().change(function() {
+    $('#sortBars').text("SORT");
+    $('#barComparingArea svg').remove();
+    drawGroupBarhart(this.value, $('#yvaluechoice').val());
+  });
+
+  $('#yvaluechoice').chosen().change(function() {
+    $('#sortBars').text("SORT");
+    $('#barComparingArea svg').remove();
+    drawGroupBarhart($('#xvaluechoice').val(), this.value);
+  });
+
+  $('#sortBars').click(function() {
+    if(this.innerText == "SORT") {
+      sortBars(true);
+      this.innerText = "RANDOM";
+    } else {
+      sortBars(false);
+      this.innerText = "SORT";
+    }
+  });
+
+  $('#itemsLinechart').click(function() {
+    $('#lineComparingArea svg').remove();
+    $('#lineComparingArea').show(0, function(){
+      $.colorbox({inline:true, href:"#lineComparingArea", width:1060, height:780, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
+        onCleanup:function() {
+          $('#lineComparingArea svg').remove();
+          $('#streamchoiceLine').val("sponsor").trigger("liszt:updated");
+          $('#yvaluechoiceLine').val("number").trigger("liszt:updated");
+          $('#lineComparingArea').hide(0);
+        },
+        onComplete:function() {
+          $('#backComparing').parent().hide(0);
+          drawLinechart("sponsor", "number");
+        }
+      });
+    });
+  })
+
+  function drawLinechart(streamValue, yValue) {
+    var selectedData = processSelectedData();
+    var filteredData = _.filter(selectedData, function(d) {
+      return d.awardstat != "";
+    });
+    var groupedData = _.groupBy(filteredData, function(d) {
+      return eval("d." + streamValue);
+    });
+
+    var min = 9999, max = 0;
+    filteredData.forEach(function(d) {
+      min = d.begin < min ? d.begin : min;
+      max = d.end > max ? d.end : max;
+    });
+
+    var lineData = [];
+    _.each(groupedData, function(value, key) {
+      var yearData = d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; });
+      value.forEach(function(d, i) {
+        for(var i = 0; i < yearData.length; i++) {
+          if(d.begin == yearData[i].x) {
+            for(var j = i; j < yearData.length && yearData[j].x <= d.end; j++) {
+              if(yValue == "number")
+                yearData[j].y++;
+              else
+                yearData[j].y += d.requestamt;
+            }
+            break;
+          }
+        }
+      });
+      lineData.push({key: key, values: yearData, color: color20(key)});
+    });
+
+    //draw graph
+    var margin = {top: 40, right: 10, bottom: 40, left: 10},
+      width = 1000 - margin.left - margin.right,
+      height = 600 - margin.top - margin.bottom;
+
+    nv.addGraph(function() {
+      var chart = nv.models.lineWithFocusChart();
+
+      chart.xAxis
+        .axisLabel('Year')
+        .tickFormat(d3.format('d'));
+      chart.x2Axis.tickFormat(d3.format('d'));
+      chart.yAxis
+        .axisLabel(yValue)
+        .tickFormat(d3.format(',d'));
+      chart.y2Axis.tickFormat(d3.format(',d'));
+
+      //chart.showLegend(false);
+
+      d3.select('#lineComparingArea').append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        //the NVD3 uses style width and height to decide the children width and height
+        .style("width", width + margin.left + margin.right)
+        .style("height", height + margin.top + margin.bottom)
+        .datum(lineData)
+        .transition().duration(500).call(chart)
+        .call(function() {
+          if(streamValue == "sponsor") {
+            //do after the chart is built
+            setTimeout(function(){
+              d3.select('#lineComparingArea svg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups').selectAll("path")
+                .on("mouseover", function() {
+                  d3.select(this).style("stroke-width", "3px");
+                })
+                .on("mouseout", function() {
+                  d3.select(this).style("stroke-width", "1.5px");
+                })
+                .on("click", function() {
+                  var sponsor = this.parentNode.__data__.key;
+                  $('#streamchoiceLine').parent().slideUp();
+                  $('#backComparing').parent().slideDown();
+                  $('#lineComparingArea svg').slideUp(400, function() {
+                    drawSponsorDetail(sponsor);
+                  });
+                });
+
+
+              d3.select('#lineComparingArea svg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-scatterWrap g.nv-point-paths').selectAll("path")
+                // .on("mouseover", function() {
+                //   d3.select('#lineComparingArea svg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups g.nv-series-' + this.__data__.series + ' path').style("stroke-width", "3px");
+                // })
+                // .on("mouseout", function() {
+                //   d3.select('#lineComparingArea svg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups g.nv-series-' + this.__data__.series + ' path').style("stroke-width", "1.5px");
+                // })
+                .on("click", function() {
+                  var sponsor = $('#lineComparingArea svg')[0].__data__[this.__data__.series].key;
+                  $('#streamchoiceLine').parent().slideUp();
+                  $('#backComparing').parent().slideDown();
+                  $('#lineComparingArea svg').slideUp(400, function() {
+                    drawSponsorDetail(sponsor);
+                  });
+                });
+            }, 500);
+          }
+        });
+
+      nv.utils.windowResize(chart.update);
+
+      return chart;
+    });
+
+  }
+
+  $('#streamchoiceLine').chosen().change(function() {
+    $('#lineComparingArea svg').remove();
+    drawLinechart(this.value, $('#yvaluechoiceLine').val());
+  });
+
+  $('#yvaluechoiceLine').chosen().change(function() {
+    $('#lineComparingArea svg').remove();
+    drawLinechart($('#streamchoiceLine').val(), this.value);
+  });
+
+  function drawSponsorDetail(sponsor) {
+    $('#lineComparingArea h2').text(sponsor);
+    var selectedData = processSelectedData();
+    var filteredData = _.filter(selectedData, function(d) {
+      return d.awardstat != "" && d.sponsor == sponsor;
+    });
+    var groupedData = _.groupBy(filteredData, function(d) {
+      return d.program;
+    });
+
+    var min = 9999, max = 0;
+    filteredData.forEach(function(d) {
+      min = d.begin < min ? d.begin : min;
+      max = d.end > max ? d.end : max;
+    });
+
+    var detailData = [];
+    _.each(groupedData, function(value, key) {
+      var yearData = d3.range(min, max + 1).map(function(d) { return {x: d, y: 0}; });
+      value.forEach(function(d, i) {
+        for(var i = 0; i < yearData.length; i++) {
+          if(d.begin == yearData[i].x) {
+            for(var j = i; j < yearData.length && yearData[j].x <= d.end; j++)
+                yearData[j].y++;
+            break;
+          }
+        }
+      });
+      detailData.push({key: key, values: yearData, color: color20(key)});
+    });
+
+    //draw graph
+    var margin = {top: 40, right: 10, bottom: 40, left: 10},
+      width = 960 - margin.left - margin.right,
+      height = 600 - margin.top - margin.bottom;
+
+    nv.addGraph(function() {
+      var chart = nv.models.lineChart();
+
+      chart.xAxis
+        .axisLabel('Year')
+        .tickFormat(d3.format('d'));
+      chart.yAxis
+        .axisLabel('Number')
+        .tickFormat(d3.format('d'));
+
+      //chart.showLegend(false);
+
+      d3.select('#lineComparingArea').append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        //the NVD3 uses style width and height to decide the children width and height
+        .style("width", width + margin.left + margin.right)
+        .style("height", height + margin.top + margin.bottom)
+        .datum(detailData)
+        .transition().duration(500).call(chart);
+
+      nv.utils.windowResize(chart.update);
+
+      return chart;
+    });
+  }
+
+  $('#backComparing').click(function() {
+    $('#streamchoiceLine').parent().slideDown();
+    $(this).parent().slideUp();
+    $('#lineComparingArea svg:last').slideUp(400, function() {
+      this.remove();
+    });
+    $('#lineComparingArea h2').text("Grants");
+    setTimeout(function() {
+      $('#lineComparingArea svg:first').show();
+    }, 400);
+  })
 
   // $('#arrangetreemap').on("change", function() {
   //     console.log("select zoom(node)");
@@ -2471,14 +2966,14 @@ var GRANTS = (function () {
         .on("mouseout", function(d) {
           if(!d3.select(this).classed("chosen")) {
             d3.select(this).style("background-color", "white")
-            .style("color", function(d) { return color20(d.Department); } );  
+            .style("color", function(d) { return color20(d.Sponsor); } );  
           }
 
           var datum = d;
           d3.selectAll("circle.node").each(function(d) {
             if(d == datum) {
               if($('#selectionShow').is(':checked'))
-                d3.select(this).style("fill", function(d) { return color20(d.Department); });
+                d3.select(this).style("fill", function(d) { return color20(d.Sponsor); });
               else
                 d3.select(this).style("fill", "white");
             }
@@ -2493,19 +2988,11 @@ var GRANTS = (function () {
           }
 
           var counts = d3.select("#selectionList").selectAll("li.item.chosen")[0].length;
-          // if(counts == 0) {
-          //   $('#itemsCompare').parent().hide('fast');
-          //   $('#itemsCompare').hide();
-          //   $('#itemLinechart').hide();
-          // } else if(counts == 1) {
-          //   $('#itemsCompare').parent().show('fast');
-          //   $('#itemsCompare').hide();
-          //   $('#itemLinechart').show();
-          // } else {
-          //   $('#itemsCompare').parent().show('fast');
-          //   $('#itemsCompare').show();
-          //   $('#itemLinechart').hide();
-          // }
+          if(counts < 2) {
+            $('#itemsBarchart').parent().hide('fast');
+          } else {
+            $('#itemsBarchart').parent().show('fast');
+          }
 
           if(counts == selectedBubbles.length)
             $('#itemsChooseAll').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
@@ -2527,24 +3014,12 @@ var GRANTS = (function () {
         $('#itemsChooseAll').parent().slideUp('fast');
       $('#itemsChooseAll').css("background", "rgb(36,137,197)").css("color", "white").css("cursor", "pointer");
       $('#itemsChooseNone').css("background", "grey").css("color", "rgb(162,162,162").css("cursor", "default");
-      // if(d3.selectAll('.item.chosen')[0].length > 1)
-      //  $('#itemsCompare').show('fast');
-      // else 
-      //  $('#itemsCompare').hide('fast');
-      // var counts = d3.select("#selectionList").selectAll("li.item.chosen")[0].length;
-      // if(counts == 0) {
-      //   $('#itemsCompare').parent().hide('fast');
-      //   $('#itemsCompare').hide();
-      //   $('#itemLinechart').hide();
-      // } else if(counts == 1) {
-      //   $('#itemsCompare').parent().show('fast');
-      //   $('#itemsCompare').hide();
-      //   $('#itemLinechart').show();
-      // } else {
-      //   $('#itemsCompare').parent().show('fast');
-      //   $('#itemsCompare').show();
-      //   $('#itemLinechart').hide();
-      // }
+      var counts = d3.select("#selectionList").selectAll("li.item.chosen")[0].length;
+      if(counts < 2) {
+        $('#itemsBarchart').parent().hide('fast');
+      } else {
+        $('#itemsBarchart').parent().show('fast');
+      }
 
   }
 

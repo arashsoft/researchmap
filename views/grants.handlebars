@@ -52,17 +52,64 @@
       <div id="cloningArea">
         <h2>Clone</h2>
       </div>
+      <div id="barComparingArea">
+        <h2>Grants</h2>
+        <div style="display:inline-block; float:left">
+        <ul class="actionlist"> 
+          <li>
+            <input type="radio" name="chartchoice" value="individual" id="individualbar" checked></input>
+            <label for="individualbar">individual</label>
+          </li>
+          <li>
+            <input type="radio" name="chartchoice" value="group" id="groupbar"></input>
+            <label for="groupbar">group</label>
+          </li>
+        </ul>
+        </div>
+        <div style="float: right">
+          <span>X-Axis</span>
+          <select id="xvaluechoice" class="chzn-select" style="width: 100%;"> 
+            <option value="sponsor" selected>Sponsor</option>
+            <option value="department">Department</option>
+          </select>
+          <span>Y-Axis</span>
+          <select id="yvaluechoice" class="chzn-select" style="width: 100%;"> 
+            <option value="number" selected>Numbers</option>
+            <option value="amount">Amounts</option>
+          </select>
+        </div>
+        <button id="sortBars" style="height: 2em; float: left; left: 52%">sort</button>
+      </div>
+      <div id="lineComparingArea">
+        <h2>Grants</h2>
+        <div style="display:inline-block; float:left">
+          <span>Stream</span>
+          <select id="streamchoiceLine" class="chzn-select" style="width: 100%;"> 
+            <option value="sponsor" selected>Sponsor</option>
+            <option value="department">Department</option>
+          </select>
+          <span>Y-Axis</span>
+          <select id="yvaluechoiceLine" class="chzn-select" style="width: 100%;"> 
+            <option value="number" selected>Numbers</option>
+            <option value="amount">Amounts</option>
+          </select>
+        </div>
+        <div style="height: 25px; width: 1px; visibility: hidden; float: left"></div>
+        <div style="display:inline-block; float:right">
+          <button id="backComparing" style="height: 2em">back</button>
+        </div>
+      </div>
       <div id="selectionArea">
         <h2>selections</h2>
         <div style="width:100%; display:block; margin:auto; padding-bottom:15px; display:none;">
           <button id="itemsChooseAll" style="height: 2em; left:15%;">choose all</button>       
           <button id="itemsChooseNone" style="height: 2em; left:20%;">choose none</button>
         </div>          
-        <div style="width:100%; padding-bottom:15px;">
-          <button id="itemLinechart" 
-          style="margin: 5px; height: 2em; display:none; margin:auto; left: 39%;">detail</button>
-          <button id="itemsCompare" 
-          style="margin: 5px; height: 2em; display:none; margin:auto; left: 37%;">compare</button>
+        <div style="width:100%; padding-bottom:15px; display:none">
+          <button id="itemsLinechart" 
+          style="margin: 5px; height: 2em; margin:auto; left: 15%;">line chart</button>
+          <button id="itemsBarchart" 
+          style="margin: 5px; height: 2em; margin:auto; left: 25%;">bar chart</button>
         </div>         
         <ul id="selectionList"></ul>
       </div>      
