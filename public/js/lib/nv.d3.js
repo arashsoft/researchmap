@@ -638,6 +638,21 @@ window.nv.tooltip.* also has various helper methods.
            pos[1] = pos[1] - parentContainer.scrollTop;
         }
         nv.tooltip.calcTooltipPosition(pos, gravity, dist, container);
+
+        var newContainer = document.createElement('div');
+        newContainer.className = 'nvtooltip ' + (classes ? classes : 'xy-tooltip');
+        newContainer.style.top = 0;
+        newContainer.style.left = 0;
+        newContainer.style.opacity = 0;
+        newContainer.innerHTML = content;
+        
+        document.getElementsByTagName('body')[0].appendChild(newContainer);
+        newContainer.style.top = nv.tooltip.findTotalOffsetTop(container.offsetParent, parseInt(container.style.top.substring(0, container.style.top.length-2))) + "px";
+        newContainer.style.left = nv.tooltip.findTotalOffsetLeft(container.offsetParent, parseInt(container.style.left.substring(0, container.style.left.length-2))) + "px";
+        newContainer.style.position = 'absolute';
+        newContainer.style.opacity = 1;
+        
+        container.parentNode.removeChild(container);
   };
 
   //Looks up the ancestry of a DOM element, and returns the first NON-svg node.
@@ -751,7 +766,7 @@ window.nv.tooltip.* also has various helper methods.
 
             container.style.left = left+'px';
             container.style.top = top+'px';
-            container.style.opacity = 1;
+            //container.style.opacity = 1;
             container.style.position = 'absolute'; 
 
             return container;
@@ -941,7 +956,7 @@ nv.utils.optionsFunc = function(args) {
     ;
 
   var margin = {top: 0, right: 0, bottom: 0, left: 0}
-    , width = 75 //only used for tickLabel currently
+    , width = 60 //only used for tickLabel currently
     , height = 60 //only used for tickLabel currently
     , scale = d3.scale.linear()
     , axisLabelText = null
