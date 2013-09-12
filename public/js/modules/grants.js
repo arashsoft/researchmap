@@ -1358,7 +1358,8 @@ var GRANTS = (function () {
 
           //build folded legend
           chart.legend.width(width);
-          var legendsvg = d3.select('#legendDiv').append('svg').append('g')
+
+          d3.select('#legendDiv').append('svg').append('g')
             .datum(lineData)
             .call(chart.legend);
 
