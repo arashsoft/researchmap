@@ -1206,7 +1206,7 @@ var GRANTS = (function () {
   $('#itemsLinechart').click(function() {
     $('#lineComparingArea svg').remove();
     $('#lineComparingArea').show(0, function(){
-      $.colorbox({inline:true, href:"#lineComparingArea", width:1060, height:780, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
+      $.colorbox({inline:true, href:"#lineComparingArea", width:1140, height:780, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
         onCleanup:function() {
           $('#lineComparingArea svg').remove();
           $('#streamchoiceLine').val("sponsor").trigger("liszt:updated");
@@ -1257,7 +1257,7 @@ var GRANTS = (function () {
 
     //draw graph
     var margin = {top: 40, right: 10, bottom: 40, left: 10},
-      width = 1000 - margin.left - margin.right,
+      width = 1080 - margin.left - margin.right,
       height = 600 - margin.top - margin.bottom;
 
     nv.addGraph(function() {
@@ -1272,7 +1272,8 @@ var GRANTS = (function () {
         .tickFormat(d3.format(',d'));
       chart.y2Axis.tickFormat(d3.format(',d'));
 
-      //chart.showLegend(false);
+      if(lineData.length > 50)
+        chart.showLegend(false);
 
       d3.select('#lineComparingArea').append("svg")
         .attr("width", width + margin.left + margin.right)
