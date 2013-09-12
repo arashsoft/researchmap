@@ -1043,7 +1043,14 @@ var GRANTS = (function () {
 
     var selectedData = processSelectedData();
     var individualData = selectedData.map(function(d, i) {
-      return {label: d.title, value: d.requestamt, color: color20(d.sponsor), index: i};
+      return {label: d.title,
+        value: d.requestamt,
+        color: color20(d.sponsor),
+        index: i,
+        department: d.department,
+        sponsor: d.sponsor,
+        program: d.program
+      };
     });
     individualData = [{key: "Individuals", values: individualData}];
 
@@ -1065,6 +1072,14 @@ var GRANTS = (function () {
         chart.yAxis
           .axisLabel("Amounts")
           .tickFormat(d3.format(',d'));
+
+        chart.tooltipContent(function(key, x, y, e, graph) {
+          return '<p><b>' + x + '</b></p>' +
+               '<p><b>Value: </b>' + y + '</p>' + 
+               '<p><b>Sponsor: </b>' + e.point.sponsor + '</p>' + 
+               '<p><b>Department: </b>' + e.point.department + '</p>' + 
+               '<p><b>Program: </b>' + e.point.program + '</p>';
+        })
 
         d3.select("#barComparingArea").append("svg")
           .attr("width", width + margin.left + margin.right)
@@ -1206,7 +1221,7 @@ var GRANTS = (function () {
   $('#itemsLinechart').click(function() {
     $('#lineComparingArea svg').remove();
     $('#lineComparingArea').show(0, function(){
-      $.colorbox({inline:true, href:"#lineComparingArea", width:1140, height:780, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
+      $.colorbox({inline:true, href:"#lineComparingArea", width:1180, height:780, opacity:0.7, scrolling:true, open:true, overlayClose:false, closeButton:false, fadeOut:300, 
         onCleanup:function() {
           $('#lineComparingArea svg').remove();
           $('#streamchoiceLine').val("sponsor").trigger("liszt:updated");
@@ -1263,6 +1278,61 @@ var GRANTS = (function () {
     nv.addGraph(function() {
       var chart = nv.models.lineWithFocusChart();
 
+      function updateChartCutomized() {
+        if(streamValue == "sponsor") {
+          //do after the chart is built
+          setTimeout(function(){
+            d3.select('#lineChartSvg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups').selectAll("path")
+              .on("mouseover", function() {
+                d3.select(this).style("stroke-width", "3px");
+              })
+              .on("mouseout", function() {
+                d3.select(this).style("stroke-width", "1.5px");
+              })
+              .on("click", function() {
+                var sponsor = this.parentNode.__data__.key;
+                $('#streamchoiceLine').parent().slideUp();
+                $('#foldLegend').slideUp();
+                $('#legendDiv').parent().hide();
+                $('#foldLegend').text("unfold legend");
+                $('#backComparing').parent().slideDown();
+                $('#lineChartSvg').slideUp(400, function() {
+                  drawSponsorDetail(sponsor);
+                });
+              });
+
+
+            d3.select('#lineChartSvg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-scatterWrap g.nv-point-paths').selectAll("path")
+              // .on("mouseover", function() {
+              //   d3.select('#lineChartSvg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups g.nv-series-' + this.__data__.series + ' path').style("stroke-width", "3px");
+              // })
+              // .on("mouseout", function() {
+              //   d3.select('#lineChartSvg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups g.nv-series-' + this.__data__.series + ' path').style("stroke-width", "1.5px");
+              // })
+              .on("click", function() {
+                var sponsor = $('#lineChartSvg')[0].__data__[this.__data__.series].key;
+                $('#streamchoiceLine').parent().slideUp();
+                $('#foldLegend').slideUp();
+                $('#legendDiv').parent().hide();
+                $('#foldLegend').text("unfold legend");
+                $('#backComparing').parent().slideDown();
+                $('#lineChartSvg').slideUp(400, function() {
+                  drawSponsorDetail(sponsor);
+                });
+              });
+          }, 500);
+        }
+        
+        //rewrite the stateChange event listener
+        chart.legend.dispatch.on('stateChange', function(newState) { 
+          chart.update();
+          //legend style
+          d3.selectAll('#legendDiv g.nv-series').classed('disabled', function(d) { return d.disabled });
+          //lines click listener
+          updateChartCutomized();
+        });
+      }
+
       chart.xAxis
         .axisLabel('Year')
         .tickFormat(d3.format('d'));
@@ -1275,7 +1345,7 @@ var GRANTS = (function () {
       if(lineData.length > 50)
         chart.showLegend(false);
 
-      d3.select('#lineComparingArea').append("svg")
+      d3.select('#lineComparingArea').append("svg").attr("id", "lineChartSvg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         //the NVD3 uses style width and height to decide the children width and height
@@ -1284,43 +1354,17 @@ var GRANTS = (function () {
         .datum(lineData)
         .transition().duration(500).call(chart)
         .call(function() {
-          if(streamValue == "sponsor") {
-            //do after the chart is built
-            setTimeout(function(){
-              d3.select('#lineComparingArea svg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups').selectAll("path")
-                .on("mouseover", function() {
-                  d3.select(this).style("stroke-width", "3px");
-                })
-                .on("mouseout", function() {
-                  d3.select(this).style("stroke-width", "1.5px");
-                })
-                .on("click", function() {
-                  var sponsor = this.parentNode.__data__.key;
-                  $('#streamchoiceLine').parent().slideUp();
-                  $('#backComparing').parent().slideDown();
-                  $('#lineComparingArea svg').slideUp(400, function() {
-                    drawSponsorDetail(sponsor);
-                  });
-                });
+          updateChartCutomized();
 
-
-              d3.select('#lineComparingArea svg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-scatterWrap g.nv-point-paths').selectAll("path")
-                // .on("mouseover", function() {
-                //   d3.select('#lineComparingArea svg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups g.nv-series-' + this.__data__.series + ' path').style("stroke-width", "3px");
-                // })
-                // .on("mouseout", function() {
-                //   d3.select('#lineComparingArea svg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups g.nv-series-' + this.__data__.series + ' path').style("stroke-width", "1.5px");
-                // })
-                .on("click", function() {
-                  var sponsor = $('#lineComparingArea svg')[0].__data__[this.__data__.series].key;
-                  $('#streamchoiceLine').parent().slideUp();
-                  $('#backComparing').parent().slideDown();
-                  $('#lineComparingArea svg').slideUp(400, function() {
-                    drawSponsorDetail(sponsor);
-                  });
-                });
-            }, 500);
-          }
+          //build folded legend
+          chart.legend.width(width);
+          d3.select('#legendDiv').append('svg').append('g')
+            .datum(lineData)
+            .call(chart.legend)
+            .call(function() {
+              $('#legendDiv').parent().hide();
+            });
+            
         });
 
       nv.utils.windowResize(chart.update);
@@ -1329,6 +1373,16 @@ var GRANTS = (function () {
     });
 
   }
+
+  $('#foldLegend').click(function() {
+    if($('#legendDiv').parent().css('display') == "none") {
+      $('#legendDiv').parent().show(1000);
+      $('#foldLegend').text("fold legend");
+    } else {
+      $('#legendDiv').parent().hide(1000);
+      $('#foldLegend').text("unfold legend");
+    }
+  })
 
   $('#streamchoiceLine').chosen().change(function() {
     $('#lineComparingArea svg').remove();
@@ -1373,18 +1427,20 @@ var GRANTS = (function () {
 
     //draw graph
     var margin = {top: 40, right: 10, bottom: 40, left: 10},
-      width = 960 - margin.left - margin.right,
+      width = 1080 - margin.left - margin.right,
       height = 600 - margin.top - margin.bottom;
 
     nv.addGraph(function() {
-      var chart = nv.models.lineChart();
+      var chart = nv.models.lineWithFocusChart();
 
       chart.xAxis
         .axisLabel('Year')
         .tickFormat(d3.format('d'));
+      chart.x2Axis.tickFormat(d3.format('d'));
       chart.yAxis
         .axisLabel('Number')
         .tickFormat(d3.format('d'));
+      chart.y2Axis.tickFormat(d3.format('d'));
 
       //chart.showLegend(false);
 
@@ -1405,13 +1461,14 @@ var GRANTS = (function () {
 
   $('#backComparing').click(function() {
     $('#streamchoiceLine').parent().slideDown();
+    $('#foldLegend').slideDown();
     $(this).parent().slideUp();
     $('#lineComparingArea svg:last').slideUp(400, function() {
       this.remove();
     });
     $('#lineComparingArea h2').text("Grants");
     setTimeout(function() {
-      $('#lineComparingArea svg:first').show();
+      $('#lineChartSvg').show();
     }, 400);
   })
 
