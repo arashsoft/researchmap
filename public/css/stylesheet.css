@@ -550,6 +550,10 @@ for matrix
   stroke-dasharray: 5,5;
 }
 
+ul.ui-autocomplete {
+  z-index: 10000;
+}
+
 #bubbleviz #cloningArea {
   height: 500px;
   width: 500px;

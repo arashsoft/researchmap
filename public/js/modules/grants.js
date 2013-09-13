@@ -53,6 +53,7 @@ var GRANTS = (function () {
   var grantEndYearArray = [];
   var grantDeadlineYearArray = [];
   var yearRangeArrayBuilt = false;
+  var grantFilterData = [];
   //for the bubble diagram sliders
   var beginLowerLimit;
   var beginUpperLimit;
@@ -434,8 +435,7 @@ var GRANTS = (function () {
   }
 
   function initBubbleFilter(all_grants) {
-    if(!yearRangeArrayBuilt)
-      buildYearRangeArray(all_grants);
+    buildYearRangeArray(all_grants);
     $( "#grantbeginyearrange" ).slider("option", "min", 0);
     $( "#grantbeginyearrange" ).slider("option", "max", grantBeginYearArray.length - 1);
     $( "#grantbeginyearrange" ).slider("option", "values", [0, grantBeginYearArray.length - 1]);
@@ -492,8 +492,7 @@ var GRANTS = (function () {
   });
 
   function initTreemapFilter(all_grants) {
-    if(!yearRangeArrayBuilt)
-      buildYearRangeArray(all_grants);
+    buildYearRangeArray(all_grants);
     $( "#treemapbeginyearrange" ).slider("option", "min", 0);
     $( "#treemapbeginyearrange" ).slider("option", "max", grantBeginYearArray.length - 1);
     $( "#treemapbeginyearrange" ).slider("option", "values", [0, grantBeginYearArray.length - 1]);
@@ -1271,6 +1270,40 @@ var GRANTS = (function () {
       lineData.push({key: key, values: yearData, color: color20(key)});
     });
 
+    //sort by alphabet
+    lineData.sort(function(a, b) { return a.key < b.key ? -1 : 1; });
+
+    //for legend autocomplete
+    $('#legendSearch').autocomplete({
+      source: lineData.map(function(obj) { return obj.key; }),
+      delay: 500,
+      minLength: 2,
+      select: function (event, ui) {
+        var name = ui.item.value;
+        d3.selectAll('#legendDiv g.nv-series')
+          .style("opacity", function(d) {
+            if(d.key == name)
+              return 1;
+            else
+              return 0.2;
+          });
+        d3.select('#lineChartSvg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups').selectAll("path")
+          .style("stroke-width", function(d) {
+            if(this.parentNode.__data__.key == name)
+              return 3;
+            else
+              return 1.5;
+          });
+      }
+    });
+
+    $('#legendSearch').change(function() {
+      if($(this).val() == "") {
+        d3.selectAll('#legendDiv g.nv-series').style("opacity", 1);
+        d3.select('#lineChartSvg g.nv-focus g.nvd3.nv-wrap.nv-line g.nv-groups').selectAll("path").style("stroke-width", 1.5);
+      }
+    })
+
     //draw graph
     var margin = {top: 40, right: 10, bottom: 40, left: 10},
       width = 1080 - margin.left - margin.right,
@@ -1367,6 +1400,7 @@ var GRANTS = (function () {
 
           nv.dispatch.on("render_end", function() {
             $('#legendDiv').parent().hide();
+            $('#legendSearch').parent().show();
             d3.select('#legendDiv svg').attr("height", chart.legend.height());
           });
             
@@ -1565,6 +1599,8 @@ var GRANTS = (function () {
                 .attr("x", function(d) { return d.dx / 2; })
                 .attr("y", function(d) { return d.dy / 2; });
             });
+    if(node !== root)
+      zoom(node);
   }
 
   function treemapValueAccessor(d) {
@@ -1593,7 +1629,7 @@ var GRANTS = (function () {
     }
 
     //year filter
-    if(d.AwardStatus == "Accepted") {
+    if(d.AwardStatus == "Accepted" || d.AwardStatus == "Closed") {
       var beginLowerLimit = grantBeginYearArray[ $( "#treemapbeginyearrange" ).slider("option", "values")[0] ];
       var beginUpperLimit = grantBeginYearArray[ $( "#treemapbeginyearrange" ).slider("option", "values")[1] ];
       var endLowerLimit = grantEndYearArray[ $( "#treemapendyearrange" ).slider("option", "values")[0] ];
@@ -1608,15 +1644,34 @@ var GRANTS = (function () {
     return req;
   }
 
+  function treemapStatusFilterListener() {
+    var filteredData = _.filter(grantFilterData, function(d) {
+      var flag = false;
+      switch(d.awardstatus) {
+        case "Accepted":
+          flag = $('input#treemapFilterAccepted').is(':checked');
+          break;
+        case "Closed":
+          flag = $('input#treemapFilterClosed').is(':checked');
+          break;
+        default:
+          flag = false;
+      }
+      return flag;
+    });
+    initTreemapFilter(filteredData);
+    refreshTreemap();
+  }
+
   ///filters for treemap
-  $('input#treemapFilterAccepted').on('ifChecked', refreshTreemap);
-  $('input#treemapFilterAccepted').on('ifUnchecked', refreshTreemap);
-  $('input#treemapFilterClosed').on('ifChecked', refreshTreemap);
-  $('input#treemapFilterClosed').on('ifUnchecked', refreshTreemap);
-  $('input#treemapFilterDeclined').on('ifChecked', refreshTreemap);
-  $('input#treemapFilterDeclined').on('ifUnchecked', refreshTreemap);
-  $('input#treemapFilterOthers').on('ifChecked', refreshTreemap);
-  $('input#treemapFilterOthers').on('ifUnchecked', refreshTreemap);
+  $('input#treemapFilterAccepted').on('ifChecked', treemapStatusFilterListener);
+  $('input#treemapFilterAccepted').on('ifUnchecked', treemapStatusFilterListener);
+  $('input#treemapFilterClosed').on('ifChecked', treemapStatusFilterListener);
+  $('input#treemapFilterClosed').on('ifUnchecked', treemapStatusFilterListener);
+  $('input#treemapFilterDeclined').on('ifChecked', treemapStatusFilterListener);
+  $('input#treemapFilterDeclined').on('ifUnchecked', treemapStatusFilterListener);
+  $('input#treemapFilterOthers').on('ifChecked', treemapStatusFilterListener);
+  $('input#treemapFilterOthers').on('ifUnchecked', treemapStatusFilterListener);
 
   $('#arrangetreemap').chosen().change(function() {
     var built = false;
@@ -2110,6 +2165,7 @@ var GRANTS = (function () {
 
         function(err, results) {
           if (err) throw new Error(err);
+          yearRangeArrayBuilt = false;
           initBubbleFilter(all_grants);
           callback(all_grants);
         }
@@ -2290,6 +2346,7 @@ var GRANTS = (function () {
       ],
       function(err, result) {
         top20 = topSponsors(20, grant_sponsors, all_grants);
+        yearRangeArrayBuilt = false;
         initTreemapFilter(all_grants);
         callback(nestedData, grant_sponsors);
       }
@@ -2667,7 +2724,11 @@ var GRANTS = (function () {
     zoomTransition.select("text")
             .attr("x", function(d) { return kx * d.dx / 2; })
             .attr("y", function(d) { return ky * (headerHeight / 2 + 4); })
-            .style("font-size", ky * headerHeight  / 3 * 2 + "px");
+            .style("font-size", headerHeight  / 3 * 2 + "px")
+            .style("opacity", function(d) {
+              d.w = this.getComputedTextLength();
+              return Math.max(0.01, (kx * d.dx - 1)) > d.w ? 1 : 0;
+            });
 
     node = d;
 
@@ -2676,21 +2737,49 @@ var GRANTS = (function () {
     }
   }
 
+  /*
+    If it is the first time to build arrays, then record some data for filter use.
+    Otherwise just rebuild arrays with recorded data
+    @param: all_grants: grant data or recorded data
+  */
   function buildYearRangeArray(all_grants) {
-
-    all_grants.forEach(function(d) {
-      var begin = parseInt(d.BeginDate.substring(0, 4));
-      var end = parseInt(d.EndDate.substring(0, 4));
-      var deadline = parseInt(d.Deadline.substring(0, 4));
-      grant_year_begin_max = begin > grant_year_begin_max ? begin : grant_year_begin_max;
-      grant_year_begin_min = begin < grant_year_begin_min ? begin : grant_year_begin_min;
-      grant_year_end_max = end > grant_year_end_max ? end : grant_year_end_max;
-      grant_year_end_min = end < grant_year_end_min ? end : grant_year_end_min;
-      grant_year_deadline_max = deadline > grant_year_deadline_max ? deadline : grant_year_deadline_max;
-      grant_year_deadline_min = deadline < grant_year_deadline_min ? deadline : grant_year_deadline_min;
-    });
+    if(!$('input#treemapFilterAccepted').is(':checked') && !$('input#treemapFilterClosed').is(':checked'))
+      return;
+    grant_year_begin_max = 0, grant_year_begin_min = 9999;
+    grant_year_end_max = 0, grant_year_end_min = 9999;
+    grant_year_deadline_max = 0, grant_year_deadline_min = 9999;
+    if(!yearRangeArrayBuilt) {
+      grantFilterData = [];
+      all_grants.forEach(function(d) {
+        var begin = parseInt(d.BeginDate.substring(0, 4));
+        var end = parseInt(d.EndDate.substring(0, 4));
+        var deadline = parseInt(d.Deadline.substring(0, 4));
+        grantFilterData.push({ awardstatus: d.AwardStatus, proposalstatus: d.ProposalStatus, begin: begin, end: end, deadline: deadline });
+        grant_year_begin_max = begin > grant_year_begin_max ? begin : grant_year_begin_max;
+        grant_year_begin_min = begin < grant_year_begin_min ? begin : grant_year_begin_min;
+        grant_year_end_max = end > grant_year_end_max ? end : grant_year_end_max;
+        grant_year_end_min = end < grant_year_end_min ? end : grant_year_end_min;
+        grant_year_deadline_max = deadline > grant_year_deadline_max ? deadline : grant_year_deadline_max;
+        grant_year_deadline_min = deadline < grant_year_deadline_min ? deadline : grant_year_deadline_min;
+      });
+    } else {
+      all_grants.forEach(function(d) {
+        var begin = d.begin;
+        var end = d.end;
+        var deadline = d.deadline;
+        grant_year_begin_max = begin > grant_year_begin_max ? begin : grant_year_begin_max;
+        grant_year_begin_min = begin < grant_year_begin_min ? begin : grant_year_begin_min;
+        grant_year_end_max = end > grant_year_end_max ? end : grant_year_end_max;
+        grant_year_end_min = end < grant_year_end_min ? end : grant_year_end_min;
+        grant_year_deadline_max = deadline > grant_year_deadline_max ? deadline : grant_year_deadline_max;
+        grant_year_deadline_min = deadline < grant_year_deadline_min ? deadline : grant_year_deadline_min;
+      })
+    }
 
     //the begin years of most grants are after 2000. There are only 60 grants that begin before 2000 and 42 grants ending before 2012
+    grantBeginYearArray = [];
+    grantEndYearArray = [];
+    grantDeadlineYearArray = [];
     grantBeginYearArray.push(grant_year_begin_min);
     for(var year = 2000; year <= grant_year_begin_max; year++)
       grantBeginYearArray.push(year);
@@ -2702,6 +2791,7 @@ var GRANTS = (function () {
       grantDeadlineYearArray.push(year);
 
     yearRangeArrayBuilt = true;
+
   }
 
   function topSponsors(topNum, grantSponsors, all_grants) {
