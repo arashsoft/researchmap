@@ -2523,8 +2523,11 @@ form.signin input::-webkit-input-placeholder {
   font-family: 'Helvetica Neue';
   font-size: 11px;
   padding: 4px 0px 4px 4px;
-
   }  
+
+#treemapviz rect.background {
+  cursor: pointer;
+}   
 
 .labelcolor {
   width: 10px;

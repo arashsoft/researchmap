@@ -2358,10 +2358,10 @@ var GRANTS = (function () {
     var childCells = treemapsvg.selectAll("g.cell.child")
             .data(children)
             .enter().append("g")
-            .attr("class", "cell child")
-            .on("click", function(d) {
-                zoom(node === d.parent ? root : d.parent);
-            });
+            .attr("class", "cell child");
+            //.on("click", function(d) {
+              //  zoom(node === d.parent ? root : d.parent);
+            //});
     childCells.append("rect")
             .style("fill", function(d) {
               if(_.contains(top20, d.Sponsor))
