@@ -37,11 +37,27 @@
 </head>
 <body>
 
-  <div class="header">
-    <div class="row">
-    <img src="img/rmlogo.png"></img>
-    <a href="index.html"><h1>ResearchMap</h1></a>
-    <div class="nav right">
+  <div id="header">
+    <div id="header_in">
+    <!-- <img src="img/rmlogo.png"></img> -->
+      <h1><a href="index.html"><b>western</b>ResearchMap</a></h1>
+      <div id="menu">
+        <ul>
+          <li>{{#if navoverview}}<a href="overview" class='active'>Overview</a>{{else}}<a href="overview">Overview</a>{{/if}}
+          </li> 
+          <li>{{#if navpub}}<a href="publications_map"  class='active'>Collaborations</a>{{else}} <a href="publications_map">Collaborations</a>{{/if}}
+          </li>
+          <li>{{#if navgrants}}<a href="grants" class='active'>Grants</a>{{else}}<a href="grants">Grants</a>{{/if}}
+          </li>
+          <li></li>
+          <li>{{#if navhelp}}<a href="help" class='active'>Help</a>{{else}}<a href="help">Help</a>{{/if}}
+          </li>
+        </ul>
+      </div>
+    </div>
+
+<!-- </div>
+ --><!--     <div class="nav right">
       <ul>
         <a href="#login-box" class="login-window">
         <li>logout</li></a>
@@ -50,11 +66,10 @@
       <a href="help.html">
         <li>contact</li></a>
       </ul> 
-    </div>
-    </div>  
+    </div> -->
   </div>
 
-  <div class="navbar group">
+<!-- <div class="navbar group">
   <ul class="dropdown row group">
     <li>{{#if navoverview}}<a href="overview" class='active'>Overview</a>{{else}}<a href="overview">Overview</a>{{/if}}
     </li>
@@ -68,13 +83,13 @@
     </li>
     <img src="img/settings.png"></img>
   </ul>
-</div>
+</div> --> 
 
-  <div class="row group">
+<!--   <div class="row group">
     <div id="overview">
       <h2 class="textcenter">{{maintitle}}</h2>
     </div>
-  </div>
+  </div> TODO:remove maintitle-->
 
 
 
