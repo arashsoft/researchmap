@@ -4,7 +4,7 @@ var app = express();
 var exphbs = require( 'express3-handlebars' );
 
 //requirements for the routes
-var publications_map = require('./routes/publications_map');
+var collaborations = require('./routes/collaborations');
 var processData = require('./processData');
 var grants = require('./routes/grants');
 var faculty = require('./routes/faculty');
@@ -26,7 +26,7 @@ app.configure(function(){
 });
 
 //routes for pages
-app.get("/publications_map", publications_map.page);
+app.get("/collaborations", collaborations.page);
 app.get("/grants", grants.page);
 app.get("/faculty", faculty.page);
 app.get("/overview", overview.page);

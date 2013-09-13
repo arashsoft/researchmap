@@ -10,8 +10,8 @@ exports.page = function(req, res){
 		maintitle: 'collaboration explorer',
 		navpub: true,
 		scripts: [
-			'publications_map'
+			'collaborations'
 		]
 	}
-	res.render('publications_map', data);
+	res.render('collaborations', data);
 }
