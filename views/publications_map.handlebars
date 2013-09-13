@@ -1,0 +1,416 @@
+
+  <!--#######################################################################################################-->
+  <!--                           This contains the hidden content for lightbox                               -->
+
+  <!-- starting choice-->
+  <div style='display:none'>
+    <div id='VRchoice' style='padding:10px; background:#fff;'>
+      <p class="textcenter">Choose a starting visualization</p>
+      <img src="img/network.png" class="left" id="networkchoice"></img>
+      <img src="img/matrix.png" class="right" id="matrixchoice"></img>
+    </div>
+  </div>
+
+  <!--                                   end of hidden content for lightbox                                  -->
+  <!--#######################################################################################################-->
+
+
+
+  <div class="vizarea group">
+
+    <div id="vizcontainer">
+    <img id="vizloader" src="img/viz-loader.gif" style="display: none;"></img>
+      <div id="networkviz" style="display: none;">
+        <div id="networkbar">
+          <img id="networkzoomin" src="img/zoomin.png"></img>
+          <img id="networkzoomout" src="img/zoomout.png"></img>
+          <div class="ui-widget">
+            <input id="tags" />
+          </div>
+
+          <button id="networkreset">reset</button>
+        </div>
+        <div id="networkdepartmentlegend">
+        </div>
+        <div id="networkdepartmentlegendtoggle">
+        </div>   
+        <div id="animateYearPlaceholder">
+        </div>
+        <div id="selectionArea">
+          <h2>selections</h2>
+          <div style="width:100%; display:block; margin:auto; padding-bottom:15px; display:none;">
+            <button id="itemsChooseAll" style="height: 2em; left:15%;">choose all</button>       
+            <button id="itemsChooseNone" style="height: 2em; left:20%;">choose none</button>
+          </div>          
+          <div style="width:100%; padding-bottom:15px;">
+            <button id="itemLinechart" 
+            style="margin: 5px; height: 2em; display:none; margin:auto; left: 39%;">detail</button>
+            <button id="itemsCompare" 
+            style="margin: 5px; height: 2em; display:none; margin:auto; left: 37%;">compare</button>
+          </div>         
+          <ul id="selectionList"></ul>
+        </div>
+        <div id="gatheringArea">
+          <h2>drag nodes here</h2>
+        </div>
+        <div id="cloningArea">
+          <h2>Clone</h2>
+        </div>        
+        <div id="comparingArea">
+          <h2>Collaborations</h2>
+          <div style="display:inline-block; float:left">
+          <ul class="actionlist"> 
+            <li>
+              <input type="radio" name="chartchoice" value="barchart" id="barchart" checked></input>
+              <label for="barchart">cumulative</label>
+            </li>
+            <li>
+              <input type="radio" name="chartchoice" value="linechart" id="linechart"></input>
+              <label for="linechart">over time</label>
+            </li>
+          </ul>
+          </div>
+        </div>
+        <div id="detailLineArea">
+        </div>
+      </div>
+      <div id="matrixviz" style="display: none;">
+        <div id="matrixbar">
+          <img id="matrixzoomin" src="img/zoomin.png"></img>
+          <img id="matrixzoomout" src="img/zoomout.png"></img>
+          <div class="ui-widget">
+            <input id="matrixsearch" />
+          </div>
+          <button id="matrixreset">reset</button>
+        </div>
+        <div id="matrixdepartmentlegend">
+        </div>
+        <div id="matrixdepartmentlegendtoggle">
+        </div>                 
+      </div>
+    </div>
+
+
+        <div id="actionpaneltoggle">
+          <p>></p>
+        </div> 
+    <div id="actionpanel">
+      <h2>Action Panel</h2>
+
+      <div id="networkactions">
+
+        <h3>automated tasks</h3><hr>
+        <div class="action">
+          <select id="tasks" data-placeholder="Choose an automated task..." class="chzn-select" style="width:50%;" tabindex="1"> 
+            <option value=""></option>
+            <option value="ii_clusters">identify and isolate clusters</option>
+            <option value="department">task2</option>
+          </select>
+        </div>
+
+        <h3>animate</h3><hr>
+        <div class="action">
+          <p style="margin-top:10px">automatic</p>
+          <label for="animateyear">year range:</label>
+          <input type="text" id="animateyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="animateyearrange">
+          </div>
+<!--           <ul class="actionlist" style="margin-top:50px"> 
+            <li style="position:relative; left:30px;">
+              <input type="checkbox" name="iCheck" id="animateTime">
+              <label for="animateTime">go!</label>
+            </li>
+          </ul>     -->
+          <button id="animateTime" style="margin-top: 30px; position:relative; left:20%">start</button>      
+          <button id="animateReset" style="margin-top: 30px; position:relative; left:32%">reset</button>
+          <p>manual</p> 
+          <label for="animateSliderYear">year: </label>
+          <input type="text" id="animateSliderYear" style="border: 0; color: #f6931f; font-weight: bold; top: -10px;"/>                          
+          <div id="animateSlider" style="position: relative; top:10px"></div>           
+        </div>
+
+        <h3>arrange</h3><hr>
+        <div class="action">
+          <select id="arrange" data-placeholder="Arrange network according to..." class="chzn-select" style="width:90%;" tabindex="2"> 
+            <option value=""></option>
+            <option value="random">random</option>
+            <option value="department">department</option>
+            <option value="department">link type</option>
+          </select>
+        </div>
+
+        <h3>discard</h3><hr>
+        <div class="action">
+          <button id="discardUnlinkedNodes" style="margin-top: 30px; position:relative; left:12%">discard nodes without links</button>  
+          <button id="discardSelectedNodes" style="margin-top: 30px; position:relative; left:12%">discard selected nodes</button>  
+          <button id="discardUnselectedNodes" style="margin-top: 30px; position:relative; left:12%">discard unselected nodes</button>  
+        </div>        
+        
+        <h3>filter</h3><hr>
+        <div class="action">
+          <p>nodes</p>
+          <ul class="actionlist"> 
+            <li>
+              <input type="radio" name="FilteriCheck" id="filterNodesAll" checked></input>
+              <label for="filterNodesAll">all</label>
+            </li>
+            <li>
+              <input type="radio" name="FilteriCheck" id="filterNodesLinks"></input>
+              <label for="filterNodesLinks">with links only</label>
+            </li>
+          </ul>          
+
+          <p>links</p>
+          <ul class="actionlist"> 
+            <li>
+              <input type="checkbox" checked id="filterCo_pubs"></input> 
+              <label for="filterCo_pubs">co-publications</label>
+            </li>
+            <li>
+              <input type="checkbox" checked id="filterCo_sups"></input> 
+              <label for="filterCo_sups">co-supervisions</label>
+            </li>     
+            <li>
+              <input type="checkbox" checked id="filterCo_grants"></input> 
+              <label for="filterCo_grants">co-grants</label>
+            </li>                    
+          </ul>
+
+          <p>years</p>
+          <label for="networkyear">range:</label>
+          <input type="text" id="networkyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkyearrange">
+          </div>
+
+<!--           <p>departments</p>
+          <select id="filterdepartments" data-placeholder="Click to add departments" style="width:100%;" multiple class="chzn-select" tabindex="8">
+              <option value=""></option>
+          </select>   -->   
+
+          <p>research clusters</p>
+          <select id="filterclusters" class="chzn-select" style="width:90%;"> 
+            <option value="none" selected>none</option>
+            <option value="envandsus">environment & sustainability</option>
+          </select>
+
+        </div>
+
+        <h3>gather</h3><hr>
+        <div class="action">
+          <ul class="actionlist"> 
+            <li>
+              <input type="checkbox" id="gatheringMode"></input> 
+              <label for="gatheringMode">gathering area</label>
+            </li>
+          </ul>
+        </div>
+
+        <h3>granularity</h3><hr>
+        <div class="action">
+          <select id="granularity" class="chzn-select" style="width:75%;"> 
+            <option value="individuals" selected>individuals</option>
+            <option value="departments">departments</option>
+            <option value="departmentsChord">departments - chord</option>
+          </select><br>
+        </div>    
+        <h3>presentation</h3><hr>
+        <div class="action">
+              
+          <p>node properties</p>
+          <label for="networkDensity">density:</label>
+          <input type="text" id="networkDensity" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkDensitySlider"></div> 
+          <label for="networkCharge">charge:</label>
+          <input type="text" id="networkCharge" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkChargeSlider"></div> 
+          <label for="networkFriction">friction:</label>
+          <input type="text" id="networkFriction" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkFrictionSlider"></div>  
+          <p>link properties</p>          
+          <label for="networkLinkDistance">link distance:</label>
+          <input type="text" id="networkLinkDistance" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkLinkDistanceSlider"></div> 
+          <label for="networkLinkStrength">link strength:</label>
+          <input type="text" id="networkLinkStrength" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="networkLinkStrengthSlider"></div>    
+        </div>   
+
+
+        <h3>motion</h3><hr>
+        <div class="action">
+          <ul class="actionlist"> 
+            <li>
+              <input type="checkbox" id="motionFreeze"></input> 
+              <label for="motionFreeze">freeze visualization</label>
+            </li>
+            <li>
+              <input type="checkbox" id="freezeNodes"></input> 
+              <label for="freezeNodes">freeze nodes on drag</label>
+            </li>
+          </ul>
+        </div>        
+
+        <h3>scope</h3><hr>
+        <div class="action"> 
+          <label for="scopeYear">show growth up to: </label>
+          <input type="text" id="scopeYear" style="border: 0; color: #f6931f; font-weight: bold; top: -10px;"/>                          
+          <div id="scopeSlider" style="position: relative; top:10px"></div>           
+          <ul class="actionlist">    
+            <li style="margin-top: 30px">
+              <input type="checkbox" id="scopeNodes"></input> 
+              <label for="scopeNodes">include nodes</label>
+            </li>
+          </ul>
+        </div>
+        
+        <h3>select</h3><hr>
+        <div class="action">
+
+          <p>selection type</p>
+          <ul class="actionlist"> 
+            <li>
+              <input type="radio" name="iCheck" id="selectNone" checked></input> 
+              <label for="selectNone">none</label>
+            </li>
+            <li>
+              <input type="radio" name="iCheck" id="selectLasso"></input>
+              <label for="selectLasso">group</label>
+            </li>
+            <li>
+              <input type="radio" name="iCheck" id="selectIndividual"></input>
+              <label for="selectIndividual">individual</label>
+            </li>            
+          </ul>
+
+<!--            <p>further actions</p>         
+ -->            <div id="selectactions">
+              <hr style="margin:15px auto;">
+              <ul class="actionlist"> 
+                <p>hide</p>
+              <li>
+                <input type="radio" name="selectionAction" id="selectionNone" checked></input> 
+                <label for="selectionNone">none</label>
+              </li>
+              <li>
+                <input type="radio" name="selectionAction" id="selectionHide"></input> 
+                <label for="selectionHide">selections</label>
+              </li>
+              <li>
+                <input type="radio" name="selectionAction" id="selectionShow"></input> 
+                <label for="selectionShow">all but selections</label>
+              </li>
+            </ul>
+            <hr style="margin:15px auto;">
+            <div>
+              <button id="selectionClone" style="margin: 10px auto; display:block">clone selections</button>
+            </div>
+            <div>
+              <button id="selectionRemove" style="margin: 10px auto; display:block">reset</button>
+            </div> 
+          </div>     
+          
+        </div>
+
+        <h3>transform</h3><hr>
+        <div class="action">
+          <p>size nodes according to</p>
+          <select id="sizeNodes" class="chzn-select" style="width:80%;">
+            <option value="combined">all collaborations</option>
+            <option value="publications">publications</option>
+            <option value="supervisions">supervisions</option>
+            <option value="grants">grants</option>
+            <option selected value="uniform">uniform size</option>
+          </select><br>
+        </div>
+        
+        <h3>translate</h3><hr>
+        <div class="action">  
+          <select id="translate" class="chzn-select" style="width:90%">
+            <option value="network" selected>network (current)</option>
+            <option value="matrix">matrix</option>
+          </select><br>
+        </div>
+
+      </div>
+
+      <div id="matrixactions">
+        <h3>arrange</h3><hr>
+        <div class="action">
+          <p>according to</p>           
+          <select id="order" class="chzn-select" style="width:100%;"> 
+            <option value="name" selected>name</option>
+            <option value="count">collaboration count</option>
+            <option value="department">department</option>
+          </select><br>
+        </div> 
+
+        <h3>filter</h3><hr>
+        <div class="action">
+          <p>by collaboration type</p> 
+            <ul class="actionlist"> 
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_pubs"></input> 
+                <label for="matrixFilterCo_pubs">publications</label>
+              </li>
+
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_sups"></input> 
+                <label for="matrixFilterCo_sups">supervisions</label>
+              </li>  
+   
+              <li>
+                <input type="checkbox" checked id="matrixFilterCo_grants"></input> 
+                <label for="matrixFilterCo_grants">grants</label>
+              </li> 
+            </ul>
+
+          <div id="matrixFilterTypeMultiple">
+            <hr style="margin: 20px 0px">            
+            <input type="radio" name="matrixFilterMultipleType" id="matrixFilterAND"></input>
+            <input type="radio" name="matrixFilterMultipleType" id="matrixFilterOR" checked></input>
+            <br>
+            <label for="matrixFilterAND" style="margin:0% 10% 0% 12%; line-height:1.5">INTERSECTION</label>
+            <label for="matrixFilterOR" style="margin:0% 12% 0% 3%; line-height:1.5">UNION</label> 
+            <label for="matrixFilterAND" style="margin:0% 15% 0% 23.5%">(AND)</label>
+            <label for="matrixFilterOR" style="margin:0% 15% 0% 11.5%">(OR)</label>   
+          </div>
+          <div id="matrixFilterTypeSingle"> 
+            <hr style="margin: 20px 0px">          
+            <input type="radio" name="matrixFilterSingleType" id="matrixFilterEXCLUSIVE"></input>
+            <input type="radio" name="matrixFilterSingleType" id="matrixFilterINCLUSIVE" checked></input>
+            <br>
+            <label for="matrixFilterAND" style="margin:0% 5% 0% 16%; line-height:1.5">EXCLUSIVE</label>
+            <label for="matrixFilterOR" style="margin:0% 10% 0% 9%; line-height:1.5">INCLUSIVE</label>   
+          </div>          
+      </div>
+
+        <h3>translate</h3><hr>
+        <div class="action">
+          <select id="translatematrix" class="chzn-select" style="width:90%;">
+            <option value="matrix" selected>matrix (current)</option>
+            <option value="network">network</option>
+            <option value="bar">bar graph</option>
+          </select><br> 
+        </div>
+    </div>
+  </div>
+  <div id="matrixcollaborationlegend">
+    <p id="dock">dock</p>
+    <div><div id="matrixlegendpub" style="background: #E1B2D7;"></div><p>publication</p></div>
+    <div><div id="matrixlegendsup" style="background: #D5E067;"></div><p>supervision</p></div>
+    <div><div id="matrixlegendgrant" style="background: #79DEC0;"></div><p>grant</p></div>
+    <br>
+    <div><div id="matrixlegendpubsup" style="background: #9BD0E3;"></div><p>publication + supervision</p></div>
+    <div><div id="matrixlegendsupgrant" style="background: #A0E191;"></div><p>supervision + grant</p></div>
+    <div><div id="matrixlegendpubgrant" style="background: #F0A487;"></div><p>publication + grant</p></div>
+    <br>
+
+    <div><div id="matrixlegendpubsupgrant" style="background: #DCBE6B;"></div><p>all three</p></div>                             
+  </div>   
+</div>
+
+{{#scripts}}
+<script type="text/javascript" src="js/modules/{{.}}.js"></script>
+{{/scripts}}
+
+
