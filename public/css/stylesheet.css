@@ -544,6 +544,12 @@ for matrix
   background: white;
 }
 
+.guideline line {
+  stroke: rgb(80, 80, 80);
+  stroke-width: 1px;
+  stroke-dasharray: 5,5;
+}
+
 #bubbleviz #cloningArea {
   height: 500px;
   width: 500px;

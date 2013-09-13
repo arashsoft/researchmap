@@ -1332,6 +1332,8 @@ var GRANTS = (function () {
           //lines click listener
           updateChartCutomized();
         });
+
+        drawGuideLines(chart, d3.select('#lineChartSvg'));
       }
 
       chart.xAxis
@@ -1375,6 +1377,37 @@ var GRANTS = (function () {
       return chart;
     });
 
+  }
+
+  function drawGuideLines(chart, container) {
+    //add elementMouseover/out listener to show guidelines
+    chart.lines.dispatch.on('elementMouseover.guideline', function(e) {
+      var guidelineSvg = container.select('g.nv-linesWrap').append('g')
+        .attr("class", "guideline");
+      var horizotalLine = {x1: 0, y1: 0, x2: 0, y2: 0};
+      var verticalLine = {x1: 0, y1: 0, x2: 0, y2: 0};
+      horizotalLine.x1 = 0, horizotalLine.x2 = e.pos[0] - chart.margin().left;
+      horizotalLine.y1 = horizotalLine.y2 = e.pos[1] - chart.margin().top;
+      verticalLine.y1 = e.pos[1] - chart.margin().top;
+      verticalLine.y2 = (parseInt(container.style('height')) || parseInt(container.attr('height')) || 400)
+        - chart.margin().top - chart.margin().bottom - 100;
+      verticalLine.x1 = verticalLine.x2 = e.pos[0] - chart.margin().left;
+
+      guidelineSvg.append('line')
+        .attr('x1', horizotalLine.x1)
+        .attr('x2', horizotalLine.x2)
+        .attr('y1', horizotalLine.y1)
+        .attr('y2', horizotalLine.y2);
+      guidelineSvg.append('line')
+        .attr('x1', verticalLine.x1)
+        .attr('x2', verticalLine.x2)
+        .attr('y1', verticalLine.y1)
+        .attr('y2', verticalLine.y2);
+    });
+    
+    chart.lines.dispatch.on('elementMouseout.guideline', function(e) {
+      container.select('g.nv-linesWrap g.guideline').remove();
+    });
   }
 
   $('#foldLegend').click(function() {
@@ -1455,6 +1488,8 @@ var GRANTS = (function () {
         .style("height", height + margin.top + margin.bottom)
         .datum(detailData)
         .transition().duration(500).call(chart);
+
+      drawGuideLines(chart, d3.select($('#lineComparingArea svg:last')[0]));
 
       nv.utils.windowResize(chart.update);
 
