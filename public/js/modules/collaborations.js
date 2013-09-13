@@ -9,7 +9,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 SOFTWARE.
 */
 
-var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import them into the function
+var collaborations = (function () { //pass globals as parameters to import them into the function
 	
 
 	/////////////////////////////////////////////////////////////////////
