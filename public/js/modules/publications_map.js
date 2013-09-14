@@ -9,7 +9,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 SOFTWARE.
 */
 
-var collaborations = (function () { //pass globals as parameters to import them into the function
+var PUBLICATIONS_MAP = (function () { //pass globals as parameters to import them into the function
 	
 
 	/////////////////////////////////////////////////////////////////////
@@ -378,41 +378,36 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  //to populate the search bar
 	  if(store.session.has("science_names")){
 	    console.log("science_names is already in sessionStorage...no need to fetch again");
-	    populateSearchbox();
 	  }
 	  else {
 	    console.log("fetching science_names...");
 	    $.get('/network/science_names', function(result) {
 	      var science_names = JSON.parse(result.science_names);
 	      store.session("science_names", science_names);
-	      populateSearchbox();
+	      //populate the autocomplete search box with the science members
+		  //for the network
+		  $( "#tags" ).autocomplete({
+		    source: store.session("science_names"),
+		    delay: 500,
+		    minLength: 2,
+		    select: function (event, ui) {
+		      var name = ui.item.value;
+		      highlightSelectedNode(name);
+		    }
+		  });
+		  //and for the matrix
+		  $( "#matrixsearch" ).autocomplete({
+		    source: store.session("science_names"),
+		    delay: 500,
+		    minLength: 2,
+		    select: function (event, ui) {
+		    	$('#matrixdepartmentlegend').slideUp();
+		    	currentlySearchingMatrix = true;
+		      	var name = ui.item.value;
+		      	highlightSelectedRow(name);
+		    }
+		  });	  
 	    });
-	  }
-
-	  function populateSearchbox() {
-	  	//populate the autocomplete search box with the science members
-		//for the network
-		$( "#tags" ).autocomplete({
-		  source: store.session("science_names"),
-		  delay: 500,
-		  minLength: 2,
-		  select: function (event, ui) {
-		    var name = ui.item.value;
-		    highlightSelectedNode(name);
-		  }
-		});
-		//and for the matrix
-		$( "#matrixsearch" ).autocomplete({
-		  source: store.session("science_names"),
-		  delay: 500,
-		  minLength: 2,
-		  select: function (event, ui) {
-		   	$('#matrixdepartmentlegend').slideUp();
-		  	currentlySearchingMatrix = true;
-		   	var name = ui.item.value;
-		   	highlightSelectedRow(name);
-		  }
-		});	  
 	  }
 
 	  $('input#filterNodesAll').iCheck('check');
