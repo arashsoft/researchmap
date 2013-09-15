@@ -1328,7 +1328,7 @@ var GRANTS = (function () {
                 $('#streamchoiceLine').parent().slideUp();
                 $('#foldLegend').slideUp();
                 $('#legendDiv').parent().hide();
-                $('#foldLegend').text("unfold legend");
+                $('#foldLegend').text("show legend");
                 $('#backComparing').parent().slideDown();
                 $('#lineChartSvg').slideUp(400, function() {
                   drawSponsorDetail(sponsor);
@@ -1348,7 +1348,7 @@ var GRANTS = (function () {
                 $('#streamchoiceLine').parent().slideUp();
                 $('#foldLegend').slideUp();
                 $('#legendDiv').parent().hide();
-                $('#foldLegend').text("unfold legend");
+                $('#foldLegend').text("show legend");
                 $('#backComparing').parent().slideDown();
                 $('#lineChartSvg').slideUp(400, function() {
                   drawSponsorDetail(sponsor);
@@ -1447,10 +1447,10 @@ var GRANTS = (function () {
   $('#foldLegend').click(function() {
     if($('#legendDiv').parent().css('display') == "none") {
       $('#legendDiv').parent().show(1000);
-      $('#foldLegend').text("fold legend");
+      $('#foldLegend').text("hide legend");
     } else {
       $('#legendDiv').parent().hide(1000);
-      $('#foldLegend').text("unfold legend");
+      $('#foldLegend').text("show legend");
     }
   })
 

@@ -82,28 +82,32 @@
       </div>
       <div id="lineComparingArea">
         <h2>Grants</h2>
-        <div style="display:inline-block; float:left">
-          <span>Stream</span>
-          <select id="streamchoiceLine" class="chzn-select" style="width: 100%;"> 
-            <option value="sponsor" selected>Sponsor</option>
-            <option value="department">Department</option>
-          </select>
-          <span>Y-Axis</span>
-          <select id="yvaluechoiceLine" class="chzn-select" style="width: 100%;"> 
-            <option value="number" selected>Numbers</option>
-            <option value="amount">Amounts</option>
-          </select>
-        </div>
-        <div style="height: 25px; width: 1px; visibility: hidden; float: left"></div>
-        <button id="foldLegend" style="height: 2em; margin-left: 5px">unfold legend</button>
+        <!-- <div style="height: 25px; width: 1px; visibility: hidden; float: left"></div> -->
+        <div>
+        <button id="foldLegend" style="display:block; height: 2em; margin: auto">show legend</button>
+      </div>
         <div class="nvd3">
-          <div id="legendDiv" class="nv-legendWrap" style="width:1000px; float: left">
-            <div class="ui-widget" style="float:left; display:none">
-              <span>Search Legends</span>
+          <div id="legendDiv" class="nv-legendWrap">
+            <div class="ui-widget" style="float: right; display:none">
+              <!-- <span>Search</span> -->
               <input id="legendSearch" style="height:15px; width:500px; margin:5px" />
             </div>
           </div>
         </div>
+        <div class="yaxisselector">
+          <!-- <span>Y-Axis</span> -->
+          <select id="yvaluechoiceLine" class="chzn-select" style="width: 100%;"> 
+            <option value="number" selected>number</option>
+            <option value="amount">amount</option>
+          </select>
+        </div>
+        <div class="xaxisselector">
+          <span>lines</span>
+          <select id="streamchoiceLine" class="chzn-select" style="width: 100%;"> 
+            <option value="sponsor" selected>sponsor</option>
+            <option value="department">department</option>
+          </select>          
+        </div>        
         <div style="display:inline-block; float:right">
           <button id="backComparing" style="height: 2em">back</button>
         </div>

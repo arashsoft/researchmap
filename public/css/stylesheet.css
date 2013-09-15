@@ -263,6 +263,33 @@ blockquote, q {
   color: #E6E6E6;
 }
 
+.overviewdescription {
+  width: 80%;
+  margin: auto;
+  padding: 60px 0px 20px 0px;
+  color: black;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 1.5em;
+  line-height: 1.5em;
+}
+
+.viewpanel {
+  border: 1px solid #EDEDED;
+  display: inline-block;
+}
+
+.viewpanel h1 {
+
+}
+
+.viewoption {
+
+}
+
+.viewdescription {
+  font: 'Oswald', sans-serif;
+}
+
 .primary {
   padding: 50px 0 50px 0;
   line-height: 1.5;
@@ -2185,7 +2212,28 @@ form.signin input::-webkit-input-placeholder {
 
 
 
+#lineComparingArea div#legendDiv {
+  border: 1px solid rgb(235, 235, 235);
+  margin-top: 15px;
+  padding: 5px;
+  border-radius: 2px;
+  width: inherit;
+  float: none;
+}
 
+.yaxisselector {
+  display: inline-block;
+  -webkit-transform: rotate(270deg);
+  position: relative;
+  top: 250px;
+  left: -40px;
+}
+
+.xaxisselector {
+  position: relative;
+  left: 85%;
+  top:20px;
+}
 
 
 
