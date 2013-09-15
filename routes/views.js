@@ -4,8 +4,8 @@ var couchdb = require('felix-couchdb'),
 
 exports.page = function(req, res){
 	var data = {
-		maintitle: 'overview',
-		navoverview: true
+		maintitle: 'views',
+		views: true
 	}
-	res.render('overview', data);
+	res.render('views', data);
 }						
