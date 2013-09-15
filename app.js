@@ -8,10 +8,11 @@ var collaborations = require('./routes/collaborations');
 var processData = require('./processData');
 var grants = require('./routes/grants');
 var faculty = require('./routes/faculty');
-var overview = require('./routes/overview');
+var views = require('./routes/views');
 var industry = require('./routes/industry');
 var network = require('./routes/network');
 var matrix = require('./routes/matrix');
+var home = require ('./routes/home');
 
 //configuration
 app.configure(function(){
@@ -29,8 +30,10 @@ app.configure(function(){
 app.get("/collaborations", collaborations.page);
 app.get("/grants", grants.page);
 app.get("/faculty", faculty.page);
-app.get("/overview", overview.page);
+app.get("/views", views.page);
 app.get("/industry", industry.page);
+//route for default home
+app.get("/", home.page);
 
 //routes for processing data
 app.get("/processData", processData.full);
@@ -40,8 +43,7 @@ app.get("/network/:x", network.data);
 app.get("/matrix/:x", matrix.data);
 app.get("/grants/:x", grants.data);
 
-//route for default home
-app.get("/", overview.page);
+
 
 //server
 app.listen( 3000, function(){
