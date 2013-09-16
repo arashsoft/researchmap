@@ -263,6 +263,33 @@ blockquote, q {
   color: #E6E6E6;
 }
 
+.overviewdescription {
+  width: 80%;
+  margin: auto;
+  padding: 60px 0px 20px 0px;
+  color: black;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 1.5em;
+  line-height: 1.5em;
+}
+
+.viewpanel {
+  border: 1px solid #EDEDED;
+  display: inline-block;
+}
+
+.viewpanel h1 {
+
+}
+
+.viewoption {
+
+}
+
+.viewdescription {
+  font: 'Oswald', sans-serif;
+}
+
 .primary {
   padding: 50px 0 50px 0;
   line-height: 1.5;
@@ -689,7 +716,7 @@ ul.ui-autocomplete {
 #lineComparingArea h2 {
   font-family: 'Helvetica Neue', sans-serif;
   padding-bottom: 15px;
-  font-size: 1.5em;
+  font-size: 1.3em;
   text-transform: uppercase;
   text-align: center;  
   color: black;
@@ -998,6 +1025,20 @@ ul.ui-autocomplete {
   padding: 30px 25px;
   margin-top: 10px;
   font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  border-radius: 3px;
+}
+
+.linehintdrill {
+  background: #00b300;
+  width: 100%;
+  color: white;
+  min-height: 10px;
+  font-size: 1em;
+  padding: 10px 10px;
+  margin-top: 10px;
+  font-weight: 200;
   line-height: 1.3;
   text-align: center;
   border-radius: 3px;
@@ -2185,7 +2226,36 @@ form.signin input::-webkit-input-placeholder {
 
 
 
+#lineComparingArea div#legendDiv {
+  border: 1px solid rgb(235, 235, 235);
+  margin-top: 15px;
+  padding: 5px;
+  border-radius: 2px;
+  width: inherit;
+  float: none;
+}
 
+.axisselect {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.yaxisselector {
+  display: inline-block;
+  /*-webkit-transform: rotate(270deg);*/
+  position: relative;
+  float: left;
+/*  top: 250px;
+  left: -35px;*/
+}
+
+.xaxisselector {
+  display: inline-block;
+  position: relative;
+  float:right;
+/*  left: 85%;
+  top:20px;*/
+}
 
 
 
@@ -2527,8 +2597,11 @@ form.signin input::-webkit-input-placeholder {
   font-family: 'Helvetica Neue';
   font-size: 11px;
   padding: 4px 0px 4px 4px;
-
   }  
+
+#treemapviz rect.background {
+  cursor: pointer;
+}   
 
 .labelcolor {
   width: 10px;

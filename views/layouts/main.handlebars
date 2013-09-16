@@ -33,6 +33,24 @@
   <script src="js/lib/underscore.string-min.js"></script>
   <script src="js/lib/rm-extras.js"></script>
   <script src="js/lib/nv.d3.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $('#menu li:lt(2)').hide(0);
+      $('#menu li:lt(3)').on("mouseover", function(){
+        //$('#menu li:eq(0)').html("<a href='views'><< views</a>");
+        $('#menu li:lt(2)').show('fast');
+      });
+      $('#menu').on("mouseleave", function(){
+        console.log("yup");
+        $('#menu li:lt(2)').hide('fast');
+      });
+
+      // $('#header').on("mouseout", function(){
+      //   //$('#menu li:eq(0)').html("<a href='views'>  views</a>");
+      //   $('#menu li:gt(0):lt(2)').hide('fast');
+      // });
+    });
+  </script>
 	
 </head>
 <body>
@@ -40,16 +58,15 @@
   <div id="header">
     <div id="header_in">
     <!-- <img src="img/rmlogo.png"></img> -->
-      <h1><a href="index.html"><b>western</b>ResearchMap</a></h1>
+      <h1><a href="/"><b>western</b>ResearchMap</a></h1>
       <div id="menu">
         <ul>
-          <li>{{#if navoverview}}<a href="overview" class='active'>Overview</a>{{else}}<a href="overview">Overview</a>{{/if}}
-          </li> 
           <li>{{#if navpub}}<a href="collaborations"  class='active'>Collaborations</a>{{else}} <a href="collaborations">Collaborations</a>{{/if}}
           </li>
           <li>{{#if navgrants}}<a href="grants" class='active'>Grants</a>{{else}}<a href="grants">Grants</a>{{/if}}
-          </li>
-          <li></li>
+          </li> 
+          <li>{{#if views}}<a href="views" class='active'>views</a>{{else}}<a href="views">views</a>{{/if}}
+          </li> 
           <li>{{#if navhelp}}<a href="help" class='active'>Help</a>{{else}}<a href="help">Help</a>{{/if}}
           </li>
         </ul>
