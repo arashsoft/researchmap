@@ -177,6 +177,7 @@ var GRANTS = (function () {
 
   //this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
   var color20 = d3.scale.ordinal().range(["#D24B32","#73D74B","#7971D9","#75CCC1","#4F2A3F","#CA4477","#C78D38","#5D8737","#75A0D2","#C08074","#CD50CC","#D0D248","#CA8BC2","#BFC98D","#516875","#434E2F","#66D593","#713521","#644182","#C9C0C3"]);
+  var colorfrag = d3.scale.ordinal().range(["#497AC5","#2E5960","#3782A6","#687985","#245199","#3C5F85","#3179DA","#697EA2","#427F8F","#3F82B9","#23619B","#3B5168"]);
 
 
   //load the lightbox option for VRchoice
@@ -553,7 +554,7 @@ var GRANTS = (function () {
           treemapsvg.selectAll("g.cell.parent rect")
             .transition().duration(transitionDuration)
             .attr("height", function(d) { return node == root ? Math.max(0.01, d.dy - 1) : d3.select(this).attr("height"); })
-            .style("fill", function(d) { return color20(d.name); });
+            .style("fill", function(d) { return colorfrag(d.name); });
           if(node == root) { //only hide children when zooming out
             treemapsvg.selectAll("g.cell.child")
               .transition().duration(transitionDuration)
