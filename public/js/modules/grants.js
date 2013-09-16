@@ -1,21 +1,12 @@
 var GRANTS = (function () { 
 
-  //var grants = {};
   var module = {}; //this will be exported (returned)
-  //var sankey_data_faculty = {"nodes":[], "links": []};
-  //var sankey_data_departments = {"nodes":[], "links": []};
   var grantDepartments = []; //array of unique departments
-  //var grantSponsors = []; //array of unique sponsors
   var proposalStatuses = []; //array of unique proposal statuses
   var awardStatuses = []; //array of unique award statuses
-  //var grantsUnique = [];
-  //var grantYears = [];
-  //var departmentProposals = {};
   var filterPopulated = false;
   var filtersourcesvisible; //keeps track of the currently visible filter sources
   var filtertargetsvisible; //keeps track of the currently visible filter targets
-  //var nested_by_sponsor; //contains sponsor data in nested format for treemap
-  //var nested_by_department; //contains department/sponsor data in nestd format
   var sankey_constructed = false;
   var treemap_constructed = false;
   var bubble_constructed = false;
@@ -23,12 +14,8 @@ var GRANTS = (function () {
   var bubble;
   var top20 = [];
   var programview = 0; //keeps track of whether the line chart is in program view or not (i.e., it's in sponsor view)
-
-
   var grouped_grants;
-  //log scale for the grant request amounts
-  var log_scale = d3.scale.log().domain([1,10000000]).range([5,40]);
-
+  var log_scale = d3.scale.log().domain([1,10000000]).range([5,40]); //log scale for the grant request amounts
   var brush;
   var selectedBubbles = [];
   var grantValueCenters = [];
@@ -40,7 +27,6 @@ var GRANTS = (function () {
   var department_border_coords = [];
   var border_coords_sampled = true; //when set to false, start updating the border coords arrays in the tick function
   var sampletime = 1000;
-
   var individualSelect = false; //flag to be used in 'tick' function for selecting individual nodes
 
   //for the bubble diagram filter
@@ -63,15 +49,7 @@ var GRANTS = (function () {
   var deadlineLowerLimit;
   var deadlineUpperLimit;
 
-  //receive JSON from the server
-  //var nested_by_sponsor = {{{nested_by_sponsor}}};
-  // var nested_by_department = {{{nested_by_department}}};
-  // var sankey_data_departments = {{{sankey_data_departments}}};
-  // var sankey_data_faculty = {{{sankey_data_faculty}}};
-
-
   //FOR TREEMAP//
-
   var margin = {top: 5, right: 0, bottom: 5, left: 0},
       width = $('#vizcontainer').width() - margin.left - margin.right,
       height = $('#vizcontainer').height() - margin.top - margin.bottom; 
@@ -187,42 +165,6 @@ var GRANTS = (function () {
 
   //this list of 20 colors is calculated such that they are optimally disctinct. See http://tools.medialab.sciences-po.fr/iwanthue/
   var color20 = d3.scale.ordinal().range(["#D24B32","#73D74B","#7971D9","#75CCC1","#4F2A3F","#CA4477","#C78D38","#5D8737","#75A0D2","#C08074","#CD50CC","#D0D248","#CA8BC2","#BFC98D","#516875","#434E2F","#66D593","#713521","#644182","#C9C0C3"]);
-
-
-
-// //similar to _.extend, but with the added feature of maintaining different properties (rather than overwriting them)
-// //if properties are the same they will be merged/overwritten (same as with _.extend)
-// //if properties are not the same, they will be combined in the form of an array and stored as multiple properties
-// //@params: obj: objects to combine
-// //@returns: obj: the combine object
-// function combineObjects (obj) {
-//   var slice = Array.prototype.slice;
-//   var concat = Array.prototype.concat;
-  
-//     _.each(obj.slice(1), function(source) {
-      
-//       if (source) {
-//         for (var prop in source) {
-//           //if they properties are the same overwrite
-//           if (obj[0][prop] === source[prop]) {
-//               obj[0][prop] = source[prop];
-//             }
-//             else {
-//               //concatenate the properties
-//               //if the property is already an array
-//               if (obj[0][prop].constructor === Array){
-//                 obj[0][prop] = obj[0][prop].concat(source[prop]); //concatenate
-//               }
-//               //if it is not already an array
-//               else {
-//                 obj[0][prop] = [obj[0][prop]].concat(source[prop]); //turn it into an array and then concatenate
-//               }
-//             }
-//         }
-//       }
-//     });
-//     return obj[0];
-//   };
 
 
   //load the lightbox option for VRchoice
@@ -571,83 +513,78 @@ var GRANTS = (function () {
       }
   });
 
-
-
   $('#sankeytranslate').change(function () {
       $('#sankeyviz').hide();
       $('#sankeyactions').hide('slow');
 
-    if (this.value == "treemap"){
-      //hide the sankey and show the treemap
-      $('#treemapviz').show();
-      $('#treemapactions').show('slow');
-      //if treemap has not yet been constructed, construct it
-      if(!treemap_constructed){
-        //prepareTreemap();
-        constructTreemap("department");
+      if (this.value == "treemap"){
+        //hide the sankey and show the treemap
+        $('#treemapviz').show();
+        $('#treemapactions').show('slow');
+        //if treemap has not yet been constructed, construct it
+        if(!treemap_constructed){
+          //prepareTreemap();
+          constructTreemap("department");
+        }
       }
-    }
       else if (this.value == "bubble"){
         $('#bubbleviz').show();
         $('#bubbleactions').show('slow');
         if(!bubble_constructed){
           constructBubble();
+        }
       }
-    }
-    $('#sankeytranslate').val('').trigger('liszt:updated');
+      $('#sankeytranslate').val('').trigger('liszt:updated');
   });
 
   $('#treemaptranslate').change(function () {
       $('#treemapviz').hide();
       $('#treemapactions').hide('slow');
 
-    if (this.value == "sankey"){
-      //hide the treemap and show the sankey
-      $('#sankeyviz').show();
-      $('#sankeyactions').show('slow');
-      //if sankey is not yet constructed, construct it
-      if(!sankey_constructed){
-        //prepareSankey();
-        constructSankey("faculty");
+      if (this.value == "sankey"){
+        //hide the treemap and show the sankey
+        $('#sankeyviz').show();
+        $('#sankeyactions').show('slow');
+        //if sankey is not yet constructed, construct it
+        if(!sankey_constructed){
+          //prepareSankey();
+          constructSankey("faculty");
+        }
       }
-    }
-    else if (this.value == "bubble"){
-      $('#bubbleviz').show();
-      $('#bubbleactions').show('slow');
-      if(!bubble_constructed){
-        constructBubble();
+      else if (this.value == "bubble"){
+        $('#bubbleviz').show();
+        $('#bubbleactions').show('slow');
+        if(!bubble_constructed){
+          constructBubble();
+        }
       }
-    }
-    $('#treemaptranslate').val('').trigger('liszt:updated'); 
+      $('#treemaptranslate').val('').trigger('liszt:updated'); 
   });
 
   $('#bubbletranslate').change(function () {
       $('#bubbleviz').hide();
       $('#bubbleactions').hide('slow');
 
-    if (this.value == "sankey"){
-      $('#sankeyviz').show();
-      $('#sankeyactions').show('slow');
-      //if sankey is not yet constructed, construct it
-      if(!sankey_constructed){
-        //prepareSankey();
-        constructSankey("faculty");
+      if (this.value == "sankey"){
+        $('#sankeyviz').show();
+        $('#sankeyactions').show('slow');
+        //if sankey is not yet constructed, construct it
+        if(!sankey_constructed){
+          //prepareSankey();
+          constructSankey("faculty");
+        }
       }
-    }
-    else if (this.value == "treemap"){
-      $('#treemapviz').show();
-      $('#treemapactions').show('slow');
-      //if treemap has not yet been constructed, construct it
-      if(!treemap_constructed){
-        //prepareTreemap();
-        constructTreemap("department");
-      }    
-    }
-    $('#bubbletranslate').val('').trigger('liszt:updated'); 
+      else if (this.value == "treemap"){
+        $('#treemapviz').show();
+        $('#treemapactions').show('slow');
+        //if treemap has not yet been constructed, construct it
+        if(!treemap_constructed){
+          //prepareTreemap();
+          constructTreemap("department");
+        }    
+      }
+      $('#bubbletranslate').val('').trigger('liszt:updated'); 
   });
-
-
-
 
 
 ///// for bubble interactions
@@ -735,7 +672,7 @@ var GRANTS = (function () {
     bubble_force.start();
 
     filterBubblesByYear();
-  }
+  }//end filterBubblesByStatus
 
   $('input#filterAccepted').on('ifChecked', filterBubblesByStatus);
   $('input#filterAccepted').on('ifUnchecked', filterBubblesByStatus);
@@ -1062,7 +999,7 @@ var GRANTS = (function () {
         });
       });
     return selectedData;
-  }
+  }//end processSelectedData
 
   function drawIndividualBarchart() {
 
@@ -1131,10 +1068,9 @@ var GRANTS = (function () {
 
         return chart;
     });
+  }//end drawIndividualBarchart
 
-  }
-
-  function drawGroupBarhart(xValue, yValue) {
+  function drawGroupBarchart(xValue, yValue) {
     
     var selectedData = processSelectedData();
     var xGroupedData = _.groupBy(selectedData, function(d) { return eval("d." + xValue); });
@@ -1191,7 +1127,7 @@ var GRANTS = (function () {
 
         return chart;
     });
-  }
+  }//end dragGroupBarhart
 
   function sortBars(flag) {
     var data = $('#barComparingArea svg')[0].__data__;
@@ -1203,7 +1139,7 @@ var GRANTS = (function () {
     d3.select("#barComparingArea svg").datum(data);
     chart.update();
     d3.select('#barComparingArea svg g.nv-y.nv-axis path').style("stroke", "white");
-  }
+  }//end sortBars
 
   $('#individualbar').on('ifChecked', function() {
     $('#xvaluechoice').parent().slideUp();
@@ -1218,19 +1154,19 @@ var GRANTS = (function () {
     $('#xvaluechoice').parent().slideDown();
     $('#sortBars').text("SORT");
     $('#barComparingArea svg').remove();
-    drawGroupBarhart("sponsor", "number");
+    drawGroupBarchart("sponsor", "number");
   });
 
   $('#xvaluechoice').chosen().change(function() {
     $('#sortBars').text("SORT");
     $('#barComparingArea svg').remove();
-    drawGroupBarhart(this.value, $('#yvaluechoice').val());
+    drawGroupBarchart(this.value, $('#yvaluechoice').val());
   });
 
   $('#yvaluechoice').chosen().change(function() {
     $('#sortBars').text("SORT");
     $('#barComparingArea svg').remove();
-    drawGroupBarhart($('#xvaluechoice').val(), this.value);
+    drawGroupBarchart($('#xvaluechoice').val(), this.value);
   });
 
   $('#sortBars').click(function() {
@@ -1280,8 +1216,7 @@ var GRANTS = (function () {
         $(this).css("font-size", "1em");
         $(this).css("font-weight", 200);
       }); 
-
-  })
+  });
 
   function drawLinechart(streamValue, yValue) {
     var selectedData = processSelectedData();
@@ -1418,7 +1353,7 @@ var GRANTS = (function () {
         });
 
         drawGuideLines(chart, d3.select('#lineChartSvg'));
-      }
+      }//end updateChartCustomized
 
       chart.xAxis
         .axisLabel('Year')
@@ -1461,8 +1396,7 @@ var GRANTS = (function () {
 
       return chart;
     });
-
-  }
+  } //end drawLinechart
 
   function drawGuideLines(chart, container) {
     //add elementMouseover/out listener to show guidelines
@@ -1503,7 +1437,7 @@ var GRANTS = (function () {
       $('#legendDiv').parent().hide(1000);
       $('#foldLegend').text("show legend");
     }
-  })
+  });
 
   $('#streamchoiceLine').chosen().change(function() {
 
@@ -1600,7 +1534,7 @@ var GRANTS = (function () {
     }, 400);
     programview=0;
     console.log("show");
-  })
+  });
 
   // $('#arrangetreemap').on("change", function() {
   //     console.log("select zoom(node)");
@@ -1659,7 +1593,7 @@ var GRANTS = (function () {
             });
     if(node !== root)
       zoom(node);
-  }
+  }//end refreshTreemap
 
   function treemapValueAccessor(d) {
     var req = d.RequestAmt;
@@ -1896,9 +1830,11 @@ var GRANTS = (function () {
 
     });
   });//end function
-
-  //populates the filter area based on grant data
-  //is called from prepareSankeyDepts in processGrantData
+  
+  /*
+  populates the filter area based on grant data
+  is called from prepareSankeyDepts in processGrantData
+  */
   function populateFilter(fragmentationLevel, grantDepts, proposalStatuses, awardStatuses) {
 
     //clear old contents
@@ -1947,7 +1883,7 @@ var GRANTS = (function () {
       });
     }
 
-  // $("#filteryears").RangeSlider("option", "bounds", {min: 10, max: 90});
+    // $("#filteryears").RangeSlider("option", "bounds", {min: 10, max: 90});
 
     //loop through each grantYear and append it
     // $.each(grantYears, function(key, value) {  
@@ -1965,7 +1901,7 @@ var GRANTS = (function () {
     $("#filtertargets").trigger("liszt:updated");  
 
     filterPopulated = true;
-  }
+  }//end populateFilter
 
   //constructs the sankey diagram
   //parameter fragmentation is an object with nodes and links arrays...determines which sankey to construct
@@ -2058,7 +1994,7 @@ var GRANTS = (function () {
         });
       }    
     }
-  }
+  }//end getSankeyData
 
 
   function buildSankey(sankey_data, grant_sponsors, grant_departments, proposal_statuses, award_statuses, fragmentationLevel, grant_year_range_end, grant_year_range_begin){
@@ -2181,7 +2117,7 @@ var GRANTS = (function () {
       }
 
       sankey_constructed = true;
-  }//end constructSankey
+  }//end buildSankey
 
   function constructBubble () {
 
@@ -2190,7 +2126,6 @@ var GRANTS = (function () {
     $('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
 
     getBubbleData(buildBubble);    
-
   }//end constructBubble
 
   /*
@@ -2310,7 +2245,6 @@ var GRANTS = (function () {
       })
       .on("tick", tick)
       .start();
-
   }//end buildBubble
 
   function constructTreemap (nestedData) {
@@ -2409,7 +2343,7 @@ var GRANTS = (function () {
         callback(nestedData, grant_sponsors);
       }
     );
-  }
+  }//end getTreemapData
 
   function buildTreemap(nestedData, grant_sponsors) {
 
@@ -2515,8 +2449,7 @@ var GRANTS = (function () {
             });*/
 
     treemap_constructed = true;
-
-  }//end constructtreemap
+  }//end buildTreemap
 
   function tick () {
 
@@ -2849,7 +2782,6 @@ var GRANTS = (function () {
       grantDeadlineYearArray.push(year);
 
     yearRangeArrayBuilt = true;
-
   }
 
   function topSponsors(topNum, grantSponsors, all_grants) {
@@ -3100,7 +3032,7 @@ var GRANTS = (function () {
             return "$ " + (i ? grantValueCenters[i-1].amount + " - " + grantValueCenters[i].amount : "0 - " + grantValueCenters[i].amount);
         });
     }
-  }
+  }//end arrangementBoundaries
 
   /* 
   Resolve collisions between nodes
@@ -3264,7 +3196,6 @@ var GRANTS = (function () {
       } else {
         $('#itemsBarchart').parent().show('fast');
       }
-
   }
 
 
