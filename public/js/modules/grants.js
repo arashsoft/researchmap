@@ -22,6 +22,7 @@ var GRANTS = (function () {
   var bubblezoom = d3.behavior.zoom();
   var bubble;
   var top20 = [];
+  var programview = 0; //keeps track of whether the line chart is in program view or not (i.e., it's in sponsor view)
 
 
   var grouped_grants;
@@ -297,6 +298,9 @@ var GRANTS = (function () {
 
     $('#barComparingArea').hide();
     $('#lineComparingArea').hide();
+
+    //for the user to dismiss a warning
+      $('.linehintdrill').click(function() { $(this).hide('blind', 500); } );
 
   });
 
@@ -1234,6 +1238,28 @@ var GRANTS = (function () {
         }
       });
     });
+
+    $('.linehintdrill').hide(0);
+    if (!programview){//show the hint if we're not in the program view (i.e., we're in the sponsor view)
+      console.log("programview: " + programview);
+      $('.linehintdrill').show('blind', 500);
+    } 
+
+      //set the mouseover behavior for the hint
+    $('.linehintdrill').mouseover(function() {
+        $(this).css("opacity", 0.2);
+        $(this).css("cursor", "pointer");
+        $(this).css("font-size", "1em");
+        $(this).css("font-weight", 200);
+        $(this).text("dismiss");
+      }).mouseout(function() {
+        $(this).css("opacity", 1);
+        $(this).css("cursor", "auto");
+        $(this).text("hint: click on a sponsor line to drill into it");
+        $(this).css("font-size", "1em");
+        $(this).css("font-weight", 200);
+      }); 
+
   })
 
   function drawLinechart(streamValue, yValue) {
@@ -1333,6 +1359,8 @@ var GRANTS = (function () {
                 $('#lineChartSvg').slideUp(400, function() {
                   drawSponsorDetail(sponsor);
                 });
+                $('#linehintdrill').hide('blind', 500);
+                programview=1;                
               });
 
 
@@ -1465,7 +1493,7 @@ var GRANTS = (function () {
   });
 
   function drawSponsorDetail(sponsor) {
-    $('#lineComparingArea h2').text(sponsor);
+    $('#lineComparingArea h2').text("Programs under sponsor: " + sponsor);
     var selectedData = processSelectedData();
     var filteredData = _.filter(selectedData, function(d) {
       return d.awardstat != "" && d.sponsor == sponsor;
@@ -1538,10 +1566,11 @@ var GRANTS = (function () {
     $('#lineComparingArea svg:last').slideUp(400, function() {
       this.remove();
     });
-    $('#lineComparingArea h2').text("Grants");
+    $('#lineComparingArea h2:eq(0)').text("");
     setTimeout(function() {
       $('#lineChartSvg').show();
     }, 400);
+    programview=0;
   })
 
   // $('#arrangetreemap').on("change", function() {

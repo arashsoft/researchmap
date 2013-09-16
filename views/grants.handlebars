@@ -53,7 +53,7 @@
         <h2>Clone</h2>
       </div>
       <div id="barComparingArea">
-        <h2>Grants</h2>
+        <!-- <h2>Grants</h2> -->
         <div style="display:inline-block; float:left">
         <ul class="actionlist"> 
           <li>
@@ -67,12 +67,12 @@
         </ul>
         </div>
         <div style="float: right">
-          <span>X-Axis</span>
+          <span>x axis:</span>
           <select id="xvaluechoice" class="chzn-select" style="width: 100%;"> 
             <option value="sponsor" selected>Sponsor</option>
             <option value="department">Department</option>
           </select>
-          <span>Y-Axis</span>
+          <span>y axis:</span>
           <select id="yvaluechoice" class="chzn-select" style="width: 100%;"> 
             <option value="number" selected>Numbers</option>
             <option value="amount">Amounts</option>
@@ -81,7 +81,7 @@
         <button id="sortBars" style="height: 2em; float: left; left: 52%">sort</button>
       </div>
       <div id="lineComparingArea">
-        <h2>Grants</h2>
+        <h2></h2>
         <!-- <div style="height: 25px; width: 1px; visibility: hidden; float: left"></div> -->
         <div>
         <button id="foldLegend" style="display:block; height: 2em; margin: auto">show legend</button>
@@ -94,20 +94,25 @@
             </div>
           </div>
         </div>
-        <div class="yaxisselector">
-          <!-- <span>Y-Axis</span> -->
-          <select id="yvaluechoiceLine" class="chzn-select" style="width: 100%;"> 
-            <option value="number" selected>number</option>
-            <option value="amount">amount</option>
-          </select>
-        </div>
-        <div class="xaxisselector">
-          <span>lines</span>
-          <select id="streamchoiceLine" class="chzn-select" style="width: 100%;"> 
-            <option value="sponsor" selected>sponsor</option>
-            <option value="department">department</option>
-          </select>          
-        </div>        
+        <div class="axisselect group">
+          <div class="yaxisselector">
+            <span>y axis:</span>
+            <select id="yvaluechoiceLine" class="chzn-select" style="width: 100%;"> 
+              <option value="number" selected>number</option>
+              <option value="amount">amount</option>
+            </select>
+          </div>
+          <div class="xaxisselector">
+            <span>plot:</span>
+            <select id="streamchoiceLine" class="chzn-select" style="width: 100%;"> 
+              <option value="sponsor" selected>sponsor</option>
+              <option value="department">department</option>
+            </select>          
+          </div>  
+        </div> 
+        <div class="linehintdrill">
+          hint: click on a sponsor line to drill into it
+        </div>     
         <div style="display:inline-block; float:right">
           <button id="backComparing" style="height: 2em">back</button>
         </div>
