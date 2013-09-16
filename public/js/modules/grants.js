@@ -122,7 +122,8 @@ var GRANTS = (function () {
 
   var treemapsvg = treemapviz.append("svg:g")
       .attr("id", "departmentsTreemap")
-      .attr("transform", "translate(.5,.5)");
+      .attr("transform", "translate(.5,.5)")
+      .attr("fragmentation", 0);
 
   var treemaplegend = d3.select("#treemaplegend"); //where the treemap legend will go
      
@@ -512,7 +513,7 @@ var GRANTS = (function () {
 
   $("#treemapanimatespeedbar").slider({
     min: 10,
-    max: 20,
+    max: 60,
     value: 10,
     animate: true,
     slide: function(event, ui) {
@@ -591,7 +592,45 @@ var GRANTS = (function () {
       }
   });
 
+  $("#treemapfragslider").slider({
+    value: 0,
+    min: 0,
+    max: 1,
+    step: 1,
+    slide: function(event, ui) {
+      treemapsvg.attr("fragmentation", ui.value);
+      $('#treemapfrag').val(function(element) {
+        if(ui.value == 1) {
+          treemapsvg.selectAll("g.cell.parent rect")
+            .transition().duration(transitionDuration)
+            .attr("height", function(d) { return node == root ? Math.max(0.01, d.dy - 1) : d3.select(this).attr("height"); })
+            .style("fill", function(d) { return color20(d.name); });
+          if(node == root) { //only hide children when zooming out
+            treemapsvg.selectAll("g.cell.child")
+              .transition().duration(transitionDuration)
+              .style("opacity", 0);
+            treemapsvg.selectAll("g.cell.child")
+              .transition().delay(transitionDuration)
+              .style("visibility", "hidden");            
+          }
 
+          return $('#arrangetreemap').val();
+        } else {
+          treemapsvg.selectAll("g.cell.parent rect")
+            .transition().duration(transitionDuration)
+            .attr("height", function(d) { return node == root ? headerHeight : d3.select(this).attr("height"); })
+            .style("fill", headerColor);
+          treemapsvg.selectAll("g.cell.child")
+            .style("visibility", "visible");
+          treemapsvg.selectAll("g.cell.child")
+            .transition().duration(transitionDuration)
+            .style("opacity", 1);
+
+          return "Individual";
+        }
+      })
+    }
+  });
 
   $('#sankeytranslate').change(function () {
       $('#sankeyviz').hide();
@@ -935,19 +974,31 @@ var GRANTS = (function () {
       $('#treemapAnimateTime').text("stop");
       currentYear = $('#treemapanimateyearbar').slider("option", "value");
       var endYear = grantEndYearArray[grantEndYearArray.length-1];
-      var interval = $('#treemapanimatespeedbar').slider("option", "value");
+      var interval = $('#treemapanimatespeedbar').slider("option", "value") * 1000;
       animating = true;
+
+      //first time
+      refreshTreemap();
+      currentYear++;
+
       int1 = setInterval(function() {
         if(currentYear > endYear) {
           clearInterval(int1);
+          animating = false;
+          $('#treemapAnimateTime').text("start");
           return ;
         }
+        console.log("waiting...");
+        //wait for the transition
+        setTimeout(function() {
         //console.log("refreshing..");
-        refreshTreemap();
-        $("#treemapanimateyearbar").slider("option", "value", currentYear);
-        $("#treemapanimateyear").val(currentYear);
-        currentYear++;
-        //console.log("done!");
+          refreshTreemap();
+          $("#treemapanimateyearbar").slider("option", "value", currentYear);
+          $("#treemapanimateyear").val(currentYear);
+          currentYear++;
+          //console.log("done!");
+        }, transitionDuration);
+
       }, interval);
     } else {
       clearInterval(int1);
@@ -965,7 +1016,8 @@ var GRANTS = (function () {
     //console.log("reset");
     refreshTreemap();
     $("#treemapanimateyearbar").slider("option", "value", grantBeginYearArray[0]);
-  })
+    $("#treemapanimateyear").val(grantBeginYearArray[0]);
+  });
 
   //if the user clicks the button to remove all selections
   $('#selectionRemove').click(function() {
@@ -1677,7 +1729,8 @@ var GRANTS = (function () {
               
               this.selectAll("rect")
                   .attr("width", function(d) { return Math.max(0.01, d.dx - 1); })
-                  .attr("height", function(d) { return headerHeight; });
+                  .attr("height", function(d) { return parseInt(treemapsvg.attr("fragmentation")) ? Math.max(0.01, d.dy - 1) : headerHeight; })
+                  .style("fill", function(d) { return parseInt(treemapsvg.attr("fragmentation")) ? color20(d.name) : headerColor; });
                 
               this.selectAll("text")
                 .attr("x", function(d) { return d.dx / 2; })
@@ -1801,11 +1854,17 @@ var GRANTS = (function () {
         treemapsvg = treemapviz.select("g#departmentsTreemap");
         treemapsvg.style("visibility", "visible").style("opacity", 0);
         treemapsvg.transition().duration(transitionDuration).style("opacity", 1);
+        var frag = parseInt(treemapsvg.attr("fragmentation"));
+        $('#treemapfragslider').slider("option", "value", frag);
+        $('#treemapfrag').val(frag ? this.value : "Individual");
         built = true;
       } else {
         treemapsvg = treemapviz.append("svg:g")
               .attr("id", "departmentsTreemap")
-              .attr("transform", "translate(.5,.5)");
+              .attr("transform", "translate(.5,.5)")
+              .attr("fragmentation", 0);
+        $('#treemapfragslider').slider("option", "value", 0);
+        $('#treemapfrag').val("Individual");
       }
       if(treemapviz.select("g#sponsorsTreemap")[0][0]) {
         treemapviz.select("g#sponsorsTreemap")//.transition().duration(transitionDuration)
@@ -1818,11 +1877,17 @@ var GRANTS = (function () {
         treemapsvg = treemapviz.select("g#sponsorsTreemap");
         treemapsvg.style("visibility", "visible").style("opacity", 0);
         treemapsvg.transition().duration(transitionDuration).style("opacity", 1);
+        var frag = parseInt(treemapsvg.attr("fragmentation"));
+        $('#treemapfragslider').slider("option", "value", frag);
+        $('#treemapfrag').val(frag ? this.value : "Individual");
         built = true;
       } else {
         treemapsvg = treemapviz.append("svg:g")
               .attr("id", "sponsorsTreemap")
-              .attr("transform", "translate(.5,.5)");
+              .attr("transform", "translate(.5,.5)")
+              .attr("fragmentation", 0);
+        $('#treemapfragslider').slider("option", "value", 0);
+        $('#treemapfrag').val("Individual");
       }
       if(treemapviz.select("g#departmentsTreemap")[0][0]) {
         treemapviz.select("g#departmentsTreemap")//.transition().duration(transitionDuration)
@@ -2535,10 +2600,10 @@ var GRANTS = (function () {
     var childCells = treemapsvg.selectAll("g.cell.child")
             .data(children)
             .enter().append("g")
-            .attr("class", "cell child");
-            //.on("click", function(d) {
-              //  zoom(node === d.parent ? root : d.parent);
-            //});
+            .attr("class", "cell child")
+            .on("click", function(d) {
+               zoom(node === d.parent ? root : d.parent);
+            });
     childCells.append("rect")
             .style("fill", function(d) {
               if(_.contains(top20, d.Sponsor))
@@ -2790,9 +2855,10 @@ var GRANTS = (function () {
     xscale.domain([d.x, d.x + d.dx]);
     yscale.domain([d.y, d.y + d.dy]);
 
-    if (node != level) {
-        treemapsvg.selectAll(".cell.child .celllabel").style("display", "none");
-    }
+    // if (node != level) {
+    //     //treemapsvg.selectAll(".cell.child .celllabel").style("display", "none");
+    //     console.log("hahahhah");
+    // }
 
     var zoomTransition = treemapsvg.selectAll("g.cell").transition().duration(transitionDuration)
             .attr("transform", function(d) {
@@ -2833,12 +2899,41 @@ var GRANTS = (function () {
             });*/
 
     // update the width/height of the rects
-    zoomTransition.select("rect")
+    // zoomTransition.select("rect")
+    //         .attr("width", function(d) {
+    //             return Math.max(0.01, (kx * d.dx - 1));
+    //         })
+    //         .attr("height", function(d) {
+    //             return d.children ? (ky * headerHeight) : Math.max(0.01, (ky * d.dy - 1));
+    //         });
+
+    if(parseInt(treemapsvg.attr("fragmentation"))) {
+      if(level != root) { //zoom in
+        treemapsvg.selectAll("g.cell.child")
+          .style("visibility", "visible")
+          .style("opacity", 1);
+      } else { //zoom out
+        treemapsvg.selectAll("g.cell.child")
+          .transition().delay(transitionDuration)
+          .style("opacity", 0)
+          .style("visibility", "hidden");
+      }
+    }
+
+    zoomTransition.selectAll(".child rect")
             .attr("width", function(d) {
                 return Math.max(0.01, (kx * d.dx - 1));
             })
             .attr("height", function(d) {
-                return d.children ? (ky * headerHeight) : Math.max(0.01, (ky * d.dy - 1));
+                return Math.max(0.01, (ky * d.dy - 1));
+            });
+            
+    zoomTransition.selectAll(".parent rect")
+            .attr("width", function(d) {
+                return Math.max(0.01, (kx * d.dx - 1));
+            })
+            .attr("height", function(d) {
+                return parseInt(treemapsvg.attr("fragmentation")) && level == root ? Math.max(0.01, (ky * d.dy - 1)) : (ky * headerHeight);
             });
 
     zoomTransition.select("text")
