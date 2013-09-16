@@ -491,6 +491,13 @@ var GRANTS = (function () {
     }
   });
 
+  $("#treemapanimateyearbar").slider({
+    animate: true,
+    slide: function(event, ui) {
+      $("#treemapanimateyear").val(ui.value);
+    }
+  });
+
   function initTreemapFilter(all_grants) {
     buildYearRangeArray(all_grants);
     $( "#treemapbeginyearrange" ).slider("option", "min", 0);
@@ -504,6 +511,12 @@ var GRANTS = (function () {
     $( "#treemapendyearrange" ).slider("option", "values", [0, grantEndYearArray.length - 1]);
     $( "#treemapendyear" ).val( grantEndYearArray[$( "#treemapendyearrange" ).slider( "values", 0 )] +
       " - " + grantEndYearArray[$( "#treemapendyearrange" ).slider( "values", 1 )] );
+
+    //for animate bar
+    $("#treemapanimateyearbar").slider("option", "min", grantBeginYearArray[0]);
+    $("#treemapanimateyearbar").slider("option", "max", grantEndYearArray[grantEndYearArray.length-1]);
+    $("#treemapanimateyearbar").slider("option", "value", grantBeginYearArray[0]);
+    $("#treemapanimateyear").val(grantBeginYearArray[0]);
   }
 
 
@@ -891,6 +904,15 @@ var GRANTS = (function () {
       //show the selectionArea div
       $('#selectionArea').show('slow');
     }); 
+
+  //for animate start and pause
+  $('#treemapAnimateTime').click(function() {
+    if($('#treemapAnimateTime').val() == "START") {
+      $('#treemapAnimateTime').text("STOP");
+    } else {
+      $('#treemapAnimateTime').text("START");
+    }
+  })
 
   //if the user clicks the button to remove all selections
   $('#selectionRemove').click(function() {
