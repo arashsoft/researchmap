@@ -1241,7 +1241,6 @@ var GRANTS = (function () {
 
     $('.linehintdrill').hide(0);
     if (!programview){//show the hint if we're not in the program view (i.e., we're in the sponsor view)
-      console.log("programview: " + programview);
       $('.linehintdrill').show('blind', 500);
     } 
 
@@ -1359,8 +1358,8 @@ var GRANTS = (function () {
                 $('#lineChartSvg').slideUp(400, function() {
                   drawSponsorDetail(sponsor);
                 });
-                $('#linehintdrill').hide('blind', 500);
-                programview=1;                
+                $('.linehintdrill').hide('blind', 500);
+                programview=1;
               });
 
 
@@ -1381,6 +1380,8 @@ var GRANTS = (function () {
                 $('#lineChartSvg').slideUp(400, function() {
                   drawSponsorDetail(sponsor);
                 });
+                $('.linehintdrill').hide('blind', 500);
+                programview=1; 
               });
           }, 500);
         }
@@ -1483,6 +1484,11 @@ var GRANTS = (function () {
   })
 
   $('#streamchoiceLine').chosen().change(function() {
+
+    //hide the hint if the user chooses department
+    if (this.value == "department")
+      $('.linehintdrill').hide('blind', 500);
+
     $('#lineComparingArea svg').remove();
     drawLinechart(this.value, $('#yvaluechoiceLine').val());
   });
@@ -1571,6 +1577,7 @@ var GRANTS = (function () {
       $('#lineChartSvg').show();
     }, 400);
     programview=0;
+    console.log("show");
   })
 
   // $('#arrangetreemap').on("change", function() {
