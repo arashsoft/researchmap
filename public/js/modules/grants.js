@@ -49,6 +49,17 @@ var GRANTS = (function () {
   var deadlineLowerLimit;
   var deadlineUpperLimit;
 
+  var animating = false; //set to true if the animation is performing
+  var int1; //animate interval timer
+  var currentYear;
+
+  //receive JSON from the server
+  //var nested_by_sponsor = {{{nested_by_sponsor}}};
+  // var nested_by_department = {{{nested_by_department}}};
+  // var sankey_data_departments = {{{sankey_data_departments}}};
+  // var sankey_data_faculty = {{{sankey_data_faculty}}};
+
+
   //FOR TREEMAP//
   var margin = {top: 5, right: 0, bottom: 5, left: 0},
       width = $('#vizcontainer').width() - margin.left - margin.right,
@@ -441,8 +452,24 @@ var GRANTS = (function () {
     animate: true,
     slide: function(event, ui) {
       $("#treemapanimateyear").val(ui.value);
+      animating = true;
+      currentYear = ui.value;
+      refreshTreemap();
+      animating = false;
     }
   });
+
+  $("#treemapanimatespeedbar").slider({
+    min: 10,
+    max: 20,
+    value: 10,
+    animate: true,
+    slide: function(event, ui) {
+      $("#treemapanimatespeed").val(ui.value);
+    }
+  });
+
+  $("#treemapanimatespeed").val(10);
 
   function initTreemapFilter(all_grants) {
     buildYearRangeArray(all_grants);
@@ -848,11 +875,40 @@ var GRANTS = (function () {
 
   //for animate start and pause
   $('#treemapAnimateTime').click(function() {
-    if($('#treemapAnimateTime').val() == "START") {
-      $('#treemapAnimateTime').text("STOP");
+    if($('#treemapAnimateTime').text() == "start") {
+      $('#treemapAnimateTime').text("stop");
+      currentYear = $('#treemapanimateyearbar').slider("option", "value");
+      var endYear = grantEndYearArray[grantEndYearArray.length-1];
+      var interval = $('#treemapanimatespeedbar').slider("option", "value");
+      animating = true;
+      int1 = setInterval(function() {
+        if(currentYear > endYear) {
+          clearInterval(int1);
+          return ;
+        }
+        //console.log("refreshing..");
+        refreshTreemap();
+        $("#treemapanimateyearbar").slider("option", "value", currentYear);
+        $("#treemapanimateyear").val(currentYear);
+        currentYear++;
+        //console.log("done!");
+      }, interval);
     } else {
-      $('#treemapAnimateTime').text("START");
+      clearInterval(int1);
+      animating = false;
+      //console.log("stopped");
+      $('#treemapAnimateTime').text("start");
     }
+  });
+
+  $('#treemapAnimateReset').click(function() {
+    if(animating) {
+      clearInterval(int1);
+      animating = false;
+    }
+    //console.log("reset");
+    refreshTreemap();
+    $("#treemapanimateyearbar").slider("option", "value", grantBeginYearArray[0]);
   })
 
   //if the user clicks the button to remove all selections
@@ -1631,6 +1687,19 @@ var GRANTS = (function () {
       var end = parseInt(d.EndDate.substring(0, 4));
       if(!(beginLowerLimit <= begin && begin <= beginUpperLimit && endLowerLimit <= end && end <= endUpperLimit))
         req = 0;
+    }
+
+    //animation
+    if(animating) {
+      if(d.AwardStatus == "Accepted" || d.AwardStatus == "Closed") {
+        var begin = parseInt(d.BeginDate.substring(0, 4));
+        var end = parseInt(d.EndDate.substring(0, 4));
+        var current = currentYear;
+        if(!(begin <= current && current <= end))
+          req = 0;
+      } else {
+        req = 0;
+      }
     }
     
     return req;
