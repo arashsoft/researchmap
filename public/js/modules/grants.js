@@ -3182,12 +3182,13 @@ var GRANTS = (function () {
                 return ky * Math.max(0.01, Math.min(headerHeight, d.dy - 1));
             });
 
+    //if the parent rect has no width&height in this fragmentation, keep it
     zoomTransition.selectAll(".parent rect")
             .attr("width", function(d) {
-                return Math.max(0.01, (kx * d.dx - 1));
+                return parseInt(d3.select(this).attr("width")) ? Math.max(0.01, (kx * d.dx - 1)) : 0;
             })
             .attr("height", function(d) {
-                return Math.max(0.01, (ky * d.dy - 1));
+                return parseInt(d3.select(this).attr("height")) ? Math.max(0.01, (ky * d.dy - 1)) : 0;
             });
 
     zoomTransition.select("text")
