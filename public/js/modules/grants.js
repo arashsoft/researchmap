@@ -469,9 +469,9 @@ var GRANTS = (function () {
   });
 
   $("#treemapanimatespeedbar").slider({
-    min: 10,
+    min: 1,
     max: 60,
-    value: 10,
+    value: 5,
     animate: true,
     slide: function(event, ui) {
       $("#treemapanimatespeed").val(ui.value);
@@ -1069,7 +1069,7 @@ var GRANTS = (function () {
           $('#treemapAnimateTime').text("start");
           return ;
         }
-        console.log("waiting...");
+        //console.log("waiting...");
         //wait for the transition
         setTimeout(function() {
         //console.log("refreshing..");
@@ -1862,11 +1862,11 @@ var GRANTS = (function () {
               this.selectAll("text")
                 .style("opacity", function(d) {
                   d.w = this.getComputedTextLength();
-                  return d.dx > d.w ? 1 : 0;
+                  return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? 1 : 0;
                 })
                 .style("visibility", function(d) {
                   d.w = this.getComputedTextLength();
-                  return d.dx > d.w ? "visible" : "hidden";
+                  return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? "visible" : "hidden";
                 });
             });
 
@@ -2818,11 +2818,11 @@ var GRANTS = (function () {
             .selectAll('text')
             .style("opacity", function(d) {
               d.w = this.getComputedTextLength();
-              return d.dx > d.w ? 1 : 0;
+              return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? 1 : 0;
             })
             .style("visibility", function(d) {
               d.w = this.getComputedTextLength();
-              return d.dx > d.w ? "visible" : "hidden";
+              return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? "visible" : "hidden";
             });
 
     //create programs for sponsor treemap
@@ -2880,11 +2880,11 @@ var GRANTS = (function () {
               .selectAll('text')
               .style("opacity", function(d) {
                 d.w = this.getComputedTextLength();
-                return d.dx > d.w ? 1 : 0;
+                return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? 1 : 0;
               })
               .style("visibility", function(d) {
                 d.w = this.getComputedTextLength();
-                return d.dx > d.w ? "visible" : "hidden";
+                return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? "visible" : "hidden";
               });
     }
 
