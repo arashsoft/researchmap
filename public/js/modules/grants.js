@@ -185,7 +185,7 @@ var GRANTS = (function () {
 
 
   //load the lightbox option for VRchoice
-  $('#VRchoice').colorbox({inline:true, width:"80%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300 }); 
+  $('#VRchoice').colorbox({inline:true, width:"80%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300, onCleanup: function() {window.location="views";} }); 
 
 
   $(document).ready(function() {
