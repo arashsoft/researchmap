@@ -112,7 +112,7 @@ var GRANTS = (function () {
   var treemapsvg = treemapviz.append("svg:g")
       .attr("id", "departmentsTreemap")
       .attr("transform", "translate(.5,.5)")
-      .attr("fragmentation", 0);
+      .attr("pointer-events", "visible");
 
   var treemaplegend = d3.select("#treemaplegend"); //where the treemap legend will go
      
@@ -1970,7 +1970,7 @@ var GRANTS = (function () {
         treemapsvg = treemapviz.append("svg:g")
               .attr("id", "departmentsTreemap")
               .attr("transform", "translate(.5,.5)")
-              .attr("fragmentation", 0);
+              .attr("pointer-events", "visible");
       }
       //change framentation slider
       $('#treemapsponsorfragslider').hide("slow");
@@ -1993,7 +1993,7 @@ var GRANTS = (function () {
         treemapsvg = treemapviz.append("svg:g")
               .attr("id", "sponsorsTreemap")
               .attr("transform", "translate(.5,.5)")
-              .attr("fragmentation", 0);
+              .attr("pointer-events", "visible");
       }
       //change framentation slider
       $('#treemapdepartmentfragslider').hide("slow");
@@ -3172,8 +3172,7 @@ var GRANTS = (function () {
 
     zoomTransition.select("text")
             .attr("x", function(d) { return kx * d.dx / 2; })
-            .attr("y", function(d) { return ky * (headerHeight / 2 + 4); })
-            .style("font-size", headerHeight  / 3 * 2 + "px")
+            .attr("y", function(d) { return (ky * Math.max(0.01, Math.min(headerHeight, d.dy - 1)) - 1) / 2 + 4; })
             .style("opacity", function(d) {
               d.w = this.getComputedTextLength();
               return Math.max(0.01, (kx * d.dx - 1)) > d.w ? 1 : 0;
