@@ -50,11 +50,6 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	var pubdata_filtered;
 	var count1 = 0;
 	var count2 = 0;
-	//var pubs_science = [];
-	//var links_science = []; //containing links where at least one node (author) is a member of the faculty of science
-	//var links_science_exclusive = []; //containing links where every node (author) is a member of the faculty of science
-	//var links_science_exclusive_unique = []; //containing links where every node (author) is a member of the faculty of science where duplicates are removed
-	//var links_for_network = []; //this is a copy of links_science_exclusive_unique. A copy is needed because without one links_science_exclusive_unique will be modified while constructing the network
 	var links_grants = [];
 	var network_constructed = false;
 	var matrix_constructed = false;
@@ -62,7 +57,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	var bartransduration = 1000;
 	var hinttranslatecount = 0; //keep track of number of times actionhinttranslate displayed
 
-
+	//hardcoded research cluster
 	var envandsusCluster = ["Bernards,Mark A", "Branfireun,Brian Andrew", "Creed,Irena F.", "Cumming,Robert", 
 	"Damjanovski,Sashko", "Grbic,Miodrag", "Grbic,Vojislava", "Guglielmo,Christopher G.", "Henry,Hugh A.L.", 
 	"Hill,Kathleen A.", "Huner,Norman P A", "Karagiannis,Jim", "Kelly,Gregory M", "Keyghobadi,Nusha", "Kohalmi,Susanne E.", 
@@ -82,8 +77,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 
 	var dragging = false; //set to true when the user is dragging an element in the network
 
-
-	  var nodeTooltip = d3.select("#networkviz").append("div")   
+	var nodeTooltip = d3.select("#networkviz").append("div")   
     	.attr("class", "nodeTooltip")               
     	.style("opacity", 0);
 
