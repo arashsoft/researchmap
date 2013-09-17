@@ -2712,7 +2712,7 @@ var GRANTS = (function () {
                 this.childNodes[0].style.stroke="#ff0000";
                 this.childNodes[0].style.strokeWidth="3px";
               }
-              else if(this.childchildNodesren[0].style.stroke=="#ff0000"){
+              else if(this.childNodes[0].style.stroke=="#ff0000"){
                 this.childNodes[0].style.stroke="#ffffff";
                 this.childNodes[0].style.strokeWidth="0px";
               }
