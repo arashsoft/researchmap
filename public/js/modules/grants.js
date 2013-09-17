@@ -2696,25 +2696,25 @@ var GRANTS = (function () {
             .enter().append("g")
             .attr("class", "cell child")
             .on("mouseover", function(d) {
-              if (this.children[0].style.stroke!="#ff0000"){
-                this.children[0].style.stroke="#ffffff"
-                this.children[0].style.strokeWidth="3px";
+              if (this.childNodes[0].style.stroke!="#ff0000"){
+                this.childNodes[0].style.stroke="#ffffff"
+                this.childNodes[0].style.strokeWidth="3px";
               }
             })
             .on("mouseout", function() {
-              if (this.children[0].style.stroke=="#ffffff")
-                this.children[0].style.strokeWidth="0px";
+              if (this.childNodes[0].style.stroke=="#ffffff")
+                this.childNodes[0].style.strokeWidth="0px";
             })
             .on("click", function(d) {
               // if (treemapselect)
               //   console.log("selected");
-              if(this.children[0].style.stroke=="" || this.children[0].style.stroke=="#ffffff"){
-                this.children[0].style.stroke="#ff0000";
-                this.children[0].style.strokeWidth="3px";
+              if(this.childNodes[0].style.stroke=="" || this.childNodes[0].style.stroke=="#ffffff"){
+                this.childNodes[0].style.stroke="#ff0000";
+                this.childNodes[0].style.strokeWidth="3px";
               }
-              else if(this.children[0].style.stroke=="#ff0000"){
-                this.children[0].style.stroke="#ffffff";
-                this.children[0].style.strokeWidth="0px";
+              else if(this.childchildNodesren[0].style.stroke=="#ff0000"){
+                this.childNodes[0].style.stroke="#ffffff";
+                this.childNodes[0].style.strokeWidth="0px";
               }
               //zoom(node === d.parent ? root : d.parent);
             });
