@@ -165,7 +165,6 @@ blockquote, q {
 
 #header_in h1 {
     font-size: 15pt;
-    letter-spacing: 1px;
     float: left;
     padding-top: 25px;
 }
@@ -173,7 +172,6 @@ blockquote, q {
 #header_in h1 a {
     text-decoration: none;
     color: rgb(107,76,155);
-    font-weight: 100;
 }
 
 .header img {
@@ -190,7 +188,7 @@ blockquote, q {
   right: 00px;
   font-size: 95%;
   margin-right: 0px;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
     }
     
     
@@ -204,7 +202,6 @@ blockquote, q {
   color: #101115;
   text-transform: uppercase;
   font-weight: 300;
-  letter-spacing: 1px;
   display: block;
   padding: 29px 40px 0 40px;
   height: 36px;
@@ -237,7 +234,7 @@ blockquote, q {
 .header .row .nav, h1 {
   display: inline-block;
   text-transform: uppercase;
-  font-family:'Helvetica Neue', sans-serif;
+  font-family:'Arimo', sans-serif;
   color: white;
 }
 
@@ -268,7 +265,7 @@ blockquote, q {
   margin: auto;
   padding: 60px 0px 20px 0px;
   color: black;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   font-size: 1.5em;
   line-height: 1.5em;
 }
@@ -293,12 +290,11 @@ blockquote, q {
 .primary {
   padding: 50px 0 50px 0;
   line-height: 1.5;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   font-weight: 100;
   font-size: 150%;
   color: black;
   background: #ffffff;
-  letter-spacing: 0.1em;
   text-align: justify;
   overflow-y: auto;
   min-height: 300px;
@@ -310,8 +306,7 @@ blockquote, q {
   font-size: 150%;
   font-weight: 600;
   color: #727272;
-  font-family: 'Helvetica Neue', Arial;
-  letter-spacing: 0;
+  font-family: 'Arimo', Arial;
   -webkit-font-smoothing: antialiased;
   margin-bottom: 30px;
 }
@@ -353,10 +348,9 @@ blockquote, q {
   background: #eeeeee;
   padding: 50px 0 50px 0;
   line-height: 2;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   font-weight: 100;
   font-size: 170%;
-  letter-spacing: 0.1em;
   clear: both;
 }
 
@@ -438,7 +432,7 @@ a button {
   text-align: center;
   text-transform: uppercase;
   font-weight: 500;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   text-shadow: 0px 1px 1px #4d4d4d;
   color: #222;
   line-height: 1.2;
@@ -450,7 +444,7 @@ a button {
 
 h1 {
   text-transform: uppercase;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   font-weight: lighter;
   font-size: 350%;
   color: white;
@@ -477,7 +471,7 @@ button {
     border: 0;
     color: white;
     text-transform: uppercase;
-    font-family:"Helvetica Neue", Arial, sans-serif;
+    font-family:"Arimo", Arial, sans-serif;
     font-weight: 700;
     border-radius: 3px;
     position: relative;
@@ -642,7 +636,7 @@ ul.ui-autocomplete {
 
 #gatheringArea {
   position: absolute;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   font-size: 1.8em;
   height: 300px;
   width: 300px;
@@ -696,7 +690,7 @@ ul.ui-autocomplete {
 }
 
 #comparingArea h2 {
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   padding-bottom: 15px;
   font-size: 1.5em;
   text-transform: uppercase;
@@ -705,7 +699,7 @@ ul.ui-autocomplete {
 }
 
 #barComparingArea h2 {
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   padding-bottom: 15px;
   font-size: 1.5em;
   text-transform: uppercase;
@@ -714,7 +708,7 @@ ul.ui-autocomplete {
 }
 
 #lineComparingArea h2 {
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   padding-bottom: 15px;
   font-size: 1.3em;
   text-transform: uppercase;
@@ -723,7 +717,7 @@ ul.ui-autocomplete {
 }
 
 #detailLineArea h2 {
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   padding-bottom: 10px;
   font-size: 1.5em;
   text-transform: uppercase;
@@ -732,7 +726,7 @@ ul.ui-autocomplete {
 }
 
 #detailLineArea h3 {
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   padding-bottom: 5px;
   text-align: center;  
   color: black;
@@ -752,7 +746,7 @@ ul.ui-autocomplete {
 #matrixviz text {
   font-size: 9px;
   font-weight: 150;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
 }
 
 #matrixviz text.active {
@@ -970,7 +964,7 @@ ul.ui-autocomplete {
   padding: 12px;
   width: 25%;
   min-height: 100px;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   font-weight: 100;
   color: #333333;
   letter-spacing: 0.1em;
@@ -998,7 +992,7 @@ ul.ui-autocomplete {
 }
 
 .action label {
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   font-size: 1.2em;
   font-weight: 200;
   color: rgb(185,185,185);
@@ -1050,7 +1044,7 @@ ul.ui-autocomplete {
 
 #actionpanel p input{
 /*  font-size: 12px;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   letter-spacing: 0.1em;*/
   color: #ff9933;
 /*  margin-top: 20px;
@@ -1097,7 +1091,7 @@ ul.ui-autocomplete {
 /*h4 is for any text/descriptions that may be inside the action div
 */#actionpanel h4 {
   margin-top: 10px;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   color: gray;
   font-size: 13px;
   font-weight: 200;
@@ -1153,7 +1147,7 @@ div.action > p:first-child{
   pointer-events: none;
   text-shadow: 2px 2px 5px white, -2px -2px 5px white;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial;
+  font-family: 'Arimo', Arial;
   font-weight: 400;
 }
 
@@ -1175,7 +1169,7 @@ div.action > p:first-child{
 .celllabel {
   font-size: 11px;
   fill: white;
-  font-family: 'Helvetica Neue', Arial;
+  font-family: 'Arimo', Arial;
 }
 
 
@@ -1719,8 +1713,7 @@ div.action > p:first-child{
   color: black;
   font-size: 11px;
   font-weight: 200;
-  font-family: 'Helvetica Neue';
-  letter-spacing: 0.1em;
+  font-family: 'Arimo';
   border-radius: 5px;
   border: 1px solid black;
   line-height: 1.1;
@@ -1907,7 +1900,7 @@ body .ui-tooltip {
 }
 
 .ui-widget {
-  font-family: 'Helvetica Neue', Verdana,Arial,sans-serif/*{ffDefault}*/;
+  font-family: 'Arimo', Verdana,Arial,sans-serif/*{ffDefault}*/;
   font-size: 1.1em/*{fsDefault}*/;
 }
 .ui-widget .ui-widget {
@@ -1943,7 +1936,7 @@ body .ui-tooltip {
 }
 
 div#networkbar div.ui-widget {
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   font-size: 14px;
   display: inline-block;
   vertical-align: top;
@@ -1951,7 +1944,7 @@ div#networkbar div.ui-widget {
 }
 
 div#matrixbar div.ui-widget {
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   font-size: 14px;
   display: inline-block;
   vertical-align: top;
@@ -1959,7 +1952,7 @@ div#matrixbar div.ui-widget {
 }
 
 div#sankeybar div.ui-widget {
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   font-size: 14px;
   display: inline-block;
   vertical-align: top;
@@ -1967,7 +1960,7 @@ div#sankeybar div.ui-widget {
 }
 
 div#treemapbar div.ui-widget {
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   font-size: 14px;
   display: inline-block;
   vertical-align: top;
@@ -1975,7 +1968,7 @@ div#treemapbar div.ui-widget {
 }
 
 div#bubblebar div.ui-widget {
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   font-size: 14px;
   display: inline-block;
   vertical-align: top;
@@ -2085,7 +2078,7 @@ div#VRchoice img:hover {
 /*div#dataLoader p {
   line-height: 1.5;
   color: #ff9900;
-  font-family: "Helvetica Neue", Arial;
+  font-family: "Arimo", Arial;
   font-weight: bold;
   font-size: 22px;
   font-style: normal;
@@ -2281,8 +2274,7 @@ form.signin input::-webkit-input-placeholder {
 
 .overviewpanel h3 {
   font-size: 30px;
-  font-family: 'Helvetica Neue', sans-serif;
-  letter-spacing: 0.1em;
+  font-family: 'Arimo', sans-serif;
   text-transform: uppercase;
   font-weight: 100;
   color: #a7a7a7;
@@ -2291,8 +2283,7 @@ form.signin input::-webkit-input-placeholder {
 
 #overview div {
   font-size: 12px;
-  font-family: 'Helvetica Neue', sans-serif;
-  letter-spacing: 0.1em;
+  font-family: 'Arimo', sans-serif;
   font-weight: lighter;
   color: #1b7ae0;  
 }
@@ -2309,8 +2300,7 @@ form.signin input::-webkit-input-placeholder {
 
 #overviewTable h3 {
   font-size: 30px;
-  font-family: 'Helvetica Neue', sans-serif;
-  letter-spacing: 0.1em;
+  font-family: 'Arimo', sans-serif;
   text-transform: uppercase;
   font-weight: 100;
   color: #a7a7a7;
@@ -2322,9 +2312,8 @@ form.signin input::-webkit-input-placeholder {
   color: purple;
   margin: auto;
   font-weight: lighter;
-  letter-spacing: 0.1em;
   text-align: center;
-  font-family:"Helvetica Neue", Arial, sans-serif;
+  font-family:"Arimo", Arial, sans-serif;
 }
 
 #overviewbanner {
@@ -2374,7 +2363,7 @@ form.signin input::-webkit-input-placeholder {
   width: 100%;
   margin: 0 auto 20px auto;
   text-transform: uppercase;
-  font-family: "Helvetica Neue";
+  font-family: "Arimo";
   font-size: 150%;
   font-weight: 100;
   color: black;
@@ -2390,7 +2379,7 @@ form.signin input::-webkit-input-placeholder {
   margin: auto;
   padding: 10px 0;
   border-bottom: 1px solid silver;
-  font-family: "Helvetica Neue";
+  font-family: "Arimo";
   min-height: 15px;
   color: black;
 }
@@ -2419,7 +2408,7 @@ form.signin input::-webkit-input-placeholder {
 
 #networkdepartmentlegend p {
   text-align: center;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   text-transform: uppercase;
   color: gray;
   font-size: 100%;
@@ -2432,7 +2421,7 @@ form.signin input::-webkit-input-placeholder {
 #networkdepartmentlegend div.label{
   display: inline-block;
   color: black;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   font-size: 0.75em;
   padding: 2px 0px 2px 2px;
   cursor: default;
@@ -2502,7 +2491,7 @@ form.signin input::-webkit-input-placeholder {
 
 #matrixdepartmentlegend p {
   text-align: center;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   text-transform: uppercase;
   color: gray;
   font-size: 100%;
@@ -2515,7 +2504,7 @@ form.signin input::-webkit-input-placeholder {
 #matrixdepartmentlegend div.label{
   display: inline-block;
   color: black;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   font-size: 11px;
   margin-bottom: 5px;
   cursor: default;
@@ -2550,7 +2539,7 @@ form.signin input::-webkit-input-placeholder {
 }  
 
 #matrixcollaborationlegend p#dock {
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: 'Arimo', sans-serif;
   font-size: 0.3em;
   float: right;
   cursor: pointer;
@@ -2581,7 +2570,7 @@ form.signin input::-webkit-input-placeholder {
 
 #treemaplegend p {
   text-align: center;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   text-transform: uppercase;
   color: gray;
   font-size: 100%;
@@ -2594,7 +2583,7 @@ form.signin input::-webkit-input-placeholder {
 #treemaplegend div.label{
   display: inline-block;
   color: black;
-  font-family: 'Helvetica Neue';
+  font-family: 'Arimo';
   font-size: 11px;
   padding: 4px 0px 4px 4px;
   }  
