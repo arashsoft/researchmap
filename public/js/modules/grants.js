@@ -469,9 +469,11 @@ var GRANTS = (function () {
   });
 
   $("#treemapanimatespeedbar").slider({
-    min: 1,
+    //Min value must be larger than transitionDuration, or the animation will be crashed.
+    //And setting to this has the same effect with setting callback.
+    min: transitionDuration + 1,
     max: 60,
-    value: 5,
+    value: transitionDuration + 1,
     animate: true,
     slide: function(event, ui) {
       $("#treemapanimatespeed").val(ui.value);
@@ -1072,7 +1074,7 @@ var GRANTS = (function () {
         //console.log("waiting...");
         //wait for the transition
         setTimeout(function() {
-        //console.log("refreshing..");
+          //console.log("refreshing..");
           refreshTreemap();
           $("#treemapanimateyearbar").slider("option", "value", currentYear);
           $("#treemapanimateyear").val(currentYear);
