@@ -2286,7 +2286,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 
 	  //load the lightbox option for data loading progress
 	  //when that finishes, VRchoice is loaded in the lightbox (new lightbox)
-	    $('#VRchoice').colorbox({inline:true, width:"60%", href:"#VRchoice", scrolling:false, open:true, overlayClose:false, closeButton:false, fadeOut:300 });
+	    $('#VRchoice').colorbox({inline:true, width:"60%", href:"#VRchoice", scrolling:false, open:true, overlayClose:false, closeButton:false, fadeOut:300, onCleanup: function() {window.location="views";} });
 
 
 	var filterPopulated = false;
