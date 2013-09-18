@@ -56,6 +56,8 @@ var GRANTS = (function () {
   var departmentFragmentationName = ["Individual", "Department"];
   var sponsorFragmentationName = ["Individual", "Program", "Sponsor"];
 
+  var colorboxChosen = false; //setting to false will be redirected to the overview
+
   //receive JSON from the server
   //var nested_by_sponsor = {{{nested_by_sponsor}}};
   // var nested_by_department = {{{nested_by_department}}};
@@ -185,7 +187,7 @@ var GRANTS = (function () {
 
 
   //load the lightbox option for VRchoice
-  $('#VRchoice').colorbox({inline:true, width:"80%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300, onCleanup: function() {window.location="views";} }); 
+  $('#VRchoice').colorbox({inline:true, width:"80%", href:"#VRchoice", scrolling:false, open:true, overlayClose: false, fadeOut: 300, onCleanup: function() { if(!colorboxChosen) window.location="views"; } }); 
 
 
   $(document).ready(function() {
@@ -230,19 +232,22 @@ var GRANTS = (function () {
 
     //for the initial popup choice
     $('#sankeychoice').click(function() {
-      $.colorbox.close()
+      colorboxChosen = true;
+      $.colorbox.close();
       $('#sankeyviz').show();
       constructSankey("faculty");
       $('#sankeyactions').delay(800).show(800);
     });
     $('#bubblechoice').click(function() {
-      $.colorbox.close()
+      colorboxChosen = true;
+      $.colorbox.close();
       $('#bubbleviz').show();
       constructBubble();
       $('#bubbleactions').delay(800).show(800);
     });
     $('#treemapchoice').click(function() {
-      $.colorbox.close()
+      colorboxChosen = true;
+      $.colorbox.close();
       $('#treemapviz').show();
       constructTreemap("department");
       $('#treemapactions').delay(800).show(800);

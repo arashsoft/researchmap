@@ -57,6 +57,8 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	var bartransduration = 1000;
 	var hinttranslatecount = 0; //keep track of number of times actionhinttranslate displayed
 
+	var colorboxChosen = false; //setting to false will be redirected to the overview
+
 	//hardcoded research cluster
 	var envandsusCluster = ["Bernards,Mark A", "Branfireun,Brian Andrew", "Creed,Irena F.", "Cumming,Robert", 
 	"Damjanovski,Sashko", "Grbic,Miodrag", "Grbic,Vojislava", "Guglielmo,Christopher G.", "Henry,Hugh A.L.", 
@@ -307,12 +309,14 @@ var collaborations = (function () { //pass globals as parameters to import them 
 
 	  //for the initial popup choice
 	  $('#matrixchoice').click(function() {
-	    $.colorbox.close()
+	  	colorboxChosen = true;
+	    $.colorbox.close();
 	    $('#matrixviz').show();
 	    constructMatrix();
 	  });
 	  $('#networkchoice').click(function() {
-	    $.colorbox.close()
+	  	colorboxChosen = true;
+	    $.colorbox.close();
 	    $('#networkviz').show();
 	    constructNetwork();
 	  });
@@ -2286,7 +2290,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 
 	  //load the lightbox option for data loading progress
 	  //when that finishes, VRchoice is loaded in the lightbox (new lightbox)
-	    $('#VRchoice').colorbox({inline:true, width:"60%", href:"#VRchoice", scrolling:false, open:true, overlayClose:false, closeButton:false, fadeOut:300, onCleanup: function() {window.location="views";} });
+	    $('#VRchoice').colorbox({inline:true, width:"60%", href:"#VRchoice", scrolling:false, open:true, overlayClose:false, closeButton:false, fadeOut:300, onCleanup: function() { if(!colorboxChosen) window.location="views"; } });
 
 
 	var filterPopulated = false;
