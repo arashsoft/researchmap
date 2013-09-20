@@ -1869,11 +1869,11 @@ var GRANTS = (function () {
               this.selectAll("text")
                 .style("opacity", function(d) {
                   d.w = this.getComputedTextLength();
-                  return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? 1 : 0;
+                  return d.dx > d.w && headerHeight < d.dy - 1 ? 1 : 0;
                 })
                 .style("visibility", function(d) {
                   d.w = this.getComputedTextLength();
-                  return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? "visible" : "hidden";
+                  return d.dx > d.w && headerHeight < d.dy - 1 ? "visible" : "hidden";
                 });
             });
 
@@ -2825,11 +2825,11 @@ var GRANTS = (function () {
             .selectAll('text')
             .style("opacity", function(d) {
               d.w = this.getComputedTextLength();
-              return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? 1 : 0;
+              return d.dx > d.w && headerHeight < d.dy - 1 ? 1 : 0;
             })
             .style("visibility", function(d) {
               d.w = this.getComputedTextLength();
-              return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? "visible" : "hidden";
+              return d.dx > d.w && headerHeight < d.dy - 1 ? "visible" : "hidden";
             });
 
     //create programs for sponsor treemap
@@ -2887,11 +2887,11 @@ var GRANTS = (function () {
               .selectAll('text')
               .style("opacity", function(d) {
                 d.w = this.getComputedTextLength();
-                return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? 1 : 0;
+                return d.dx > d.w && headerHeight < d.dy - 1 ? 1 : 0;
               })
               .style("visibility", function(d) {
                 d.w = this.getComputedTextLength();
-                return d.dx > d.w && parseInt(d3.select(this.parentNode).select("rect").attr("height")) == headerHeight ? "visible" : "hidden";
+                return d.dx > d.w && headerHeight < d.dy - 1 ? "visible" : "hidden";
               });
     }
 
@@ -3203,11 +3203,11 @@ var GRANTS = (function () {
             .attr("y", function(d) { return (ky * Math.max(0.01, Math.min(headerHeight, d.dy - 1)) - 1) / 2 + 4; })
             .style("opacity", function(d) {
               d.w = this.getComputedTextLength();
-              return Math.max(0.01, (kx * d.dx - 1)) > d.w ? 1 : 0;
+              return Math.max(0.01, (kx * d.dx - 1)) > d.w && headerHeight < d.dy - 1 ? 1 : 0;
             })
             .style("visibility", function(d) {
               d.w = this.getComputedTextLength();
-              return Math.max(0.01, (kx * d.dx - 1)) > d.w ? "visible" : "hidden";
+              return Math.max(0.01, (kx * d.dx - 1)) > d.w && headerHeight < d.dy - 1 ? "visible" : "hidden";
             });
 
     node = d;
