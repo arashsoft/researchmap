@@ -80,7 +80,8 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	var dragging = false; //set to true when the user is dragging an element in the network
 
 	var nodeTooltip = d3.select("#networkviz").append("div")   
-    	.attr("class", "nodeTooltip")               
+    	.attr("class", "nodeTooltip")
+    	.style("z-index", 10)               
     	.style("opacity", 0);
 
 	//
