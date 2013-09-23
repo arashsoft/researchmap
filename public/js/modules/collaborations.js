@@ -453,13 +453,18 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  slide: function( event, ui ) {
 	    $( "#networkyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
 
-	  d3.selectAll("line.link").filter(function(d) { return d.type == "publication"; }).each( function () {
-	    if (ui.values[0] <= this.__data__.year && this.__data__.year <= ui.values[1] ) {
-	        d3.select(this).style("visibility", "visible").style("opacity", 1);
-	    }
-	    else {
-	        d3.select(this).style("opacity", 0).style("visibility", "hidden");        
-	    }
+	  d3.selectAll("line.link").each( function () {
+	  	if(this.__data__.type == "publication") {
+	  		if (ui.values[0] <= this.__data__.year && this.__data__.year <= ui.values[1] && $('input#filterCo_pubs').is(':checked')) {
+		        d3.select(this).style("visibility", "visible").style("opacity", 1);
+		    }
+		    else {
+		        d3.select(this).style("opacity", 0).style("visibility", "hidden");        
+		    }
+	  	} else if(this.__data__.type == "grant") {
+	  		//...filtering grant links may lead to forever disapperance of some links
+	  	}
+
 	  });
 
 	  //if the user has specified that nodes w/o links should be hidden
@@ -957,7 +962,27 @@ var collaborations = (function () { //pass globals as parameters to import them 
 			  	else
 			  		return "hidden";
 		  	});
-		d3.selectAll("circle.node").transition().duration(0).delay(0).style("opacity", 1).style("visibility", "visible");//.attr("r", 10);
+		if($('#filterNodesAll').is(':checked')) {
+			d3.selectAll("circle.node").transition().duration(0).delay(0).style("opacity", 1).style("visibility", "visible");//.attr("r", 10);
+		} else {
+			d3.selectAll("circle.node").each( function () {
+		    var that = this;//because of the nested loop
+		      var match = false;
+		      d3.selectAll("line.link").each( function() {
+		      	  if(this.style.visibility == "hidden")
+		      	  	return ;
+		          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
+		           match = true;
+		         }
+		      }); 
+		      if (match == false){
+		        d3.select(this).style("visibility", "hidden").style("opacity", 0);
+		      }
+		      else {
+		        d3.select(this).style("visibility", "visible").style("opacity", 1);
+		      }
+		    });
+		}
 		$('#animateYearPlaceholder').hide('slow');
 	});
 
@@ -1975,8 +2000,13 @@ var collaborations = (function () { //pass globals as parameters to import them 
 		      function(callback){
 		        d3.selectAll("line.link").each( function () {
 		          if (this.__data__.type != "supervision" && this.__data__.type != "grant" && d3.select(this).attr("animViz") == "true") {
-		            d3.select(this).style("visibility", "visible");
-		            d3.select(this).transition().duration(1000).style("opacity", 1);
+		          	//work with year filter
+		          	var begin = $('#networkyearrange').slider("option", "values")[0];
+		          	var end = $('#networkyearrange').slider("option", "values")[1];
+		          	if(begin <= this.__data__.year && this.__data__.year <= end) {
+		          		d3.select(this).style("visibility", "visible");
+		            	d3.select(this).transition().duration(1000).style("opacity", 1);
+		          	}
 		          }
 		        });
 		        //wait 2000 because of the duration and delay above
@@ -2337,6 +2367,8 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    var that = this;//because of the nested loop
 	      var match = false;
 	      d3.selectAll("line.link").each( function() {
+	      	  if(this.style.visibility == "hidden")
+		      	return ;
 	          if (((this["x1"].animVal.value == that["cx"].animVal.value && this["y1"].animVal.value == that["cy"].animVal.value) || (this["x2"].animVal.value == that["cx"].animVal.value && this["y2"].animVal.value == that["cy"].animVal.value))){ //if there is a link to the current node set the boolean flag to true
 	           match = true;
 	         }
