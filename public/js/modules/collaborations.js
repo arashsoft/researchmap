@@ -520,7 +520,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  $( "#animateSliderYear" ).val( ui.value );
 
 	  d3.selectAll("line.link").each( function () {
-	    if (this.__data__.type == "publication" && yearSelected == this.__data__.year || !$('input#filterCo_pubs').is(':checked')) {
+	    if (this.__data__.type == "publication" && (yearSelected == this.__data__.year || !$('input#filterCo_pubs').is(':checked'))) {
 	      d3.select(this).transition().duration(1000).style("opacity", 0);
 	      d3.select(this).transition().delay(1000).style("visibility", "hidden");
 	    }
@@ -530,6 +530,9 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	      if(yearSelected < begin || yearSelected > end || !$('input#filterCo_grants').is(':checked')) {
 	      	d3.select(this).style("opacity", 0);
 	      	d3.select(this).style("visibility", "hidden");
+	      } else {
+	      	d3.select(this).style("visibility", "visible").style("opacity", 0);
+	        d3.select(this).transition().duration(1000).style("opacity", 1);
 	      }
 	    }
 	    else {
@@ -568,7 +571,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  $( "#scopeYear" ).val( ui.value );
 
 	  d3.selectAll("line.link").each( function () {
-	    if (this.__data__.type == "publication" && yearSelected < this.__data__.year || !$('input#filterCo_pubs').is(':checked')) {
+	    if (this.__data__.type == "publication" && (yearSelected < this.__data__.year || !$('input#filterCo_pubs').is(':checked'))) {
 	      d3.select(this).style("opacity", 0);
 	      d3.select(this).style("visibility", "hidden");
 	    }
@@ -578,9 +581,12 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	      if(yearSelected < begin || !$('input#filterCo_grants').is(':checked')) {
 	      	d3.select(this).style("opacity", 0);
 	      	d3.select(this).style("visibility", "hidden");
+	      } else {
+	      	d3.select(this).style("visibility", "visible").style("opacity", 0);
+	        d3.select(this).transition().duration(1000).style("opacity", 1);
 	      }
 	    }
-	    else { //publication
+	    else {
 	      //only want to set opacity to 0 and then fade it in if it is not currently visible
 	      // if (this.style.visibility == "hidden"){
 	      //   if ($('input#filterCo_sups').is(':checked')){
