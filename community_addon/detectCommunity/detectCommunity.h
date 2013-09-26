@@ -1,0 +1,1 @@
+int InfomapMain(int argc, char *argv[]);
