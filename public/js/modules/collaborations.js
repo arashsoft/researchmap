@@ -2650,10 +2650,15 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  $('#comparingArea').hide('slow');
 	  $('#detailLineArea').hide('slow');
 
+	  //reset selections
+	  $('#sizeNodes').val('uniform').trigger("liszt:updated");
+	  $('#arrange').val('').trigger("liszt:updated");
+	  $('#granularity').val('individuals').trigger("liszt:updated").change();
+
 	  //reset the network
 	  
 	  network_force.gravity(dgravity).friction(dfriction).linkDistance(dlinkDistance).linkStrength(dlinkStrength).charge(dcharge).start();
-
+/*
 	  if ($('#arrange').val() == "department" || $('#arrange').val() == "community"){
 	    //moves each node towards the normal_center
 	    node
@@ -2672,7 +2677,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	      .attr("x2", function(d) { return d.target.x; })
 	      .attr("y2", function(d) { return d.target.y; });
 	  }
-
+*/
 	  //reset the radio buttons and checkboxes
 	  $('input#filterNodesAll').iCheck('check');
 	  $('input#filterGrants').iCheck('check');
@@ -6356,15 +6361,27 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  });
 //	  setTimeout(function() {
 	  	network_force.charge(function(d, i) {
-	  	  var radius = $("circle.node")[i].r.animVal.value;
+	  	  var radius = 0;
+	  	  d3.selectAll("circle.node").each(function(node) {
+	  	  	if(node == d)
+	  	  		radius = this.r.animVal.value;
+	  	  });
+	  	  //var radius = $("circle.node")[i].r.animVal.value;
 		  //return -Math.pow((radius - 10), 2) * 2;
 		  //return -radius * 35;
 		  return -Math.pow(radius, 2) / 1.5;
 		  //return -200;
 		})
 		.linkDistance(function(d, i) {
-			var r_source = $("circle.node")[d.source.index].r.animVal.value;
-			var r_target = $("circle.node")[d.target.index].r.animVal.value;
+			var r_source = 0, r_target = 0;
+			d3.selectAll("circle.node").each(function(node) {
+				if(node.index == d.source.index)
+					r_source = this.r.animVal.value;
+				if(node.index == d.target.index)
+					r_target = this.r.animVal.value;
+			});
+			//var r_source = $("circle.node")[d.source.index].r.animVal.value;
+			//var r_target = $("circle.node")[d.target.index].r.animVal.value;
 			return 70 + r_source + r_target;
 		}).start();
 //	  }, 1000);

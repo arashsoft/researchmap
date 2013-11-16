@@ -1863,6 +1863,23 @@ var GRANTS = (function () {
                 .attr("y", function(d) { return headerHeight / 2 + 4; });
             });
 
+    if($('#arrangetreemap').val() == "sponsor") {
+      treemapsvg.selectAll("g.cell.labelbar.labelbar2")
+              .data(parents2)
+              .transition().duration(transitionDuration)
+              .call(function(d, i) {
+                this.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                
+                this.selectAll("rect")
+                  .attr("width", function(d) { return Math.max(0.01, d.dx - 1); })
+                  .attr("height", function(d) { return Math.max(0.01, Math.min(headerHeight, d.dy - 1)); });
+                  
+                this.selectAll("text")
+                  .attr("x", function(d) { return d.dx / 2; })
+                  .attr("y", function(d) { return headerHeight / 2 + 4; });
+              });
+    }
+
     treemapsvg.selectAll("g.cell.labelbar")
             .transition().delay(transitionDuration)
             .call(function(d, i) {
