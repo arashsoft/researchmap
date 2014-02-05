@@ -47,6 +47,6 @@ app.get("/grants/:x", grants.data);
 
 //server
 app.listen( 3000, function(){
-	console.log( 'server running...' );
+	console.log( 'server running on port 3000...' );
 });
 
