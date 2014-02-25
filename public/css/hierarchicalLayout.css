@@ -1,0 +1,50 @@
+/*	Code by Arash
+		18-2-2014
+			CSS style for hierarchical layout
+*/
+
+.hierarchicalNode {
+  font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: #6E6E6E;
+}
+
+.hierarchicalNode:hover {
+  fill: #000000;
+  font-weight:bold;
+  background-color:#FFFF66;
+}
+
+.hierarchicalLink {
+  stroke: steelblue;
+  stroke-opacity: .4;
+  fill: none;
+  pointer-events: none;
+}
+
+.hierarchicalNode--source,
+.hierarchicalNode--target {
+  font-weight:bold;
+  background-color:#E68A00;
+}
+
+.hierarchicalNode--source {
+  fill: #d62728;
+}
+
+.hierarchicalNode--target {
+  fill: #d62728;
+}
+
+.hierarchicalLink--source,
+.hierarchicalLink--target {
+  stroke-opacity: 1;
+  stroke-width: 2px;
+}
+
+.hierarchicalLink--source {
+  stroke: #d62728;
+}
+
+.hierarchicalLink--target {
+  stroke: #d62728;
+}
