@@ -6,6 +6,7 @@ var exphbs = require( 'express3-handlebars' );
 //requirements for the routes
 var collaborations = require('./routes/collaborations');
 var processData = require('./processData');
+var retrieveData = require('./retrieveData');
 var grants = require('./routes/grants');
 var faculty = require('./routes/faculty');
 var views = require('./routes/views');
@@ -37,6 +38,7 @@ app.get("/", home.page);
 
 //routes for processing data
 app.get("/processData", processData.full);
+app.get("/retrieveData", retrieveData.scopus);
 
 //routes for viz data
 app.get("/network/:x", network.data);
