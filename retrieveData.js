@@ -100,6 +100,11 @@ exports.scopus = function(req, res) {
 				                	console.log("");
 				                	console.log("count (total num of documents) set at " + elsvr_count);
 				                	console.log("");
+<<<<<<< HEAD
+=======
+				                	console.log("count (total num of documents) set at " + elsvr_count);
+				                	console.log("");
+>>>>>>> 537e1f960f02b86e95ac610d86c0d51f14acd1b1
 				                	countset = true;
 				                }
 				                elsvr_resultChunk = result["search-results"]["entry"]; //the current chunk of the total result, the size of which elsvr_retSize
