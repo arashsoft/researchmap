@@ -80,7 +80,10 @@ var collaborations = (function () { //pass globals as parameters to import them 
 							, {nodes: [140, 201]}];
 
 	var chord_constructed = false;
-	 
+	
+	// arash - 13/02/2014
+	var hierarchical_constructed = false;
+	
 	// scales for the different node sizings
   	var scale_grants = d3.scale.linear().domain([0,450]).range([3,150]);
   	var scale_copubs = d3.scale.linear().domain([0,50]).range([3,150]);
@@ -309,6 +312,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  //gets every div that is a child of networkactions and hides it
 	  $('#matrixactions:eq(0)> div').hide();
 
+
 	  //bind a click handler to each action (i.e., each h3)
 	  $('#matrixactions:eq(0)> h3').click(function() { 
 	    $(this).next().next().slideToggle('fast');
@@ -466,7 +470,23 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  	}
 
 	  });
-
+	  
+		// code by Arash 26/2/2014
+		// show hierarchical edge links based on their year
+		d3.selectAll("path.hierarchicalLink").each( function(){
+			if(this.__data__.type == "publication") {
+				if (ui.values[0] <= this.__data__.year && this.__data__.year <= ui.values[1] && $('input#filterCo_pubs').is(':checked')) {
+					d3.select(this).style("visibility", "visible").style("opacity", 1);
+				}
+				else {
+					d3.select(this).style("opacity", 0).style("visibility", "hidden");        
+				}
+	  
+	  
+	  
+			}
+		});
+	  
 	  //if the user has specified that nodes w/o links should be hidden
 	  if ($('input#filterNodesLinks').is(':checked')){
 	    d3.selectAll("circle.node").each( function () {
@@ -2740,6 +2760,12 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    d3.selectAll("path.group").transition().delay(1500).style("display", "none");
 	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0);
 	    d3.selectAll("path.chord").transition().delay(1500).style("display", "none");
+		//code by arash - 13/02/2014
+		//hide hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.hierarchicalLink").transition().delay(1500).style("display", "none");
+	    d3.selectAll("text.hierarchicalNode").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("text.hierarchicalNode").transition().delay(1500).style("display", "none");
 	    //show the individual nodes
 	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 1).style("display", "");
 	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 1).style("display", "");
@@ -2755,6 +2781,12 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    d3.selectAll("path.group").transition().delay(1500).style("display", "none");
 	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0);
 	    d3.selectAll("path.chord").transition().delay(1500).style("display", "none");
+		//code by arash - 13/02/2014
+		//hide hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.hierarchicalLink").transition().delay(1500).style("display", "none");
+	    d3.selectAll("text.hierarchicalNode").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("text.hierarchicalNode").transition().delay(1500).style("display", "none");
 	    //show the department nodes
 	    d3.selectAll("circle.dept").style("display", "").style("opacity", "0");
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 1).attr("r", function(d){ 
@@ -2772,6 +2804,12 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    //hide the department nodes
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
 	    d3.selectAll("circle.dept").transition().delay(1500).style("display", "none");
+		//code by arash - 13/02/2014
+		//hide hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.hierarchicalLink").transition().delay(1500).style("display", "none");
+	    d3.selectAll("text.hierarchicalNode").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("text.hierarchicalNode").transition().delay(1500).style("display", "none");
 	    //build chord diagram
 	    if(!chord_constructed)
 	    	constructChord();
@@ -2780,8 +2818,36 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    d3.selectAll("path.chord").style("display", "").style("opacity", 0);
 	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0.8);
 	  }
+	  // code by Arash - 13/02/2014
+	  if(this.value == "hierarchicalEdgeBundling") {
+	  	//hide the individual nodes
+	  	d3.selectAll("circle.node").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("circle.node").transition().delay(1500).style("display", "none");
+	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("line.link").transition().delay(1500).style("display", "none");
+	    //hide the department nodes
+	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 0).attr("r", 1);
+	    d3.selectAll("circle.dept").transition().delay(1500).style("display", "none");
+	    //hide the chord diagram
+	    d3.selectAll("path.group").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.group").transition().delay(1500).style("display", "none");
+	    d3.selectAll("path.chord").transition().duration(1500).style("opacity", 0);
+	    d3.selectAll("path.chord").transition().delay(1500).style("display", "none");
+		//code by arash - 13/02/2014
+		// show hierarchicalEdgeBundling
+		if (!hierarchical_constructed)
+			constructHierarchical();
+		//show hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").transition().duration(1500).style("opacity", 1).style("display", "");
+	   //d3.selectAll("path.hierarchicalLink").transition().delay(1500).;
+	   d3.selectAll("text.hierarchicalNode").transition().duration(1500).style("opacity", 1).style("display", "");
+	   //d3.selectAll("text.hierarchicalNode").transition().delay(1500).style("display", "");
+		
+	  }
+	  
 	});
-
+	
+	
 	$('#tasks').change(function() {
 
 	  if(this.value == "ii_clusters") {
@@ -5526,7 +5592,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	        .on("mouseover", mouseover)
 	        .on("mouseout", mouseout);
 
-	    // function rowbar(rowbar) {   	
+	    /* function rowbar(rowbar) {   	
 	    //     	.attr("x", function(d) { return matrix_x(d.x); })
 	    //     	.attr("width", function(d) {
 	    //     		return d.count;
@@ -5550,7 +5616,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 		   //      	else if (d.copub > 0 && d.cosup > 0 && d.grant > 0)
 		   //      		return "#DCBE6B";	        			        	
 	    //     //});	    
-	    //     } 
+	    //     } */
 
 
 	    cell.append("name1").text(function(d) { return "<b>" + matrixnodes[d.x].Name + " & </b>" + "<br>"; });
@@ -5785,7 +5851,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 
 		var selectedDepartments = [];
 
-	  var label = networkdepartmentlegend.selectAll(".label")
+		var label = networkdepartmentlegend.selectAll(".label")
 	    .data(science_departments)
 	    .enter().append("div")
 	    .attr("class", "label")
@@ -5800,27 +5866,50 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    .style("background-color", function(d){ return color20(d); });
 
 		label
-			.on("mouseover", function(d) {
-				var label = this;
-				d3.select(label)
-					.style("background-color", "rgb(36,137,197)")
-					.style("color", "white");
-				d3.selectAll("circle.node").each(function() {
-					if (this.__data__.Department != d && !_.contains(selectedDepartments, this.__data__.Department)) {
-							d3.select(this).style("opacity", "0.05");
-					}
-					else {
+		.on("mouseover", function(d) {
+			var label = this;
+			d3.select(label)
+				.style("background-color", "rgb(36,137,197)")
+				.style("color", "white");
+			d3.selectAll("circle.node").each(function() {
+				if (this.__data__.Department != d && !_.contains(selectedDepartments, this.__data__.Department)) {
+						d3.select(this).style("opacity", "0.05");
+				}
+				else {
+					d3.select(this).style("opacity", "1");
+				}
+			});
+			
+			d3.selectAll("line.link").each(function(link) {
+				if ((link.source.Department == d || _.contains(selectedDepartments, link.source.Department)) && (link.target.Department == d || _.contains(selectedDepartments, link.target.Department))) {
 						d3.select(this).style("opacity", "1");
-					}
-				});
-				d3.selectAll("line.link").each(function(link) {
-					if ((link.source.Department == d || _.contains(selectedDepartments, link.source.Department)) && (link.target.Department == d || _.contains(selectedDepartments, link.target.Department))) {
-							d3.select(this).style("opacity", "1");
-					}
-					else
-						d3.select(this).style("opacity", "0");
-				});
-			})
+				}
+				else
+					d3.select(this).style("opacity", "0");
+			});
+			
+			// code by Arash 25/2/2014
+			// show or hide departments nodes
+			
+			d3.selectAll("text.hierarchicalNode").each(function() {
+				if (this.__data__.parent.name != d && !_.contains(selectedDepartments, this.__data__.parent.name)) {
+						d3.select(this).style("opacity", "0.2");
+				}
+				else {
+					d3.select(this).style("opacity", "1");
+				}
+			});
+			
+			d3.selectAll("path.hierarchicalLink").each(function(link) {
+				if ((link.source.parent.name == d || _.contains(selectedDepartments, link.source.parent.name)) && (link.target.parent.name == d || _.contains(selectedDepartments, link.target.parent.name))) {
+						d3.select(this).style("opacity", "1");
+				}
+				else
+					d3.select(this).style("opacity", "0.005");
+			});
+			
+		
+		})
 			.on("mouseout", function(d) {
 				var label = this;				
 				if (!_.contains(selectedDepartments, d)){
@@ -5832,6 +5921,10 @@ var collaborations = (function () { //pass globals as parameters to import them 
 					if( _.isEmpty(selectedDepartments)){
 						d3.selectAll("circle.node").style("opacity", "1");
 						d3.selectAll("line.link").style("opacity", "1");
+						// Arash - 25/2/2014
+						//show all links:
+						d3.selectAll("text.hierarchicalNode").style("opacity", "1");
+						d3.selectAll("path.hierarchicalLink").style("opacity", "1");
 					}
 					else {									
 						d3.selectAll("circle.node").each(function() {
@@ -5848,6 +5941,26 @@ var collaborations = (function () { //pass globals as parameters to import them 
 							else
 								d3.select(this).style("opacity", "0");
 						});	
+						
+						// Code by Arash 25/2/2014
+						// Show selected departments
+						d3.selectAll("text.hierarchicalNode").each(function() {
+							if (_.contains(selectedDepartments, this.__data__.parent.name)) {
+								d3.select(this).style("opacity", "1");
+							}
+							else {
+								d3.select(this).style("opacity", "0.2");
+							}
+						});
+					
+						d3.selectAll("path.hierarchicalLink").each(function(link) {
+							if (_.contains(selectedDepartments, link.source.parent.name) && _.contains(selectedDepartments, link.target.parent.name)) {
+								d3.select(this).style("opacity", "1");
+							}
+							else
+								d3.select(this).style("opacity", "0.005");
+						});
+							
 					}
 				}			
 			})
@@ -6100,6 +6213,224 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    );
 	}
 
+	// *******************************
+	// code by arash - 13/02/2014
+	// add Hierarchical edge bundling
+	// *******************************
+
+	function constructHierarchical(){
+		
+		/*
+		// TEMP code , just for making json file at first time
+		var myjson = new Array();
+		
+		for (var i =0 ; i < store.session("science_faculty_data").length; i++){
+			
+			var newRow = new Object();
+			newRow.name = store.session("science_faculty_data")[i].Department + "." +  store.session("science_faculty_data")[i].Name;
+			newRow.imports = new Array();
+			
+			// making imports
+			for (var j=0 ; j < store.session("links_combined").length; j++){
+				if (store.session("links_combined")[j].source == i){
+					newRow.imports.push(store.session("science_faculty_data")[store.session("links_combined")[j].target].Department
+					+ "." +  store.session("science_faculty_data")[store.session("links_combined")[j].target].Name);
+					//newRow.year=store.session("links_combined")[j].year;
+				}
+			}
+			
+			myjson.push(newRow);
+		}
+		*/
+		
+		/*
+		// TEMP code II , making json file with years and types + performance optimization
+		// new features: imports.name - imports.year - imports.type
+		
+		var myjson = new Array();
+		
+		// empty imports
+		for ( var i=0 ; i < store.session("science_faculty_data").length; i++){
+			var newRow = new Object();
+			newRow.name = store.session("science_faculty_data")[i].Department + "." +  store.session("science_faculty_data")[i].Name;
+			newRow.imports = new Array();
+			myjson.push(newRow);
+		}
+		for ( var i=0 ; i < store.session("links_combined").length ; i++){
+				var tempImport = new Object();
+				// making import
+				tempImport.name=(store.session("science_faculty_data")[store.session("links_combined")[i].target].Department + "." + store.session("science_faculty_data")[store.session("links_combined")[i].target].Name);
+				if (typeof(store.session("links_combined")[i].begin) !== 'undefined'){
+					tempImport.begin= store.session("links_combined")[i].begin.substr(0,4);
+					tempImport.end=store.session("links_combined")[i].end.substr(0,4);
+				}else if(typeof(store.session("links_combined")[i].year) !== 'undefined'){
+					tempImport.begin=store.session("links_combined")[i].year;
+					tempImport.end=store.session("links_combined")[i].year;
+				}else{
+					// something TODO for supervision without years
+				}
+				tempImport.type=store.session("links_combined")[i].type;
+				
+				myjson[store.session("links_combined")[i].source].imports.push(tempImport);
+		}
+		
+		//JSON.stringify(myjson);
+		// End of TEMP code II
+		*/
+		
+		
+		// use this css file for styling classes
+		$('head').append('<link rel="stylesheet" href="css/hierarchicalLayout.css" type="text/css" />');
+		
+		var hierarchicalDiameter = (svgwidth<svgheight)?svgwidth+20:svgheight+20  ,
+			hierarchicalRadius = hierarchicalDiameter / 2,
+			hierarchicalInnerRadius = hierarchicalRadius - 120;
+
+		var hierarchicalCluster = d3.layout.cluster()
+			.size([360, hierarchicalInnerRadius])
+			.sort(null)
+			.value(function(d) { return d.size; });
+
+		var hierarchicalBundle = d3.layout.bundle();
+
+		var hierarchicalLine = d3.svg.line.radial()
+			.interpolate("bundle")
+			.tension(.85)
+			.radius(function(d) { return d.y; })
+			.angle(function(d) { return d.x / 180 * Math.PI; });
+
+			
+		var hierarchicalSvg = networksvg.append("g")
+			.attr("width", hierarchicalDiameter)
+			.attr("height", hierarchicalDiameter)
+		  .append("g")
+			.attr("transform", "translate(" + svgwidth/2 + "," + svgheight/2 + ")");
+
+		var hierarchicalLink = hierarchicalSvg.append("g").selectAll(".link"),
+			hierarchicalNode = hierarchicalSvg.append("g").selectAll(".node");
+
+			
+		d3.json("collaboration2.json", function(error, classes) {
+		 var hierarchicalNodes = hierarchicalCluster.nodes(packageHierarchy(classes)),
+			  hierarchicalLinks = packageImports(hierarchicalNodes);
+			 
+			  
+		hierarchicalLink = hierarchicalLink
+			  .data(hierarchicalBundle(hierarchicalLinks))
+			.enter().append("path")
+			  .each(function(d) { 
+				d.source = d[0],
+				d.target = d[d.length - 1]  
+			  })
+			  .attr("class", "hierarchicalLink")
+			  //.style("stroke", "steelblue")
+			  //.style("stroke-opacity", 0.4)
+			  //.style("fill", "none")
+			  .attr("d", hierarchicalLine);
+
+		hierarchicalNode= hierarchicalNode
+			  .data(hierarchicalNodes.filter(function(n) { return !n.children; }))
+			.enter().append("text")
+			  .attr("class", "hierarchicalNode")
+			  //.style("font", "11px 'Helvetica Neue', Helvetica, Arial, sans-serif")
+			  .style("fill", function(d){return color20(d.parent.name); })
+			  .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+			  .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")" + (d.x < 180 ? "" : "rotate(180)"); })
+			  .style("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+			  .text(function(d) { return d.key; })
+			  .on("mouseover", mouseovered)
+			  .on("mouseout", mouseouted);
+			  
+	
+		}); 
+		d3.select(self.frameElement).style("height", hierarchicalDiameter + "px");
+		
+		hierarchical_constructed=true;
+		
+
+		function mouseovered(d) {
+		  hierarchicalNode
+			  .each(function(n) { n.target = n.source = false; });
+
+		  hierarchicalLink
+			  .classed("hierarchicalLink--target", function(l) { if (l.target === d) return l.source.source = true; })
+			  .classed("hierarchicalLink--source", function(l) { if (l.source === d) return l.target.target = true; })
+			.filter(function(l) { return l.target === d || l.source === d; })
+			  .each(function() { this.parentNode.appendChild(this); });
+
+					  
+		  hierarchicalNode
+			  .classed("hierarchicalNode--target", function(n) { return n.target; })
+			  .classed("hierarchicalNode--source", function(n) { return n.source; })
+		
+
+		// :(
+		//var mynodes =$(".hierarchicalNode").filter(":contains("+d.key+")").css("color","#000000");
+		
+		}
+
+		function mouseouted(d) {
+		  hierarchicalLink
+			  .classed("hierarchicalLink--target", false)
+			  .classed("hierarchicalLink--source", false);
+
+		  hierarchicalNode
+			  .classed("hierarchicalNode--target", false)
+			  .classed("hierarchicalNode--source", false);
+		}
+		
+	}
+
+	// construct the package hierarchy from class names.
+	function packageHierarchy(classes) {
+	  var map = {};
+
+	  function find(name, data) {
+		var node = map[name], i;
+		if (!node) {
+		  node = map[name] = data || {name: name, children: []};
+		  if (name.length) {
+			node.parent = find(name.substring(0, i = name.indexOf(".")));
+			node.parent.children.push(node);
+			node.key = name.substring(i + 1);
+		  }
+		}
+		return node;
+	  }
+
+	  classes.forEach(function(d) {
+		find(d.name, d);
+	  });
+
+	  return map[""];
+	}
+
+	// Return a list of imports for the given array of nodes.
+	function packageImports(nodes) {
+	  var map = {},
+		  imports = [];
+
+	  // Compute a map from name to node.
+	  nodes.forEach(function(d) {
+		map[d.name] = d;
+	  });
+
+	  // For each import, construct a link from the source to target node.
+	  nodes.forEach(function(d) {
+		if (d.imports) d.imports.forEach(function(i) {
+		  imports.push({source: map[d.name], target: map[i.name] , begin: i.begin ,end: i.end , type : i.type});
+		});
+	  });
+
+	  return imports;
+	}
+
+	// commit merger
+	// **************************
+	// end of Arash codes
+	// **************************
+	
+	
 	function buildChord(links_combined, science_faculty_data, science_departments) {
 		var chordMatrix = [];
 		var chordDetailsMatrix = [];
@@ -6736,5 +7067,6 @@ var collaborations = (function () { //pass globals as parameters to import them 
 			$('#networkdepartmentlegendtoggle').css('left', $('#networkdepartmentlegend').width()/2 + $('#networkdepartmentlegendtoggle').width()/2);
 		}
 	}
+	
 
 }());
