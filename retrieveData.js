@@ -24,15 +24,15 @@ exports.scopus = function(req, res) {
 	//if no, create it
 	//if yes, delete the database and then create it -- this is for development purposes only!
 	db.exists(function(err,exists){
-		  console.log("");
-		  if (!exists) {
+		console.log("");
+		if (!exists) {
 		    db.create(function(er){
 		    	if (er) throw new Error(JSON.stringify(er));
 		    	console.log('New database: ' + db + 'created.');
 		    	getData();
 		    });
 		  } 
-		  else {
+		else {
     		db.remove(function(er){
     			if (er) throw new Error(JSON.stringify(er));
     			console.log('Database: ' + db.name + ' removed.');
@@ -41,12 +41,13 @@ exports.scopus = function(req, res) {
     			if (er) throw new Error(JSON.stringify(er));
     			console.log('New database: ' + db.name + ' created.');
     		});
-    		db.saveDoc('unprocessed', {'unprocessed': "test"}, function(err){
-    			if (err) throw new Error(JSON.stringify(er));
-    			console.log('New document: ' + 'unprocessed' + ' created.');
-    			getData();
-    		})
     	}
+    	//create new document in the database;	
+		db.saveDoc('unprocessed', {'unprocessed': "test"}, function(err){
+			if (err) throw new Error(JSON.stringify(er));
+			console.log('New document: ' + 'unprocessed' + ' created.');
+			getData();
+		});
 	});//end of initial db operations
 
 
@@ -55,9 +56,9 @@ exports.scopus = function(req, res) {
 	var elsvr_apiKey = "9cb35f2a298ac707a9de85c32a2fcd63"; //my (Paul Parsons) api key
 	var elsvr_baseURL = "http://api.elsevier.com/content/search/index:SCOPUS?"; 
 	var elsvr_resultType = "json";
-	var elsvr_retSize = 10; //number of results that are returned per query. max is 200
+	var elsvr_retSize = 200; //number of results that are returned per query. max is 200
 	var elsvr_initialReturn;
-	var elsvr_count = 100; //number of results--start with a default and update later
+	var elsvr_count = 1000; //number of results--start with a default and update later
 	var elsvr_view = "META";// see www.developers.elsevier.com/devcms/content-api-retrieval-views
 	var elsvr_results = [];
 	var elsvr_errors = 0;
@@ -95,9 +96,10 @@ exports.scopus = function(req, res) {
 				            $.get(elsvr_Query, function(result) {
 				                
 				                if (!countset){
-				                	//elsvr_count = parseInt(result["search-results"]["opensearch:totalResults"]); //the number of results
+				                	elsvr_count = parseInt(result["search-results"]["opensearch:totalResults"]); //the number of results
 				                	console.log("");
-				                	console.log("count set at " + elsvr_count);
+				                	console.log("count (total num of documents) set at " + elsvr_count);
+				                	console.log("");
 				                	countset = true;
 				                }
 				                elsvr_resultChunk = result["search-results"]["entry"]; //the current chunk of the total result, the size of which elsvr_retSize
@@ -160,7 +162,6 @@ exports.scopus = function(req, res) {
 				                //save the document to the database
 				                db.saveDoc('unprocessed', doc, function(er, ok) {
 				                    if (er) throw new Error(JSON.stringify(er));
-				                    console.log("");
 				                    console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name);
 				               		retstart += elsvr_retSize;
 									callback(null);     
