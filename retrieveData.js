@@ -23,6 +23,7 @@ var couchdb = require('felix-couchdb'),
 //this is what gets exported when called by the app router
 exports.scopus = function(req, res) {
 
+	//send a response back to the client
 	var data = {
 		maintitle: 'data processing',
 	}
@@ -64,7 +65,7 @@ exports.scopus = function(req, res) {
 	var elsvr_apiKey = "9cb35f2a298ac707a9de85c32a2fcd63"; //my (Paul Parsons) api key
 	var elsvr_baseURL = "http://api.elsevier.com/content/search/index:SCOPUS?"; 
 	var elsvr_resultType = "json";
-	var elsvr_retSize = 200; //number of results that are returned per query. max is 200
+	var elsvr_retSize = 10; //number of results that are returned per query. max is 200
 	var elsvr_initialReturn;
 	var elsvr_count = 1000; //number of results--start with a default and update later
 	var elsvr_view = "META";// see www.developers.elsevier.com/devcms/content-api-retrieval-views
