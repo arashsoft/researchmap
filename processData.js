@@ -55,6 +55,13 @@ If the db does not exist, it gets created
 If the db does exist, it gets removed and then recreated
 */
 exports.full = function(req, res) {
+
+	//send a response back to the client
+	var data = {
+		maintitle: 'data processing',
+	}
+	res.render('processingData', data);
+	
 	var headers = [];
 
 	//check if the database exists yet
