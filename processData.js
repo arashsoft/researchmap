@@ -1,4 +1,5 @@
 //TODO: look through file for 'TODO' statements and fix them!
+//check grants_not_unique to see if it is being used. otherwise delete
 
 /*
 processData.js: This module deals with data processing on the server
@@ -8,7 +9,7 @@ It has 3 main stages:
 (2) read data from multiple csv files and save it to the db (function readData)
 (3) process the data and resave to the db (funciton processData)
 
-copyright Paul Parsons 2013
+copyright Paul Parsons 2014
 */
 
 var csv = require('csv');
@@ -28,7 +29,6 @@ var allfaculty =[];
 var grants = [];
 var supervisors = [];
 var publications = [];
-//var grant_data = [];
 var publications_science = [];
 var publications_western = [];
 var links_science = [];
@@ -37,7 +37,6 @@ var links_cosupervisions = [];
 var links_cosupervisions_converted = [];
 var links_grants = [];
 var links_grants_converted = [];
-//var grants = {};
 var sankeyData = {"nodes":[], "links": []};
 var sankeyDataDepartments = {"nodes":[], "links": []};
 var grantDepartments = []; //array of unique departments
@@ -61,7 +60,7 @@ exports.full = function(req, res) {
 		maintitle: 'data processing',
 	}
 	res.render('processingData', data);
-	
+
 	var headers = [];
 
 	//check if the database exists yet
@@ -89,7 +88,7 @@ exports.full = function(req, res) {
 		  		//callback
 		  		function(err, results){
 		  			if (err)
-		 				res.send("ERROR on " + results + ": " + JSON.stringify(err));
+		 				console.log("ERROR on " + results + ": " + JSON.stringify(err));
 		 			else {
 		 				//pass the response object to the function;
 		 				readData(res);
@@ -281,11 +280,10 @@ function readData (res) {
 		 function (err, results){
 		 	if (err){
 		 		console.log("ERROR on " + results + ": " + JSON.stringify(err));
-		 		res.send("ERROR on " + results + "Error message: " + JSON.stringify(err) + "<br>Please check the formatting of the data.");}
+		 		console.log("ERROR on " + results + "Error message: " + JSON.stringify(err) + "<br>Please check the formatting of the data.");}
 		 	else {
 		 		console.log("");			 			 			 		
 		 		console.log("All CSV data read and saved to database successfully");
-		 		//res.send("All CSV data read and saved to database successfully");
 		 		processData(res, results);
 		 	}
 		 });//end async.series	
@@ -405,33 +403,6 @@ function processData (res, results) {
 							    	callback(null, [publications_science, publications_western]);
 						  	}	
 						}
-						//,
-
-						//do it again for all faculty at western
-						// function(callback){
-						// 	console.log("processing publications_western...");
-						//   	for (row_num in publication_data) {
-						//     	authors = publication_data[row_num].Authors;
-						//     	autharr = authors.split("; "); //make sure to include the space
-
-						// 	    for (author_num in autharr){
-						// 	      var surname = autharr[author_num].substring(0, autharr[author_num].indexOf(' ') + 2); //surname and first initial
-
-						// 	      for (i in allNamesUnique){
-						// 	        //extract the surname and the first initial
-						// 	        //e.g., "Lastname,Firstname MiddleInitial" will become "Lastname FirstInitial"
-						// 	        var surname2 = allNamesUnique[i].substring(0,allNamesUnique[i].indexOf(',')) + " " + allNamesUnique[i].substring(allNamesUnique[i].indexOf(',') + 1, allNamesUnique[i].indexOf(',') + 2); 
-							        
-						// 	        if (surname == surname2){ //we have a match
-						// 	          //add the whole row to a new array that keeps track of the pubs with an author from western
-						// 	          publications_western.push(publication_data[row_num]);
-						// 	        }
-						// 	      } //end members 
-						// 	    } //end authors
-						// 	    if (row_num == publication_data.length-1)
-						// 	    	callback(null, publications_western);
-						//   	}	
-						// }
 					],
 
 					//callback
@@ -471,22 +442,6 @@ function processData (res, results) {
 								links_cosupervisions.push({"source":element[0].SupervisorName, "target":element[1].SupervisorName, "value":1, "type":"supervision"});
 								links_cosupervisions_converted.push({"source":element[0].SupervisorName, "target":element[1].SupervisorName, "value":1, "type":"supervision"});
 							});
-
-		 				// 	var sorted = _.sortBy(supervisor_data, function(d) { return d.StudentName; } );
-							// var currentStudent = "";
-							// var previousStudent = "";
-							// var currentSupervisor = "";
-							// var previousSupervisor = "";
-							// var temp = _.each(sorted, function(key, value){
-							// 	currentStudent = key.StudentName;
-							// 	currentSupervisor = key.SupervisorName;
-							// 	if (currentStudent == previousStudent){
-							// 		co_supervision.push([currentSupervisor, previousSupervisor]);
-							// 	}
-							// 	//update for the next loop through
-							// 	previousSupervisor = key.SupervisorName;
-							// 	previousStudent = key.StudentName;
-							// });
 							callback(null);
 						},
 
@@ -764,9 +719,6 @@ function processData (res, results) {
 							grantSponsors = _.uniq(_.pluck(grant_data, 'Sponsor'));
 							grantYearRangeBegin = _.pluck(grant_data, 'BeginDate');
 							grantYearRangeEnd = _.pluck(grant_data, 'EndDate');
-							//console.log("********");
-							//console.log(grantYearRangeBegin);
-							//console.log(grantYearRangeEnd);
 
 							//loop through each entry (row) in the dataset
 							async.eachSeries(grant_data, function(){
@@ -847,6 +799,7 @@ function processData (res, results) {
 										});
 									});
 				  				},
+				  				//what is going on here?? seems that grants_not_unique is never used...delete this??
 				  				function(callback){
 									db.getDoc('processed_data', function(err, doc){
 										doc.grants_not_unique = grants;
@@ -1124,12 +1077,12 @@ function processData (res, results) {
 		//callback
 		function(err, results){
 		 	if (err)
-		 		res.send("ERROR on " + results + ": " + JSON.stringify(err));
+		 		console.log("ERROR on " + results + ": " + JSON.stringify(err));
 		 	else{
 		 		//send a message to the client
 		 		console.log("");
 		 		console.log("^^^^^------- All data processed and saved to database successfully -------^^^^^");
-		 		res.send("All data sucessfully loaded, processed, and saved to the database.");
+		 		console.log("All data sucessfully loaded, processed, and saved to the database.");
 		 	}
 		}
 	);//end async.series

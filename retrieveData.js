@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /*
 retrieveData.js: This module deals with retrieving publication data from APIs and storing in the database 
 
