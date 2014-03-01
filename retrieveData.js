@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
 retrieveData.js: This module deals with retrieving publication data from APIs and storing in the database 
 
@@ -20,6 +22,12 @@ var couchdb = require('felix-couchdb'),
 
 //this is what gets exported when called by the app router
 exports.scopus = function(req, res) {
+
+	var data = {
+		maintitle: 'data processing',
+	}
+	res.render('processingData', data);
+
 	//check if the database exists
 	//if no, create it
 	//if yes, delete the database and then create it -- this is for development purposes only!
@@ -56,7 +64,7 @@ exports.scopus = function(req, res) {
 	var elsvr_apiKey = "9cb35f2a298ac707a9de85c32a2fcd63"; //my (Paul Parsons) api key
 	var elsvr_baseURL = "http://api.elsevier.com/content/search/index:SCOPUS?"; 
 	var elsvr_resultType = "json";
-	var elsvr_retSize = 200; //number of results that are returned per query. max is 200
+	var elsvr_retSize = 10; //number of results that are returned per query. max is 200
 	var elsvr_initialReturn;
 	var elsvr_count = 1000; //number of results--start with a default and update later
 	var elsvr_view = "META";// see www.developers.elsevier.com/devcms/content-api-retrieval-views
@@ -93,23 +101,26 @@ exports.scopus = function(req, res) {
 				            var elsvr_Query = String(elsvr_baseURL) + "apiKey="+ String(elsvr_apiKey) + "&query=af-id(" + String(elsvr_ID) + ")&httpAccept=application/" + String(elsvr_resultType) + "&count=" + String(elsvr_retSize) + "&view=";
 
 				            //ajax request based on the query above
-				            $.get(elsvr_Query, function(result) {
-				                
-				                if (!countset){
-				                	elsvr_count = parseInt(result["search-results"]["opensearch:totalResults"]); //the number of results
-				                	console.log("");
-				                	console.log("count (total num of documents) set at " + elsvr_count);
-				                	console.log("");
-<<<<<<< HEAD
-=======
-				                	console.log("count (total num of documents) set at " + elsvr_count);
-				                	console.log("");
->>>>>>> 537e1f960f02b86e95ac610d86c0d51f14acd1b1
-				                	countset = true;
-				                }
-				                elsvr_resultChunk = result["search-results"]["entry"]; //the current chunk of the total result, the size of which elsvr_retSize
-				                callback(null);
-				            });//end get
+				            $.ajax({
+				            	url: elsvr_Query,
+				            	type: 'GET',
+				            	dataType: 'json',
+				            	success: function(result){
+					                if (!countset){
+					                	elsvr_count = parseInt(result["search-results"]["opensearch:totalResults"]); //the number of results
+					                	console.log("");
+					                	console.log("count (total num of documents) set at " + elsvr_count);
+					                	console.log("");
+					                	countset = true;
+					                }
+					                elsvr_resultChunk = result["search-results"]["entry"]; //the current chunk of the total result, the size of which elsvr_retSize
+					                callback(null);
+				            	},
+				            	error: function(err){
+				            		console.log("there was an error with the query: " + JSON.parse(err.responseText)['service-error']['status']['statusText']);
+				            	}
+
+				            });
 				        },
 
 				        function(callback){
