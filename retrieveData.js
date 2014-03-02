@@ -116,7 +116,8 @@ exports.scopus = function(req, res) {
 					                callback(null);
 				            	},
 				            	error: function(err){
-				            		console.log("there was an error with the query: " + JSON.parse(err.responseText)['service-error']['status']['statusText']);
+				            		//doesn't seem to be a consistent structure for error messages-->console.log("there was an error with the query: " + JSON.parse(err.responseText)['service-error']['status']['statusText']);
+				            		console.log("there was an error with the query: " + JSON.parse(err.responseText);
 				            	}
 
 				            });
