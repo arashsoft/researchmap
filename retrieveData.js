@@ -21,42 +21,14 @@ var couchdb = require('felix-couchdb'),
 //this is what gets exported when called by the app router
 exports.scopus = function(req, res) {
 
+	console.log("");
+	console.log("running script retrieveData.js...");
+
 	//send a response back to the client
 	var data = {
 		maintitle: 'data processing',
 	}
 	res.render('processingData', data);
-
-	//check if the database exists
-	//if no, create it
-	//if yes, delete the database and then create it -- this is for development purposes only!
-	db.exists(function(err,exists){
-		console.log("");
-		if (!exists) {
-		    db.create(function(er){
-		    	if (er) throw new Error(JSON.stringify(er));
-		    	console.log('New database: ' + db + 'created.');
-		    	getData();
-		    });
-		  } 
-		else {
-    		db.remove(function(er){
-    			if (er) throw new Error(JSON.stringify(er));
-    			console.log('Database: ' + db.name + ' removed.');
-    		});
-    		db.create(function(er){
-    			if (er) throw new Error(JSON.stringify(er));
-    			console.log('New database: ' + db.name + ' created.');
-    		});
-    	}
-    	//create new document in the database;	
-		db.saveDoc('unprocessed', {'unprocessed': "test"}, function(err){
-			if (err) throw new Error(JSON.stringify(er));
-			console.log('New document: ' + 'unprocessed' + ' created.');
-			getData();
-		});
-	});//end of initial db operations
-
 
 	//variables for elsevier scopus query
 	var elsvr_ID = "60010884"; //id of the institution (in this case, Western)
@@ -70,6 +42,8 @@ exports.scopus = function(req, res) {
 	var elsvr_results = [];
 	var elsvr_errors = 0;
 	var countset = false;
+
+	getData();
 
 
 	/*
@@ -104,21 +78,21 @@ exports.scopus = function(req, res) {
 				            	url: elsvr_Query,
 				            	type: 'GET',
 				            	dataType: 'json',
-				            	success: function(result){
-					                if (!countset){
-					                	elsvr_count = parseInt(result["search-results"]["opensearch:totalResults"]); //the number of results
-					                	console.log("");
-					                	console.log("count (total num of documents) set at " + elsvr_count);
-					                	console.log("");
-					                	countset = true;
-					                }
-					                elsvr_resultChunk = result["search-results"]["entry"]; //the current chunk of the total result, the size of which elsvr_retSize
-					                callback(null);
-				            	},
-				            	error: function(err){
-				            		//doesn't seem to be a consistent structure for error messages-->console.log("there was an error with the query: " + JSON.parse(err.responseText)['service-error']['status']['statusText']);
-				            		console.log("there was an error with the query: " + JSON.parse(err.responseText);
-				            	}
+				                    success: function(result){
+			                            if (!countset){
+			                              elsvr_count = parseInt(result["search-results"]["opensearch:totalResults"]); //the number of results
+			                              console.log("");
+			                              console.log("total num of documents to retrieve: " + elsvr_count);
+			                              console.log("");
+			                              countset = true;
+			                            }
+			                            elsvr_resultChunk = result["search-results"]["entry"]; //the current chunk of the total result, the size of which elsvr_retSize
+			                            callback(null);
+				                    },
+				                    error: function(err){
+				                        elsvr_errors = elsvr_errors+1;
+				                        callback(err);
+				                    }
 
 				            });
 				        },
@@ -138,20 +112,30 @@ exports.scopus = function(req, res) {
 				                    dataType: 'json',
 				                    success: function(result){
 				                        elsvr_results.push(result);
-				                        //console.log("successful query");
-				                        return callback(null);
+				                        callback(null);
 				                    },
 				                    error: function(err){
-				                        //console.log("error returned: "+err.statusText);
 				                        elsvr_errors = elsvr_errors+1;
-				                        return callback(null);
+				                        callback(err);
 				                    }
 				                });
 				            },
 
 				            //callback for async.eachSeries
 				            function(err, results) {
-				                if (err) console.log("error: " + err);
+				                if (err) {
+			                        try {
+			                        	var errmsg = JSON.parse(err.responseText)["service-error"]["status"]["statusCode"];
+			                        	if (errmsg == "QUOTA_EXCEEDED") {
+			                        		callback(errmsg);
+			                        	}
+			                        	else
+			                        		console.log("error returned from query: " + errmsg);
+			                        }
+			                        catch (e) {
+			                        	console.log("unknown error returned from query");
+			                        }
+				                }
 				                else
 				                    callback(null, elsvr_results);
 				            });
@@ -161,10 +145,49 @@ exports.scopus = function(req, res) {
 				    //callback for async.series
 				    //responsible for saving the retrieved data to the database
 				    function (err, results){
-				        if (err)
-				            console.log("ERROR: " + JSON.stringify(err));
+				        if (err) {
+		                	if (err == "QUOTA_EXCEEDED") {	
+		                		console.log("ERROR: Request quota for API key has been exceeded");
+				                console.log("stopping script execution...");
+				                retstart = elsvr_count; //to stop the whilst loop
+				                callback(err);
+		                	} 	
+		                	else
+		                		console.log("ERROR: " + err);			        	
+				        }
 				        else {
-				        	//first get the document from the database
+							//check if the database exists
+							//if no, create it
+							//if yes, delete the database and then create it -- this is for development purposes only!
+							db.exists(function(err,exists){
+								console.log("");
+								if (!exists) {
+								    db.create(function(er){
+								    	if (er) throw new Error(JSON.stringify(er));
+								    	console.log('New database: ' + db + 'created.');
+								    	//getData();
+								    });
+								  } 
+								else {
+						    		db.remove(function(er){
+						    			if (er) throw new Error(JSON.stringify(er));
+						    			console.log('Database: ' + db.name + ' removed.');
+						    		});
+						    		db.create(function(er){
+						    			if (er) throw new Error(JSON.stringify(er));
+						    			console.log('New database: ' + db.name + ' created.');
+						    		});
+						    	}
+						    	//create new document in the database;	
+								db.saveDoc('unprocessed', {'unprocessed': "test"}, function(err){
+									if (err) throw new Error(JSON.stringify(er));
+									console.log('New document: ' + 'unprocessed' + ' created.');
+									//getData();
+								});
+							});//end of initial db operations
+
+
+				        	//get the document from the database
 				            db.getDoc('unprocessed', function(er, doc){
 				                if (er) throw new Error(JSON.stringify(er));
 
@@ -191,15 +214,28 @@ exports.scopus = function(req, res) {
 		//callback for the whilst loop
 		//this will be called once the condition is no longer met (retstart < elsvr_retSize)
 		function(err) {
-			if (err) console.log("error: " + err);
 			console.log("");
-			console.log("all done!");
+			console.log("---------------")
+			console.log("script finished");
+			console.log("---------------")
 			console.log("");
-			console.log("REPORT: ");
-			console.log("---------");
-			console.log((elsvr_count-elsvr_errors) + " results saved successfully to the database.");
-			console.log(elsvr_errors + " results with errors could not be saved to the database.");
+			console.log("REPORT: ");			
 
+			if (err) {
+				console.log("script did not run successfully");
+				console.log("error returned: " + err);
+				console.log("");
+			}
+			else {
+				console.log("script successfully finished");
+				console.log((elsvr_count-elsvr_errors) + " results saved successfully to the database.");
+				console.log(elsvr_errors + " results with errors could not be saved to the database.");
+				console.log("");
+			}	
+
+			console.log("server running on port 3000");
+			console.log("");
+			console.log("");
 		});//end async.whilst
 	}//end function	
 }//end exports.scopus
