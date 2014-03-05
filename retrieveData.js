@@ -1,11 +1,6 @@
 /*
 retrieveData.js: This module deals with retrieving publication data from APIs and storing in the database 
 
-It has 3 main stages:
-(1) (re)create the database (exports.full)
-(2) read data from multiple csv files and save it to the db (function readData)
-(3) process the data and resave to the db (funciton processData)
-
 copyright Paul Parsons 2014
 */
 
@@ -27,7 +22,7 @@ exports.scopus = function(req, res) {
 	//send a response back to the client
 	var data = {
 		maintitle: 'data processing',
-	}
+	};
 	res.render('processingData', data);
 
 	//variables for elsevier scopus query
@@ -54,7 +49,7 @@ exports.scopus = function(req, res) {
 		//counter for the whilst loop below
 		var retstart = 0;
 
-		//loop that retrieves 200 results and stores them in the db
+		//loop that retrieves [elsvr_retSize] results and stores them in the db
 		//runs while retstart < elsvr_count
 		//see https://github.com/caolan/async#whilst for documentation
 		async.whilst(function() { return retstart < elsvr_count; }, 
@@ -67,7 +62,7 @@ exports.scopus = function(req, res) {
 				//first retrieve the chunk of 200 results, then retrive more detail for each of the 200
 				async.series(
 				    [ 
-				 		//retrieve the chunk of 200 results
+				 		//retrieve the chunk of [elsvr_retSize] results
 				        function(callback){
 
 				        	//initial query to the scopus api
@@ -213,6 +208,7 @@ exports.scopus = function(req, res) {
 
 		//callback for the whilst loop
 		//this will be called once the condition is no longer met (retstart < elsvr_retSize)
+		//give some report about the running of the script
 		function(err) {
 			console.log("");
 			console.log("---------------")
