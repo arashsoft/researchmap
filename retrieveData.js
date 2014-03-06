@@ -115,9 +115,9 @@ exports.scopus = function(req, res) {
 			                              console.log("");
 			                              console.log("total num of documents to retrieve: " + elsvr_count);
 			                              console.log("");
-			                              console.log('processing chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count);
 			                              countset = true;
 			                            }
+			                          	console.log('processing chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count);
 			                            elsvr_resultChunk = result["search-results"]["entry"]; //the current chunk of the total result, the size of which elsvr_retSize
 			                            callback(null);
 				                    },
