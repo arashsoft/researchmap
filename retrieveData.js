@@ -37,6 +37,7 @@ exports.scopus = function(req, res) {
 	var elsvr_results = [];
 	var elsvr_errors = 0;
 	var countset = false;
+	var elsvr_authtoken;
 
 	getData();
 
@@ -62,16 +63,51 @@ exports.scopus = function(req, res) {
 				//first retrieve the chunk of 200 results, then retrive more detail for each of the 200
 				async.series(
 				    [ 
+				 		//first send authorization request
+				        function(callback){
+
+				        	//if the authtoken hasn't been fetched yet
+				        	if (elsvr_authtoken == undefined){
+					        	//initial query to the scopus api
+					            var elsvr_auth = "http://api.elsevier.com/authenticate?platform=SCOPUS";
+
+					            //ajax request based on the query above
+					            $.ajax({
+					            	url: elsvr_auth,
+					            	type: 'GET',
+					            	beforeSend: function(request){
+					            		request.setRequestHeader("X-ELS-APIKey", elsvr_apiKey);
+					            	},
+					            	dataType: 'json',
+				                    success: function(result){
+				                    	elsvr_authtoken = result["authenticate-response"].authtoken;
+			                            callback(null);
+				                    },
+				                    error: function(err){
+				                        callback(err);
+				                    }
+
+					            });
+				        	}
+				        	//if the authtoken has already been fetched
+				        	else
+				        		callback(null);
+				        },
+
 				 		//retrieve the chunk of [elsvr_retSize] results
 				        function(callback){
 
 				        	//initial query to the scopus api
-				            var elsvr_Query = String(elsvr_baseURL) + "apiKey="+ String(elsvr_apiKey) + "&query=af-id(" + String(elsvr_ID) + ")&httpAccept=application/" + String(elsvr_resultType) + "&count=" + String(elsvr_retSize) + "&view=";
+				            var elsvr_Query = String(elsvr_baseURL) + "&query=af-id(" + String(elsvr_ID) + ")&httpAccept=application/" + String(elsvr_resultType) + "&count=" + String(elsvr_retSize) + "&view=";
 
 				            //ajax request based on the query above
 				            $.ajax({
 				            	url: elsvr_Query,
 				            	type: 'GET',
+				            	beforeSend: function(request){
+				            		request.setRequestHeader("X-ELS-APIKey", elsvr_apiKey);
+				            		request.setRequestHeader("X-ELS-Authtoken", elsvr_authtoken);
+				            	},				            	
 				            	dataType: 'json',
 				                    success: function(result){
 			                            if (!countset){
@@ -104,6 +140,10 @@ exports.scopus = function(req, res) {
 				                $.ajax({
 				                    url: docQuery,
 				                    type: 'GET',
+				     				beforeSend: function(request){
+				            			request.setRequestHeader("X-ELS-APIKey", elsvr_apiKey);
+				            			request.setRequestHeader("X-ELS-Authtoken", elsvr_authtoken);
+				            		},	               
 				                    dataType: 'json',
 				                    success: function(result){
 				                        elsvr_results.push(result);
