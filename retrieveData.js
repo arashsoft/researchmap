@@ -115,6 +115,7 @@ exports.scopus = function(req, res) {
 			                              console.log("");
 			                              console.log("total num of documents to retrieve: " + elsvr_count);
 			                              console.log("");
+			                              console.log('processing chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count);
 			                              countset = true;
 			                            }
 			                            elsvr_resultChunk = result["search-results"]["entry"]; //the current chunk of the total result, the size of which elsvr_retSize
@@ -151,7 +152,10 @@ exports.scopus = function(req, res) {
 				                    },
 				                    error: function(err){
 				                        elsvr_errors = elsvr_errors+1;
-				                        callback(err);
+				                        if (err.statusText == "parsererror")
+				                        	callback(null); //don't need to pass this error along
+				                        else
+				                        	callback(err); //pass error to callback to handle
 				                    }
 				                });
 				            },
@@ -179,6 +183,7 @@ exports.scopus = function(req, res) {
 
 				    //callback for async.series
 				    //responsible for saving the retrieved data to the database
+				    //results[2] is what we want, because the first two functions do not return anything useful
 				    function (err, results){
 				        if (err) {
 		                	if (err == "QUOTA_EXCEEDED") {	
@@ -191,57 +196,104 @@ exports.scopus = function(req, res) {
 		                		console.log("ERROR: " + err);			        	
 				        }
 				        else {
-							//check if the database exists
-							//if no, create it
-							//if yes, delete the database and then create it -- this is for development purposes only!
-							db.exists(function(err,exists){
-								console.log("");
-								if (!exists) {
-								    db.create(function(er){
-								    	if (er) throw new Error(JSON.stringify(er));
-								    	console.log('New database: ' + db + 'created.');
-								    	//getData();
-								    });
-								  } 
-								else {
-						    		db.remove(function(er){
-						    			if (er) throw new Error(JSON.stringify(er));
-						    			console.log('Database: ' + db.name + ' removed.');
-						    		});
-						    		db.create(function(er){
-						    			if (er) throw new Error(JSON.stringify(er));
-						    			console.log('New database: ' + db.name + ' created.');
-						    		});
-						    	}
-						    	//create new document in the database;	
-								db.saveDoc('unprocessed', {'unprocessed': "test"}, function(err){
-									if (err) throw new Error(JSON.stringify(er));
-									console.log('New document: ' + 'unprocessed' + ' created.');
-									//getData();
-								});
-							});//end of initial db operations
+				        	//do database operations asynchronously in series
+					        async.series(
+					        	[
+					        	function(callback){
+									//check if the database exists
+									//if no, create it
+									db.exists(function(err,exists){
+										console.log("");
+										if (!exists) {
+										    db.create(function(er){
+										    	if (er) 
+										    		callback(er);
+										    	else {
+										    		console.log('New database: ' + db + 'created.');
+										    		callback(null);
+										    	}
+										    });
+										  } 
+										else {
+											//march 6 2014: commented this section out....if the database should be deleted, do it manually
+											// 	//remove and create the db again
+								  			//   db.remove(function(er){
+								  			//   			if (er) 
+								  			//   				callback(er);
+								  			//   			console.log('Database: ' + db.name + ' removed.');
+									 		//    		db.create(function(er){
+									 		//    			if (er) 
+									 		//    				callback(er);
+									 		//    			else {
+									 		//    				console.log('New database: ' + db.name + ' created.');
+									 		callback(null);
+									 		//    			}
+									 		//    		});
+								  			//   		});
+								    	}
+									});//end db.exists
+					        	},
 
+					        	function(callback){
+						        	//get the document from the database
+						        	//if there is an error because it doesn't exist, we create it
+						        	//if there isn't an error, we get it and append to it
+						        	//no nead to do a HEAD request, as we want the document anyway
+						            db.getDoc('unprocessed', function(er, doc){
+						            	//if there is an error with the GET request to the db
+						                if (er) {
+						                	//try to check the er object for reason field
+						                	try {
+						                		//if the document doesn't exist yet
+						                		if (er.reason == "missing"){
+									                //save the document to the database
+									                db.saveDoc('unprocessed', {'unprocessed': results[2]}, function(er, ok) {
+									                    if (er) 
+									                    	callback(er);
+									                    else {
+									                    	console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
+									               			retstart += elsvr_retSize;
+															callback(null);   
+														}  
+									                });						                			
+						                		}
+						                		//otherwise it is some error we weren't expecting
+						                		else
+						                			callback(er);
+						                	}
+						                	//if it is not the error we were expecting (missing), catch it
+						                	catch(e){
+						                		callback(er);
+						                	}
+						                }
+						                //if the document returned successfully
+						                else {
+						                	//append to it
+							                doc.unprocessed = _.extend(results[2], doc.unprocessed);
 
-				        	//get the document from the database
-				            db.getDoc('unprocessed', function(er, doc){
-				                if (er) throw new Error(JSON.stringify(er));
+							                //save the document to the database
+							                db.saveDoc('unprocessed', doc, function(er, ok) {
+							                    if (er) 
+							                    	callback(er);
+							                    else {
+							                    	console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
+							               			retstart += elsvr_retSize;
+													callback(null);   
+												}  
+							                });
+						            	}
+						            });
+					        	}
+					        	],
+						        function(err, results) {
+						        	if (err)
+						        		callback(err);
+						        	else
+						        		callback(null);
+						        }
+					  		);//end async.series	
 
-				                //if the object exists already, append to it 
-				                if (doc.elsvr != undefined)
-				                    doc.elsvr = _.extend(results[1], doc.elsvr);
-				                //if the object doesn't exist already, simply save the results to it
-				                else
-				                    doc.elsvr = results[1];
-
-				                //save the document to the database
-				                db.saveDoc('unprocessed', doc, function(er, ok) {
-				                    if (er) throw new Error(JSON.stringify(er));
-				                    console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name);
-				               		retstart += elsvr_retSize;
-									callback(null);     
-				                });
-				            });
-				        }
+				        }//end else
 				     }
 				);//end async.series
 		},
