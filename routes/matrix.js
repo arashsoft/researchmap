@@ -1,5 +1,5 @@
 var couchdb = require('felix-couchdb'),
-  client = couchdb.createClient(5984, 'localhost'),
+  client = couchdb.createClient(5984, 'localhost', 'insight', 'rki#$2sd'),
   db = client.db('researchmap');
 
 //all of the data needed for the matrix rather than individual sets

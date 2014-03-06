@@ -1,5 +1,5 @@
 var couchdb = require('felix-couchdb'),
-  client = couchdb.createClient(5984, 'localhost'),
+  client = couchdb.createClient(5984, 'localhost', 'insight', 'rki#$2sd'),
   db = client.db('researchmap');
 var async = require('async');
 

@@ -20,7 +20,7 @@ var $ = require('jquery');
 var async = require('async'); 
 var d3 = require('d3');
 var couchdb = require('felix-couchdb'),
-  client = couchdb.createClient(5984, 'localhost'),
+  client = couchdb.createClient(5984, 'localhost', 'insight', 'rki#$2sd'),
   db = client.db('researchmap');
 
 //vars for the processing
