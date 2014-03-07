@@ -6,3 +6,7 @@ data/
 
 .db
 /npm-debug.log
+
+/data
+
+/node_modules
