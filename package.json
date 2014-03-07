@@ -1,24 +1,42 @@
 {
   "name": "researchmapExpress",
   "version": "0.0.1",
+  "author": "Paul Parsons <pparsons@uwo.ca>",
+  "description": "researchmap for Western University",
+  "contributors": [
+    {
+      "name": "Paul Parsons",
+      "email": "pparsons@uwo.ca"
+    },  
+    {
+      "name": "Di Li",
+      "email": "troya.lee@gmail.com"
+    },
+    {
+      "name": "Arman Didandeh",
+      "email": "a.didandeh@uwo.ca"
+    },
+    {
+      "name": "Arash Khosravi",
+      "email": "arashsoft@gmail.com"
+    }                 
+  ],
   "private": true,
   "scripts": {
-    "start": "nodemon --debug app.js"
+    "start": "node --debug app.js"
   },
   "dependencies": {
-    "express": "~3.2.4",
-    "less-middleware": "*",
-    "express3-handlebars": "~0.4.1",
-    "async": "~0.2.9",
-    "cron": "~1.0.1",
+    "express": "~3.4.8",
+    "express3-handlebars": "~0.5.0",
+    "async": "~0.2.10",
     "felix-couchdb": "~1.0.7",
     "csv": "~0.3.3",
-    "uglify-js": "~2.3.6",
-    "LazyBoy": "~0.1.14",
-    "jade": "~0.31.2",
-    "underscore": "~1.4.4",
-    "jquery": "~1.8.3",
-    "d3": "~3.2.2"
+    "underscore": "~1.6.0",
+    "jquery": "~2.1.10",
+    "d3": "~3.4.3",
+    "express-error-handler": "~0.5.4",
+    "bunyan-request-logger": "~0.21.4",
+    "connect-cache-control": "~0.1.0"
   },
   "devDependencies": {
     "nodemon": "*"
