@@ -69,9 +69,12 @@ exports.scopus = function(req, res) {
 				    		//if the database doc hasn't been checked yet
 				    		if (!checkedDoc) {
 					    		try {
-									db.getDoc('unprocessed', function(er, doc) {
-										if (er)
-											callback(er);
+									db.getDoc('unprocessed2', function(er, doc) {
+										if (er){
+											//retstart is already set at 0
+											callback(null);
+											checkedDoc = true;
+										}
 										else {
 											retstart = doc.unprocessed.length; 
 											callback(null);
@@ -81,9 +84,7 @@ exports.scopus = function(req, res) {
 								}
 								//will catch if the document doesn't exist
 								catch (e) {
-									//retstart is already set at 0
-									callback(null);
-									checkedDoc = true;
+									callback(e);
 								}
 							}
 							else
@@ -210,7 +211,7 @@ exports.scopus = function(req, res) {
 
 				    //callback for async.series
 				    //responsible for saving the retrieved data to the database
-				    //results[2] is what we want, because the first two functions do not return anything useful
+				    //results[3] is what we want, because the first two functions do not return anything useful
 				    function (err, results){
 				        if (err) {
 		                	if (err == "QUOTA_EXCEEDED") {	
@@ -275,7 +276,7 @@ exports.scopus = function(req, res) {
 						                		//if the document doesn't exist yet
 						                		if (er.reason == "missing"){
 									                //save the document to the database
-									                db.saveDoc('unprocessed', {'unprocessed': results[2]}, function(er, ok) {
+									                db.saveDoc('unprocessed', {'unprocessed': results[3]}, function(er, ok) {
 									                    if (er) 
 									                    	callback(er);
 									                    else {
@@ -297,7 +298,7 @@ exports.scopus = function(req, res) {
 						                //if the document returned successfully
 						                else {
 						                	//append to it
-							                doc.unprocessed = _.extend(results[2], doc.unprocessed);
+							                doc.unprocessed = _.extend(results[3], doc.unprocessed);
 
 							                //save the document to the database
 							                db.saveDoc('unprocessed', doc, function(er, ok) {
