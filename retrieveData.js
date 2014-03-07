@@ -38,6 +38,7 @@ exports.scopus = function(req, res) {
 	var elsvr_errors = 0;
 	var countset = false;
 	var elsvr_authtoken;
+	var checkedDoc = false;
 
 	getData();
 
@@ -63,6 +64,32 @@ exports.scopus = function(req, res) {
 				//first retrieve the chunk of 200 results, then retrive more detail for each of the 200
 				async.series(
 				    [ 
+				    	//check db
+				    	function(callback){
+				    		//if the database doc hasn't been checked yet
+				    		if (!checkedDoc) {
+					    		try {
+									db.getDoc('unprocessed', function(er, doc) {
+										if (er)
+											callback(er);
+										else {
+											retstart = doc.unprocessed.length; 
+											callback(null);
+											checkedDoc = true;
+										}
+									});
+								}
+								//will catch if the document doesn't exist
+								catch (e) {
+									//retstart is already set at 0
+									callback(null);
+									checkedDoc = true;
+								}
+							}
+							else
+								callback(null);
+				    	},
+
 				 		//first send authorization request
 				        function(callback){
 
@@ -98,7 +125,7 @@ exports.scopus = function(req, res) {
 				        function(callback){
 
 				        	//initial query to the scopus api
-				            var elsvr_Query = String(elsvr_baseURL) + "&query=af-id(" + String(elsvr_ID) + ")&httpAccept=application/" + String(elsvr_resultType) + "&count=" + String(elsvr_retSize) + "&view=";
+				            var elsvr_Query = String(elsvr_baseURL) + "&query=af-id(" + String(elsvr_ID) + ")&httpAccept=application/" + String(elsvr_resultType) + "&count=" + String(elsvr_retSize) + "&start=" + retstart + "&view=";
 
 				            //ajax request based on the query above
 				            $.ajax({
