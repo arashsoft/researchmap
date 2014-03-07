@@ -32,11 +32,13 @@
     "felix-couchdb": "~1.0.7",
     "csv": "~0.3.3",
     "underscore": "~1.6.0",
-    "jquery": "~2.1.0",
+    "jQuery": "~1.7.2",
     "d3": "~3.4.3",
     "express-error-handler": "~0.5.4",
     "bunyan-request-logger": "~0.2.3",
-    "connect-cache-control": "~0.1.0"
+    "connect-cache-control": "~0.1.0",
+    "jsdom": "~0.10.1",
+    "xmlhttprequest": "~1.6.0"
   },
   "devDependencies": {
     "nodemon": "*"
