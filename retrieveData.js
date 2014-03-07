@@ -6,7 +6,7 @@ copyright Paul Parsons 2014
 
 var util = require('util');
 var _ = require('underscore');
-var $ = require('jquery');
+var $ = require('jquery')(window);
 var async = require('async'); 
 var couchdb = require('felix-couchdb'),
   client = couchdb.createClient(5984, 'localhost', 'insight', 'rki#$2sd'),
