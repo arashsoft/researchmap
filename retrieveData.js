@@ -187,6 +187,7 @@ exports.scopus = function(req, res) {
 				    function (err, results){
 				        if (err) {
 		                	if (err == "QUOTA_EXCEEDED") {	
+		                		console.log(""); 
 		                		console.log("ERROR: Request quota for API key has been exceeded");
 				                console.log("stopping script execution...");
 				                retstart = elsvr_count; //to stop the whilst loop
@@ -209,7 +210,7 @@ exports.scopus = function(req, res) {
 										    	if (er) 
 										    		callback(er);
 										    	else {
-										    		console.log('New database: ' + db + 'created.');
+										    		console.log('New database: ' + db.name + 'created.');
 										    		callback(null);
 										    	}
 										    });
@@ -303,9 +304,7 @@ exports.scopus = function(req, res) {
 		//give some report about the running of the script
 		function(err) {
 			console.log("");
-			console.log("---------------")
-			console.log("script finished");
-			console.log("---------------")
+			console.log("-----script finished-----");
 			console.log("");
 			console.log("REPORT: ");			
 
