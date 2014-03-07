@@ -69,7 +69,7 @@ exports.scopus = function(req, res) {
 				    		//if the database doc hasn't been checked yet
 				    		if (!checkedDoc) {
 					    		try {
-									db.getDoc('unprocessed2', function(er, doc) {
+									db.getDoc('unprocessed', function(er, doc) {
 										if (er){
 											//retstart is already set at 0
 											callback(null);
@@ -142,6 +142,7 @@ exports.scopus = function(req, res) {
 			                              elsvr_count = parseInt(result["search-results"]["opensearch:totalResults"]); //the number of results
 			                              console.log("");
 			                              console.log("total num of documents to retrieve: " + elsvr_count);
+										  console.log("starting retrieval from " + retstart);
 			                              console.log("");
 			                              countset = true;
 			                            }
