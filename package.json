@@ -32,10 +32,10 @@
     "felix-couchdb": "~1.0.7",
     "csv": "~0.3.3",
     "underscore": "~1.6.0",
-    "jquery": "~2.1.10",
+    "jquery": "~2.1.0",
     "d3": "~3.4.3",
     "express-error-handler": "~0.5.4",
-    "bunyan-request-logger": "~0.21.4",
+    "bunyan-request-logger": "~0.2.3",
     "connect-cache-control": "~0.1.0"
   },
   "devDependencies": {
