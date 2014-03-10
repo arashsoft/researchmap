@@ -10,3 +10,5 @@ data/
 /data
 
 /node_modules
+routes
+/routes

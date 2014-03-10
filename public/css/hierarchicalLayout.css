@@ -9,7 +9,7 @@
 }
 
 .hierarchicalNode:hover {
-  fill: #000000;
+  fill: #000000 !important ;
   font-weight:bold;
   background-color:#FFFF66;
 }
@@ -25,26 +25,13 @@
 .hierarchicalNode--target {
   font-weight:bold;
   background-color:#E68A00;
+  fill: #d62728 !important;
 }
 
-.hierarchicalNode--source {
-  fill: #d62728;
-}
-
-.hierarchicalNode--target {
-  fill: #d62728;
-}
 
 .hierarchicalLink--source,
 .hierarchicalLink--target {
   stroke-opacity: 1;
   stroke-width: 2px;
-}
-
-.hierarchicalLink--source {
-  stroke: #d62728;
-}
-
-.hierarchicalLink--target {
   stroke: #d62728;
 }

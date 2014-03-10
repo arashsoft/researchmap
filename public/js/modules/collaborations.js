@@ -445,7 +445,11 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	      networkzoom.scale(networkzoom.scale()-0.1);
 	      networksvg.transition().duration(1000).attr('transform', 'translate(' + networkzoom.translate() + ') scale(' + networkzoom.scale() + ')');
 	  });
-
+		
+	  // code by Arash 10-3-2014
+	  // hide tensionBar
+	  $("#tensionBar").hide();
+	  
 	});//end document.ready
 
 	$( "#networkyearrange" ).slider({
@@ -2766,6 +2770,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    d3.selectAll("path.hierarchicalLink").transition().delay(1500).style("display", "none");
 	    d3.selectAll("text.hierarchicalNode").transition().duration(1500).style("opacity", 0);
 	    d3.selectAll("text.hierarchicalNode").transition().delay(1500).style("display", "none");
+		 $("#tensionBar").hide("slow");
 	    //show the individual nodes
 	    d3.selectAll("circle.node").transition().duration(1500).style("opacity", 1).style("display", "");
 	    d3.selectAll("line.link").transition().duration(1500).style("opacity", 1).style("display", "");
@@ -2787,6 +2792,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    d3.selectAll("path.hierarchicalLink").transition().delay(1500).style("display", "none");
 	    d3.selectAll("text.hierarchicalNode").transition().duration(1500).style("opacity", 0);
 	    d3.selectAll("text.hierarchicalNode").transition().delay(1500).style("display", "none");
+		 $("#tensionBar").hide("slow");
 	    //show the department nodes
 	    d3.selectAll("circle.dept").style("display", "").style("opacity", "0");
 	    d3.selectAll("circle.dept").transition().duration(1500).style("opacity", 1).attr("r", function(d){ 
@@ -2810,6 +2816,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	    d3.selectAll("path.hierarchicalLink").transition().delay(1500).style("display", "none");
 	    d3.selectAll("text.hierarchicalNode").transition().duration(1500).style("opacity", 0);
 	    d3.selectAll("text.hierarchicalNode").transition().delay(1500).style("display", "none");
+		 $("#tensionBar").hide("slow");
 	    //build chord diagram
 	    if(!chord_constructed)
 	    	constructChord();
@@ -2842,7 +2849,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	   //d3.selectAll("path.hierarchicalLink").transition().delay(1500).;
 	   d3.selectAll("text.hierarchicalNode").transition().duration(1500).style("opacity", 1).style("display", "");
 	   //d3.selectAll("text.hierarchicalNode").transition().delay(1500).style("display", "");
-		
+		$("#tensionBar").show("slow");
 	  }
 	  
 	});
@@ -6311,13 +6318,13 @@ var collaborations = (function () { //pass globals as parameters to import them 
 
 			
 		d3.json("collaboration2.json", function(error, classes) {
-		 var hierarchicalNodes = hierarchicalCluster.nodes(packageHierarchy(classes)),
+			var hierarchicalNodes = hierarchicalCluster.nodes(packageHierarchy(classes)),
 			  hierarchicalLinks = packageImports(hierarchicalNodes);
 			 
 			  
-		hierarchicalLink = hierarchicalLink
+			hierarchicalLink = hierarchicalLink
 			  .data(hierarchicalBundle(hierarchicalLinks))
-			.enter().append("path")
+			  .enter().append("path")
 			  .each(function(d) { 
 				d.source = d[0],
 				d.target = d[d.length - 1]  
@@ -6328,9 +6335,9 @@ var collaborations = (function () { //pass globals as parameters to import them 
 			  //.style("fill", "none")
 			  .attr("d", hierarchicalLine);
 
-		hierarchicalNode= hierarchicalNode
+			hierarchicalNode= hierarchicalNode
 			  .data(hierarchicalNodes.filter(function(n) { return !n.children; }))
-			.enter().append("text")
+			  .enter().append("text")
 			  .attr("class", "hierarchicalNode")
 			  //.style("font", "11px 'Helvetica Neue', Helvetica, Arial, sans-serif")
 			  .style("fill", function(d){return color20(d.parent.name); })
@@ -6340,8 +6347,12 @@ var collaborations = (function () { //pass globals as parameters to import them 
 			  .text(function(d) { return d.key; })
 			  .on("mouseover", mouseovered)
 			  .on("mouseout", mouseouted);
-			  
 	
+			$("#tensionInput").on("change", function() {
+				hierarchicalLine.tension(this.value / 100);
+				hierarchicalLink.attr("d", hierarchicalLine);
+			});
+		
 		}); 
 		d3.select(self.frameElement).style("height", hierarchicalDiameter + "px");
 		
