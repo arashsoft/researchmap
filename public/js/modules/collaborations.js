@@ -6317,7 +6317,7 @@ var collaborations = (function () { //pass globals as parameters to import them 
 			hierarchicalNode = hierarchicalSvg.append("g").selectAll(".node");
 
 			
-		d3.json("collaboration2.json", function(error, classes) {
+		d3.json("json/collaboration2.json", function(error, classes) {
 			var hierarchicalNodes = hierarchicalCluster.nodes(packageHierarchy(classes)),
 			  hierarchicalLinks = packageImports(hierarchicalNodes);
 			 
