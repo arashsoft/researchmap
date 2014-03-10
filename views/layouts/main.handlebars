@@ -36,14 +36,14 @@
   <script src="js/lib/nv.d3.js"></script>
   <script type="text/javascript">
     $(document).ready(function(){
-      $('#menu li:lt(2)').hide(0);
-      $('#menu li:lt(3)').on("mouseover", function(){
+      $('#menu li:lt(3)').hide(0);
+      $('#menu li:lt(4)').on("mouseover", function(){
         //$('#menu li:eq(0)').html("<a href='views'><< views</a>");
-        $('#menu li:lt(2)').show('fast');
+        $('#menu li:lt(3)').show('fast');
       });
       $('#menu').on("mouseleave", function(){
         console.log("yup");
-        $('#menu li:lt(2)').hide('fast');
+        $('#menu li:lt(3)').hide('fast');
       });
 
       // $('#header').on("mouseout", function(){
@@ -65,7 +65,9 @@
           <li>{{#if navpub}}<a href="collaborations"  class='active'>Collaborations</a>{{else}} <a href="collaborations">Collaborations</a>{{/if}}
           </li>
           <li>{{#if navgrants}}<a href="grants" class='active'>Grants</a>{{else}}<a href="grants">Grants</a>{{/if}}
-          </li> 
+          </li>
+          <li>{{#if navgrantpub}}<a href="grantpub" class='active'>Grant-Publication</a>{{else}}<a href="grantpub">Grant-Publication</a>{{/if}}
+			 </li>
           <li>{{#if views}}<a href="views" class='active'>views</a>{{else}}<a href="views">views</a>{{/if}}
           </li> 
           <li>{{#if navhelp}}<a href="help" class='active'>Help</a>{{else}}<a href="help">Help</a>{{/if}}

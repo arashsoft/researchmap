@@ -26,6 +26,9 @@ var industry = require('./routes/industry');
 var network = require('./routes/network');
 var matrix = require('./routes/matrix');
 var home = require ('./routes/home');
+// code by Arash - 10-3-2014
+// add grant-publication link
+var grantpub = require('./routes/grantpub');
 
 //configuration
 app.configure(function(){
@@ -79,6 +82,10 @@ app.get("/views", views.page);
 app.get("/industry", industry.page);
 //route for default home
 app.get("/", home.page);
+
+// code by Arash - 10-3-2014
+// add grant-publication menu
+app.get("/grantpub", grantpub.page);
 
 
 // Route that triggers a sample error:
