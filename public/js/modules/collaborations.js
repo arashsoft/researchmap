@@ -452,12 +452,13 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  
 	});//end document.ready
 
+			
 	$( "#networkyearrange" ).slider({
 	  range: true,
-	  min: 2008,
-	  max: 2013,
+	  min: 1996,
+	  max: 2014,
 	  animate: true,
-	  values: [ 2008, 2013 ],
+	  values: [ 1996, 2014 ],
 	  slide: function( event, ui ) {
 	    $( "#networkyear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
 
@@ -476,21 +477,41 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  });
 	  
 		// code by Arash 26/2/2014
-		// show hierarchical edge links based on their year
+		// show hierarchical edge links based on their year and type
+		
 		d3.selectAll("path.hierarchicalLink").each( function(){
+				
 			if(this.__data__.type == "publication") {
-				if (ui.values[0] <= this.__data__.year && this.__data__.year <= ui.values[1] && $('input#filterCo_pubs').is(':checked')) {
-					d3.select(this).style("visibility", "visible").style("opacity", 1);
+				if (ui.values[0] <= this.__data__.begin && this.__data__.end <= ui.values[1] && $('input#filterCo_pubs').is(':checked')) {
+					d3.select(this).style("visibility", "visible");
+		         d3.select(this).transition().duration(1000).style("opacity", 1);
 				}
 				else {
-					d3.select(this).style("opacity", 0).style("visibility", "hidden");        
+					d3.select(this).transition().duration(1000).style("opacity", 0);
+					d3.select(this).transition().delay(1000).style("visibility", "hidden");      
 				}
-	  
-	  
-	  
+			}else if(this.__data__.type == "grant") {
+				if (ui.values[0] <= this.__data__.begin && this.__data__.end <= ui.values[1] && $('input#filterCo_grants').is(':checked')) {
+					d3.select(this).style("visibility", "visible");
+		         d3.select(this).transition().duration(1000).style("opacity", 1)
+				}
+				else {
+					d3.select(this).transition().duration(1000).style("opacity", 0);
+					d3.select(this).transition().delay(1000).style("visibility", "hidden");    
+				}
+			}else if(this.__data__.type == "supervision") {
+				if (ui.values[0] <= this.__data__.begin && this.__data__.end <= ui.values[1] && $('input#filterCo_sups').is(':checked')) {
+					d3.select(this).style("visibility", "visible");
+		         d3.select(this).transition().duration(1000).style("opacity", 1)
+				}
+				else {
+					d3.select(this).transition().duration(1000).style("opacity", 0);
+					d3.select(this).transition().delay(1000).style("visibility", "hidden");       
+				}
 			}
+			
 		});
-	  
+	  		
 	  //if the user has specified that nodes w/o links should be hidden
 	  if ($('input#filterNodesLinks').is(':checked')){
 	    d3.selectAll("circle.node").each( function () {
@@ -2080,6 +2101,24 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  		}
 	  	});
 	  }
+		// Code by Arash - 12-03-2014
+		// support filter functions for hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").each( function(){
+			//work with year filter
+		   var begin = $('#networkyearrange').slider("option", "values")[0];
+		   var end = $('#networkyearrange').slider("option", "values")[1];
+			
+			if(this.__data__.type == "publication") {
+				if (begin <= this.__data__.begin && this.__data__.end <= end) {
+					d3.select(this).style("visibility", "visible");
+		         d3.select(this).transition().duration(1000).style("opacity", 1)
+				}
+				else {
+					d3.select(this).transition().duration(1000).style("opacity", 0);
+					d3.select(this).transition().delay(1000).style("visibility", "hidden");
+				}
+			} 
+		});
 	});
 	$('input#filterCo_pubs').on('ifUnchecked', function() {
 
@@ -2138,6 +2177,16 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  		}
 	  	});
 	  }
+	  // code by Arash 12-03-2014
+	  // support filter functions for hierarchical edge bundling
+	  d3.selectAll("path.hierarchicalLink").each( function(){
+			//work with year filter
+			if(this.__data__.type == "publication") {
+				d3.select(this).transition().duration(1000).style("opacity", 0);
+				d3.select(this).transition().delay(1000).style("visibility", "hidden");
+			} 
+		});
+	
 	});
 
 
@@ -2199,6 +2248,27 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  		}
 	  	});
 	  }
+		
+		// Code by Arash - 12-03-2014
+		// support filter functions for hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").each( function(){
+			//work with year filter
+		   var begin = $('#networkyearrange').slider("option", "values")[0];
+		   var end = $('#networkyearrange').slider("option", "values")[1];
+			
+			if(this.__data__.type == "supervision") {
+				if (begin <= this.__data__.begin && this.__data__.end <= end) {
+					d3.select(this).style("visibility", "visible");
+		         d3.select(this).transition().duration(1000).style("opacity", 1)
+				}
+				else {
+					d3.select(this).transition().duration(1000).style("opacity", 0);
+					d3.select(this).transition().delay(1000).style("visibility", "hidden");
+				}
+			} 
+		});
+		
+		
 	});
 	$('input#filterCo_sups').on('ifUnchecked', function(){
 	  if($('#granularity').val() == "individuals") {
@@ -2256,6 +2326,17 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  		}
 	  	});
 	  }
+	  
+		// code by Arash 12-03-2014
+		// support filter functions for hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").each( function(){
+			//work with year filter
+			if(this.__data__.type == "supervision") {
+				d3.select(this).transition().duration(1000).style("opacity", 0);
+				d3.select(this).transition().delay(1000).style("visibility", "hidden");
+			} 
+		});
+		
 	});
 
 	$('input#filterCo_grants').on('ifChecked', function(){
@@ -2316,6 +2397,24 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  		}
 	  	});
 	  }
+		// Code by Arash - 12-03-2014
+		// support filter functions for hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").each( function(){
+			//work with year filter
+		   var begin = $('#networkyearrange').slider("option", "values")[0];
+		   var end = $('#networkyearrange').slider("option", "values")[1];
+			
+			if(this.__data__.type == "grant") {
+				if (begin <= this.__data__.begin && this.__data__.end <= end) {
+					d3.select(this).style("visibility", "visible");
+		         d3.select(this).transition().duration(1000).style("opacity", 1)
+				}
+				else {
+					d3.select(this).transition().duration(1000).style("opacity", 0);
+					d3.select(this).transition().delay(1000).style("visibility", "hidden");
+				}
+			} 
+		});
 	});
 	$('input#filterCo_grants').on('ifUnchecked', function(){
 	  if($('#granularity').val() == "individuals") {
@@ -2373,6 +2472,16 @@ var collaborations = (function () { //pass globals as parameters to import them 
 	  		}
 	  	});
 	  }
+		// code by Arash 12-03-2014
+		// support filter functions for hierarchical edge bundling
+		d3.selectAll("path.hierarchicalLink").each( function(){
+			//work with year filter
+			if(this.__data__.type == "grant") {
+				d3.select(this).transition().duration(1000).style("opacity", 0);
+				d3.select(this).transition().delay(1000).style("visibility", "hidden");
+			} 
+		});
+		
 	});
 
 	$('input#filterNodesAll').on('ifChecked', function(){
@@ -6334,7 +6443,14 @@ var collaborations = (function () { //pass globals as parameters to import them 
 			  //.style("stroke-opacity", 0.4)
 			  //.style("fill", "none")
 			  .attr("d", hierarchicalLine);
-
+			
+			// add years (begin and end) to hierarchicallink
+			for (var i =0; i < hierarchicalLinks.length ; i++){
+				hierarchicalLink[0][i].__data__.begin = typeof hierarchicalLinks[i].begin === 'undefined'?  2008 : hierarchicalLinks[i].begin ;
+				hierarchicalLink[0][i].__data__.end = typeof hierarchicalLinks[i].end === 'undefined' ? 2012 : hierarchicalLinks[i].end ;
+				hierarchicalLink[0][i].__data__.type = hierarchicalLinks[i].type ;
+			}
+			
 			hierarchicalNode= hierarchicalNode
 			  .data(hierarchicalNodes.filter(function(n) { return !n.children; }))
 			  .enter().append("text")
