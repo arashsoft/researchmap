@@ -323,57 +323,54 @@ exports.scopus = function(req, res) {
 							                });
 						            	}
 						            });
-					        	},
-
-					        	function(callback){
-					        		//also want to save the number of completed queries (can be used later for query starting point)
-									db.getDoc('numcompleted', function(er, doc) {
-					            		//if there is an error with the GET request to the db
-						                if (er) {
-						                	//try to check the er object for reason field
-						                	try {
-						                		//if the document doesn't exist yet
-						                		if (er.reason == "missing"){
-									                //save the document to the database
-									                db.saveDoc('numcompleted', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
-							                    		if (er) 
-							                    			callback(er);
-							                    		else {
-															callback(null);
-														}   
-													});						                			
-						                		}
-						                		//otherwise it is some error we weren't expecting
-						                		else
-						                			callback(er);
-						                	}
-						                	//if it is not the error we were expecting (missing), catch it
-						                	catch(e){
-						                		callback(er);
-						                	}
-						                }
-
-						               	//if the document returned successfully
-						                else {
-						                	//update the existing document
-						                	doc.numcompleted = retstart+elsvr_retSize;
-
-											db.saveDoc('numcompleted', doc, function(er, ok) {
-					                    		if (er) 
-					                    			callback(er);
-					                    		else {
-													callback(null);
-												}   
-											});
-										}
-									});
 					        	}
 					        	],
 						        function(err, results) {
 						        	if (err)
 						        		callback(err);
-						        	else
-						        		callback(null);
+						        	else { 
+						        		//also want to save the number of completed queries (can be used later for query starting point)
+										db.getDoc('numcompleted', function(er, doc) {
+						            		//if there is an error with the GET request to the db
+							                if (er) {
+							                	//try to check the er object for reason field
+							                	try {
+							                		//if the document doesn't exist yet
+							                		if (er.reason == "missing"){
+										                //save the document to the database
+										                db.saveDoc('numcompleted', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
+								                    		if (er) 
+								                    			callback(er);
+								                    		else {
+																callback(null);
+															}   
+														});						                			
+							                		}
+							                		//otherwise it is some error we weren't expecting
+							                		else
+							                			callback(er);
+							                	}
+							                	//if it is not the error we were expecting (missing), catch it
+							                	catch(e){
+							                		callback(er);
+							                	}
+							                }
+
+							               	//if the document returned successfully
+							                else {
+							                	//update the existing document
+							                	doc.numcompleted = retstart+elsvr_retSize;
+
+												db.saveDoc('numcompleted', doc, function(er, ok) {
+						                    		if (er) 
+						                    			callback(er);
+						                    		else {
+														callback(null);
+													}   
+												});
+											}
+										});
+						        	}
 						        }
 					  		);//end async.series	
 
