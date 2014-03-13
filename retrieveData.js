@@ -348,7 +348,10 @@ exports.scopus = function(req, res) {
 
 						               	//if the document returned successfully
 						                else {
-											db.saveDoc('numcompleted', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
+						                	//update the existing document
+						                	doc.numcompleted = retstart+elsvr_retSize;
+
+											db.saveDoc('numcompleted', doc, function(er, ok) {
 					                    		if (er) 
 					                    			callback(er);
 					                    		else {
