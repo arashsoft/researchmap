@@ -58,6 +58,8 @@ exports.scopus = function(req, res) {
 
 			function(callback) {
 
+				elsvr_results = []; //reset the array
+
 				//this is the 200-result 'chunk'
 				var elsvr_resultChunk;
 
@@ -69,14 +71,14 @@ exports.scopus = function(req, res) {
 				    		//if the database doc hasn't been checked yet
 				    		if (!checkedDoc) {
 					    		try {
-									db.getDoc('unprocessed', function(er, doc) {
+									db.getDoc('numcompleted', function(er, doc) {
 										if (er){
 											//retstart is already set at 0
 											callback(null);
 											checkedDoc = true;
 										}
 										else {
-											retstart = doc.unprocessed.length; 
+											retstart = doc.numcompleted; //want to start with the number at which we previously left off
 											callback(null);
 											checkedDoc = true;
 										}
@@ -197,11 +199,14 @@ exports.scopus = function(req, res) {
 			                        	if (errmsg == "QUOTA_EXCEEDED") {
 			                        		callback(errmsg);
 			                        	}
-			                        	else
+			                        	else {
 			                        		console.log("error returned from query: " + errmsg);
+			                        		callback(null);
+			                        	}
 			                        }
 			                        catch (e) {
 			                        	console.log("unknown error returned from query");
+			                        	callback(null);
 			                        }
 				                }
 				                else
@@ -281,9 +286,16 @@ exports.scopus = function(req, res) {
 									                    if (er) 
 									                    	callback(er);
 									                    else {
-									                    	console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
-									               			retstart += elsvr_retSize;
-															callback(null);   
+									                    	//also save the number of completed queries (can be used later for starting point)
+									                    	db.saveDoc('unprocessed', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
+									                    		if (er) 
+									                    			callback(er);
+									                    		else {
+									                    			console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
+									               					retstart += elsvr_retSize;
+																	callback(null);
+																}   
+															}
 														}  
 									                });						                			
 						                		}
@@ -299,16 +311,23 @@ exports.scopus = function(req, res) {
 						                //if the document returned successfully
 						                else {
 						                	//append to it
-							                doc.unprocessed = _.extend(results[3], doc.unprocessed);
+							                doc.unprocessed = doc.unprocessed.concat(results[3]);
 
 							                //save the document to the database
 							                db.saveDoc('unprocessed', doc, function(er, ok) {
 							                    if (er) 
 							                    	callback(er);
 							                    else {
-							                    	console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
-							               			retstart += elsvr_retSize;
-													callback(null);   
+							                    	//also save the number of completed queries (can be used later for starting point)
+							                    	db.saveDoc('unprocessed', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
+							                    		if (er) 
+							                    			callback(er);
+							                    		else {
+							                    			console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
+							               					retstart += elsvr_retSize;
+															callback(null);
+														}   
+													}
 												}  
 							                });
 						            	}
