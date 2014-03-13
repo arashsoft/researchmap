@@ -295,7 +295,7 @@ exports.scopus = function(req, res) {
 									               					retstart += elsvr_retSize;
 																	callback(null);
 																}   
-															}
+															});
 														}  
 									                });						                			
 						                		}
@@ -327,7 +327,7 @@ exports.scopus = function(req, res) {
 							               					retstart += elsvr_retSize;
 															callback(null);
 														}   
-													}
+													});
 												}  
 							                });
 						            	}
