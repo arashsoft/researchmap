@@ -186,7 +186,8 @@ exports.scopus = function(req, res) {
 				                        if (err.statusText == "parsererror")
 				                        	callback(null); //don't need to pass this error along
 				                        else
-				                        	callback(err); //pass error to callback to handle
+				                        	callback(null); //hopefully this is okay
+				                        	//callback(err); //pass error to callback to handle
 				                    }
 				                });
 				            },
@@ -301,8 +302,14 @@ exports.scopus = function(req, res) {
 						                }
 						                //if the document returned successfully
 						                else {
-						                	//append to it
-							                doc.unprocessed = doc.unprocessed.concat(results[3]);
+						                	if (doc.unprocessed != null) {
+						                		//append to it
+							                	doc.unprocessed = doc.unprocessed.concat(results[3]);
+							            	}
+							            	else{
+							            		//create it
+							            		doc.unprocessed = results[3];
+							            	}
 
 							                //save the document to the database
 							                db.saveDoc('unprocessed', doc, function(er, ok) {
