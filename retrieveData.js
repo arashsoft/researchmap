@@ -201,12 +201,10 @@ exports.scopus = function(req, res) {
 			                        	}
 			                        	else {
 			                        		console.log("error returned from query: " + errmsg);
-			                        		callback(null);
 			                        	}
 			                        }
 			                        catch (e) {
 			                        	console.log("unknown error returned from query");
-			                        	callback(null);
 			                        }
 				                }
 				                else
