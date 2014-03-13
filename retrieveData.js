@@ -323,8 +323,10 @@ exports.scopus = function(req, res) {
 							                });
 						            	}
 						            });
+					        	},
 
-									//also want to save the number of completed queries (can be used later for query starting point)
+					        	function(callback){
+					        		//also want to save the number of completed queries (can be used later for query starting point)
 									db.getDoc('numcompleted', function(er, doc) {
 					            		//if there is an error with the GET request to the db
 						                if (er) {
