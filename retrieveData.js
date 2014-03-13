@@ -328,7 +328,7 @@ exports.scopus = function(req, res) {
 						                		//if the document doesn't exist yet
 						                		if (er.reason == "missing"){
 									                //save the document to the database
-									                db.saveDoc('unprocessed', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
+									                db.saveDoc('numcompleted', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
 							                    		if (er) 
 							                    			callback(er);
 							                    		else {
@@ -348,7 +348,7 @@ exports.scopus = function(req, res) {
 
 						               	//if the document returned successfully
 						                else {
-											db.saveDoc('unprocessed', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
+											db.saveDoc('numcompleted', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
 					                    		if (er) 
 					                    			callback(er);
 					                    		else {
