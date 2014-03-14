@@ -302,7 +302,7 @@ exports.scopus = function(req, res) {
 						                }
 						                //if the document returned successfully
 						                else {
-						                	if (typeof doc.unprocessed != "undfined") {
+						                	if (typeof doc.unprocessed != "undefined") {
 						                		//append to it
 							                	doc.unprocessed = doc.unprocessed.concat(results[3]);
 							            	}
