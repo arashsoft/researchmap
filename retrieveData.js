@@ -30,7 +30,7 @@ exports.scopus = function(req, res) {
 	var elsvr_apiKey = "9cb35f2a298ac707a9de85c32a2fcd63"; //my (Paul Parsons) api key
 	var elsvr_baseURL = "http://api.elsevier.com/content/search/index:SCOPUS?"; 
 	var elsvr_resultType = "json";
-	var elsvr_retSize = 200; //number of results that are returned per query. max is 200
+	var elsvr_retSize = 10; //number of results that are returned per query. max is 200
 	var elsvr_initialReturn;
 	var elsvr_count = 1000; //number of results--start with a default and update later
 	var elsvr_view = "META";// see www.developers.elsevier.com/devcms/content-api-retrieval-views
@@ -39,6 +39,7 @@ exports.scopus = function(req, res) {
 	var countset = false;
 	var elsvr_authtoken;
 	var checkedDoc = false;
+	var numcompleted = 0;
 
 	getData();
 
@@ -79,6 +80,7 @@ exports.scopus = function(req, res) {
 										}
 										else {
 											retstart = doc.numcompleted; //want to start with the number at which we previously left off
+											numcompleted = doc.numcompleted; //want to keep this number for later
 											callback(null);
 											checkedDoc = true;
 										}
@@ -269,60 +271,78 @@ exports.scopus = function(req, res) {
 					        	},
 
 					        	function(callback){
+
+					        		//number of chunks stored so far in the db + 1
+					        		var chunknum = (numcompleted/elsvr_retSize) + 1;
+
+					        		//save to a new document in the database
+					        		db.saveDoc('chunk' + chunknum, {'chunk': results[3]}, function(er,ok) {
+					                    if (er) 
+					                    	callback(er);
+					                    else {
+			                    			console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
+			               					retstart += elsvr_retSize;
+			               					numcompleted += elsvr_retSize;
+											callback(null);
+										} 
+					        		});
+
+
+
 						        	//get the document from the database
 						        	//if there is an error because it doesn't exist, we create it
 						        	//if there isn't an error, we get it and append to it
 						        	//no nead to do a HEAD request, as we want the document anyway
-						            db.getDoc('unprocessed', function(er, doc){
-						            	//if there is an error with the GET request to the db
-						                if (er) {
-						                	//try to check the er object for reason field
-						                	try {
-						                		//if the document doesn't exist yet
-						                		if (er.reason == "missing"){
-									                //save the document to the database
-									                db.saveDoc('unprocessed', {'unprocessed': results[3]}, function(er, ok) {
-									                    if (er) 
-									                    	callback(er);
-									                    else {
-							                    			console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
-							               					retstart += elsvr_retSize;
-															callback(null);
-														}  
-									                });						                			
-						                		}
-						                		//otherwise it is some error we weren't expecting
-						                		else
-						                			callback(er);
-						                	}
-						                	//if it is not the error we were expecting (missing), catch it
-						                	catch(e){
-						                		callback(er);
-						                	}
-						                }
-						                //if the document returned successfully
-						                else {
-						                	if (typeof doc.unprocessed != "undefined") {
-						                		//append to it
-							                	doc.unprocessed = doc.unprocessed.concat(results[3]);
-							            	}
-							            	else{
-							            		//create it
-							            		doc.unprocessed = results[3];
-							            	}
+						      //       db.getDoc('unprocessed', function(er, doc){
+						      //       	//if there is an error with the GET request to the db
+						      //           if (er) {
+						      //           	//try to check the er object for reason field
+						      //           	try {
+						      //           		//if the document doesn't exist yet
+						      //           		if (er.reason == "missing"){
+									   //              //save the document to the database
+									   //              db.saveDoc('unprocessed', {'unprocessed': results[3]}, function(er, ok) {
+									   //                  if (er) 
+									   //                  	callback(er);
+									   //                  else {
+							     //                			console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
+							     //           					retstart += elsvr_retSize;
+												// 			callback(null);
+												// 		}  
+									   //              });						                			
+						      //           		}
+						      //           		//otherwise it is some error we weren't expecting
+						      //           		else
+						      //           			callback(er);
+						      //           	}
+						      //           	//if it is not the error we were expecting (missing), catch it
+						      //           	catch(e){
+						      //           		callback(er);
+						      //           	}
+						      //           }
+						      //           //if the document returned successfully
+						      //           else {
+						      //           	if (typeof doc.unprocessed != "undefined") {
+						      //           		//append to it
+							     //            	doc.unprocessed = doc.unprocessed.concat(results[3]);
+							     //        	}
+							     //        	else{
+							     //        		//create it
+							     //        		doc.unprocessed = results[3];
+							     //        	}
 
-							                //save the document to the database
-							                db.saveDoc('unprocessed', doc, function(er, ok) {
-							                    if (er) 
-							                    	callback(er);
-							                    else {
-					                    			console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
-					               					retstart += elsvr_retSize;
-													callback(null);
-												}  
-							                });
-						            	}
-						            });
+							     //            //save the document to the database
+							     //            db.saveDoc('unprocessed', doc, function(er, ok) {
+							     //                if (er) 
+							     //                	callback(er);
+							     //                else {
+					       //              			console.log('saved chunk ' + retstart + '-' + String(retstart+elsvr_retSize) + ' of ' + elsvr_count + ' to database: ' + db.name + ' in document: ' + ok.id);
+					       //         					retstart += elsvr_retSize;
+												// 	callback(null);
+												// }  
+							     //            });
+						      //       	}
+						      //       });
 					        	}
 					        	],
 						        function(err, results) {
@@ -338,7 +358,7 @@ exports.scopus = function(req, res) {
 							                		//if the document doesn't exist yet
 							                		if (er.reason == "missing"){
 										                //save the document to the database
-										                db.saveDoc('numcompleted', {'numcompleted': retstart+elsvr_retSize}, function(er, ok) {
+										                db.saveDoc('numcompleted', {'numcompleted': retstart}, function(er, ok) {
 								                    		if (er) 
 								                    			callback(er);
 								                    		else {
@@ -359,7 +379,7 @@ exports.scopus = function(req, res) {
 							               	//if the document returned successfully
 							                else {
 							                	//update the existing document
-							                	doc.numcompleted = retstart+elsvr_retSize;
+							                	doc.numcompleted = doc.numcompleted+elsvr_retSize;
 
 												db.saveDoc('numcompleted', doc, function(er, ok) {
 						                    		if (er) 
