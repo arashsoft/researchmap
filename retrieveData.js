@@ -237,7 +237,9 @@ exports.scopus = function(req, res) {
 																    	if (er) 
 																    		callback(er);
 																    	else {
+																    		console.log("");
 																    		console.log('New database: ' + db.name + ' created.');
+																    		console.log("");
 																    		callback(null);
 																    	}
 																    });
@@ -307,12 +309,12 @@ exports.scopus = function(req, res) {
 												               	//if the document returned successfully
 												                else {
 												                	//update the existing document
-												                	if ((doc.numcompleted+elsvr_retSize) >= elsvr_count)
+												                	if (retstart >= elsvr_count) {
 												                		doc.numcompleted = 0;
+												                		doc.year++;
+												                	}
 												                	else
-												                		doc.numcompleted = doc.numcompleted+elsvr_retSize;
-												                	
-												                	doc.year = curyear++;
+												                		doc.numcompleted = doc.numcompleted+elsvr_retSize;												                	
 
 																	db.saveDoc('numcompleted', doc, function(er, ok) {
 											                    		if (er) 
