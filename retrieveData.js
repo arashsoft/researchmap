@@ -335,8 +335,48 @@ exports.scopus = function(req, res) {
 			                        	);//end async.eachSeries
 				                    },
 				                    error: function(err){
-				                        elsvr_errors = elsvr_errors+1;
-				                        callback(err);
+
+						                if (err) {
+					                        try {
+					                        	var errmsg = JSON.parse(err.responseText)["service-error"]["status"]["statusCode"];
+					                        	if (errmsg == "AUTHENTICATION_ERROR") { //the authoken has expired
+					                        		//refresh the authtoken and continue
+
+					                        		//initial query to the scopus api
+										            var elsvr_auth = "http://api.elsevier.com/authenticate?platform=SCOPUS";
+
+										            //ajax request based on the query above
+										            $.ajax({
+										            	url: elsvr_auth,
+										            	type: 'GET',
+										            	beforeSend: function(request){
+										            		request.setRequestHeader("X-ELS-APIKey", elsvr_apiKey);
+										            	},
+										            	dataType: 'json',
+									                    success: function(result){
+									                    	elsvr_authtoken = result["authenticate-response"].authtoken;
+								                            callback(null);
+									                    },
+									                    error: function(err){
+									                        callback(err);
+									                    }
+
+										            });
+					                        	}
+					                        	else {
+					                        		console.log("error returned from query: " + errmsg);
+					                        		callback(err);
+					                        	}
+					                        }
+					                        catch (e) {
+					                        	console.log("unknown error returned from query");
+					                        	callback(err);
+					                        }
+					                    }
+					                    else {
+				                        	elsvr_errors = elsvr_errors+1;
+				                        	callback(err);
+				                    	}
 				                    }
 					            });//end ajax request
 				        	},//end of 'do' function for dowhilst loop
