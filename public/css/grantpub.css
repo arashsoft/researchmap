@@ -2,7 +2,7 @@
 		27-2-2014
 			CSS style for grant-publication
 */
-
+/* old code
 .node {
   cursor: pointer;
 }
@@ -31,4 +31,27 @@
 .node--root,
 .node--leaf {
   pointer-events: none;
+}
+
+*/
+
+/* new code 28-04-2014*/
+.cell.child:hover {
+	stroke : #ffffff;
+	stroke-width: 4px;
+}
+
+.cell.child.highlighted{
+	stroke : #ffff00;
+	stroke-width: 3px;
+}
+
+.cell.labelbar.highlighted  rect{
+	stroke : #ffff00;
+	stroke-width: 3px;
+}
+
+.cell.labelbar.labelbar2.highlighted  rect{
+	stroke : #ffff00;
+	stroke-width: 3px;
 }
