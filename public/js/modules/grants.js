@@ -1953,21 +1953,24 @@ var GRANTS = (function () {
   }
 
   function treemapStatusFilterListener() {
+  	//filteredData is an array that is composed of all the elements from grantFilterData that pass the test (i.e., return true) in the _.filter function
+  	//in other words, it contains the elements that are to be shown or hidden
+  	//the function looks at the awardstatus of each element (d) in grantFilterData
     var filteredData = _.filter(grantFilterData, function(d) {
       var flag = false;
       switch(d.awardstatus) {
         case "Accepted":
-          flag = $('input#treemapFilterAccepted').is(':checked');
+          flag = $('input#treemapFilterAccepted').is(':checked'); //true if treemapFilterAccepted 'button' is checked, false otherwise
           break;
         case "Closed":
-          flag = $('input#treemapFilterClosed').is(':checked');
+          flag = $('input#treemapFilterClosed').is(':checked'); //true if treemapFilterClosed 'button' is checked, false otherwise
           break;
         default:
           flag = false;
       }
-      return flag;
+      return flag; //if flag is true, add the element (d) to the filteredData array
     });
-    initTreemapFilter(filteredData);
+    initTreemapFilter(filteredData); //pass the newly constructed array to initTreemapFilter
     refreshTreemap();
   }
 
@@ -3260,6 +3263,7 @@ var GRANTS = (function () {
         grant_year_deadline_min = deadline < grant_year_deadline_min ? deadline : grant_year_deadline_min;
       });
     } else {
+    	//loops through all of the grants that are going to be visualized to find some min and max values
       all_grants.forEach(function(d) {
         var begin = d.begin;
         var end = d.end;
