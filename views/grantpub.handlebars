@@ -1,12 +1,48 @@
 
-<div class="vizarea group">
-	<div id="grantpubContainer">
-		<img id="vizloader" src="img/viz-loader.gif" style="display: none;"></img>
-		<div id="leftTreemap"></div>
-		<div id="rightTreemap"></div>
-  
-	</div> 
- </div>
+
+<div id="grantpubContainer">
+	<img id="vizloader" src="img/viz-loader.gif" style="display: none;"></img>
+	<div id="leftTreemap">
+	</div>
+	<div id="rightTreemap">
+	</div>
+	<div id="rightPanel" >
+		<div id="verticalText">Show Filter</div>
+		<div class="panelText">filter</div>
+      <div class="action" id="filterOptions">        
+
+        <p>grant status</p>
+			<ul class="actionlist"> 
+          <li>
+            <input type="checkbox" checked id="treemapFilterAccepted"></input> 
+            <label for="treemapFilterAccepted">accepted</label>
+          </li>  
+          <li>
+            <input type="checkbox" checked id="treemapFilterClosed"></input> 
+            <label for="treemapFilterClosed">closed</label>
+          </li>
+          <li>
+            <input type="checkbox" checked id="treemapFilterDeclined"></input> 
+            <label for="treemapFilterDeclined">declined</label>
+          </li>
+          <li>
+            <input type="checkbox" checked id="treemapFilterOthers"></input> 
+            <label for="treemapFilterOthers">others</label>
+          </li>
+			</ul>
+
+			<p style="text-align:initial;">years<br>
+				<label style="font-size:small;color:black;">Grants (from-to):</label>
+				<input id="yearText" type="text" style="border:0; color:#f6931f; font-weight:bold;">
+			</p>
+			<div id="yearSlider"></div>
+			
+			
+      </div>  
+		
+	</div>
+</div> 
+
 
  
  

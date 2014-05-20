@@ -55,3 +55,73 @@
 	stroke : #ffff00;
 	stroke-width: 3px;
 }
+
+/* ==============================================
+				code by Arash - 21-04-2014
+		add new stylesheet for Grant-Pub layout
+	==============================================*/
+#grantpubContainer{
+	margin: 0px;
+	width: 100%;
+	min-height: 750px;
+	border: 1px solid #ebebeb;
+	position:relative;
+	overflow: hidden;
+}
+#leftTreemap {
+	border: 1px solid #ebebeb;
+	width: calc(49% - 20px);
+	position:absolute;
+	left:0.5%;
+	top : 20px;
+	bottom:1px;
+	z-index : 1;
+}
+#rightTreemap {
+	border: 1px solid #ebebeb;
+	width: calc(49% - 20px);
+	position:absolute;
+	right: calc(0.3% + 40px);
+	top : 20px;
+	bottom:1px;
+	z-index : 1;
+}
+#rightPanel{
+	border: 1px solid #ebebeb;
+	position:absolute;
+	width:250px;
+	top : 20px;
+	right: -210px;
+	z-index : 2;
+	background: #fff;
+
+}
+#verticalText{
+	position: absolute;
+	left: -28px;
+	top: 45px;
+	background-color: #f6931f;
+	padding: 10px;
+	border-radius: 5px 5px 0 0;
+	float: left;
+	-moz-transform: rotate(270deg);  /* FF3.5+ */
+	-o-transform: rotate(270deg);  /* Opera 10.5 */
+	-webkit-transform: rotate(-90deg);  /* Saf3.1+, Chrome */
+	color: black;
+	cursor:pointer;
+	z-index:3;
+	font-size:large;
+}
+
+#filterOptions{
+	padding-left:40px;
+}
+.panelText{
+	font-family: 'Fjalla One', sans-serif;
+	color: black;
+	font-weight: bold;
+	display: inline-block;
+	font-size: x-large;
+	margin-top:10px;
+	margin-left: 100px;
+}

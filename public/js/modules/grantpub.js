@@ -217,39 +217,242 @@ var GRANTPUB = (function () {
 	// CSS file
 	$('head').append('<link rel="stylesheet" href="css/grantpub.css" type="text/css" />');
 	
-	var top20 = [];
 
-	var colorTreemap = d3.scale.category20c();
-    headerHeight = 20,
-    headerColor = "#555555",
-    headerColor2 = "#999999",
-    transitionDuration = 3000;
-
-
-
-	// Start the Treemap
-	constructTreemap();	
+	$('#grantpubContainer').css('height', $(window).height()-50+'px');
 	
+	// some global variables
+	var top20 = [],
+	colorTreemap = d3.scale.category20c(),
+	 headerHeight = 20,
+	 headerColor = "#555555",
+	 headerColor2 = "#999999",
+	 transitionDuration = 1000;
+
+	
+	// constructTreemap make these variables and prebuildTreemap use them to build treemaps
+	var sponsorData, departmentData , grant_sponsors;
+		
+	var margin,
+	leftWidth, 
+	leftHeight, 
+	leftTreemap,
+	leftTreemapviz,
+	leftTreemapsvg, 
+	leftNode,
+	rightWidth,
+	rightHeight,
+	rightTreemap,
+	rightTreemapviz,
+	rightTreemapsvg,
+	rightNode;
+			
+	var boolFilterAccepted=true;
+	var boolFilterClosed=true;
+	var boolFilterDeclined=true;
+	var boolFilterOthers=true;
+	
+	$(document).ready(function(){
+		
+		//handlebar implementation
+		$('#verticalText').click(function(){
+		var panel = $('#rightPanel');
+			if (panel.hasClass('visible')){
+				panel.animate({"right":"-210px"}, "slow").removeClass('visible');
+				$("#verticalText").html("Show Filter").css("left" , "-28px").css("background-color","#f6931f");
+			} else {
+				panel.animate({"right":"0px"}, "slow").addClass('visible');
+				$("#verticalText").html("Hide  Filter").css("left" , "-50px").css("background-color","#F8A94C");
+			}
+		});	
+		
+		$('input').iCheck({
+      checkboxClass: 'icheckbox_square-blue',
+      radioClass: 'iradio_square-blue',
+		});
+		
+		$("#yearSlider").slider({
+			range: true,
+			values: [1973, 2018 ],
+			min: 1973,
+			max: 2018,
+			step: 1,
+			slide: function( event, ui ) {
+				$( "#yearText" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+				refreshTreemaps();
+			}
+		});
+		$("#yearText").val( "$" + $("#yearSlider").slider( "values", 0 ) + " - $" + $( "#yearSlider" ).slider( "values", 1 ) );
+		
+		
+		$('input#treemapFilterAccepted').on('ifChecked', function(){boolFilterAccepted=true;refreshTreemaps();});
+		$('input#treemapFilterAccepted').on('ifUnchecked', function(){boolFilterAccepted=false;refreshTreemaps();});
+		$('input#treemapFilterClosed').on('ifChecked', function(){boolFilterClosed=true;refreshTreemaps();});
+		$('input#treemapFilterClosed').on('ifUnchecked', function(){boolFilterClosed=false;refreshTreemaps();});
+		$('input#treemapFilterDeclined').on('ifChecked', function(){boolFilterDeclined=true;refreshTreemaps();});
+		$('input#treemapFilterDeclined').on('ifUnchecked', function(){boolFilterDeclined=false;refreshTreemaps();});
+		$('input#treemapFilterOthers').on('ifChecked', function(){boolFilterOthers=true;refreshTreemaps();});
+		$('input#treemapFilterOthers').on('ifUnchecked', function(){boolFilterOthers=false;refreshTreemaps();});
+		
+		
+		margin = {top: 5, right: 0, bottom: 5, left: 0};
+		leftWidth = $('#leftTreemap').width() - margin.left - margin.right;
+		leftHeight = $('#leftTreemap').height() - margin.top - margin.bottom; 
+		
+		leftTreemap = d3.layout.treemap()
+			.round(false)
+			.size([leftWidth, leftHeight])
+			.mode("squarify")
+			.sticky(true)
+			.padding([headerHeight + 1, 1, 1, 1])
+			.value(treemapValueAccessor);
+			
+		leftTreemapviz = d3.select("#leftTreemap").append("div")
+			.attr("class", "chart")
+			.style("width", leftWidth + margin.left + margin.right + "px")
+			.style("height", leftHeight + margin.top + margin.bottom + "px")
+		 .append("svg:svg")
+			.attr("width", leftWidth + margin.left + margin.right)
+			.attr("height", leftHeight + margin.top + margin.bottom);
+		 // .append("svg:g")
+		 //   .attr("transform", "translate(.5,.5)");
+
+		leftTreemapsvg = leftTreemapviz.append("svg:g")
+			.attr("id", "departmentsTreemap")
+			.attr("transform", "translate(.5,.5)")
+			.attr("pointer-events", "visible");
+		
+		// nestedData = "sponsor"
+		rightWidth = $('#rightTreemap').width() - margin.left - margin.right;
+		rightHeight = $('#rightTreemap').height() - margin.top - margin.bottom; 
+		
+		rightTreemap = d3.layout.treemap()
+			.round(false)
+			.size([rightWidth, rightHeight])
+			.mode("squarify")
+			.sticky(true)
+			.padding([headerHeight + 1, 1, 1, 1])
+			.value(treemapValueAccessor);
+			
+		
+		rightTreemapviz = d3.select("#rightTreemap").append("div")
+			.attr("class", "chart")
+			.style("width", rightWidth + margin.left + margin.right + "px")
+			.style("height", rightHeight + margin.top + margin.bottom + "px")
+		 .append("svg:svg")
+			.attr("width", rightWidth + margin.left + margin.right)
+			.attr("height", rightHeight + margin.top + margin.bottom);
+		 // .append("svg:g")
+		 //   .attr("transform", "translate(.5,.5)");
+
+		rightTreemapsvg = rightTreemapviz.append("svg:g")
+			.attr("id", "departmentsTreemap")
+			.attr("transform", "translate(.5,.5)")
+			.attr("pointer-events", "visible");
+			
+		
+		// Start the Treemap
+		constructTreemap();	
+		
+		
+		
+		//jquery for add tooltip to child cells :
+		$( "#leftTreemap").tooltip({
+			items: "g",
+			content: function() {
+			
+				if ( $(this).attr("class") == "cell child" ) {
+					var title = this.__data__.Title;
+					var PI = this.__data__.PI;
+					var coI = this.__data__.CoI;
+					var sponsor = this.__data__.Sponsor;
+					var program = this.__data__.PgmName;
+					var amt = this.__data__.RequestAmt;
+					var pstatus = this.__data__.ProposalStatus;
+					var astatus = this.__data__.AwardStatus;
+					var begin = this.__data__.BeginDate;
+					var end = this.__data__.EndDate;
+					var text = "<b>Title:</b> " + title + "<br><b>PI:</b> " + PI + "<br><b>Co I:</b> " + coI + "<br><b>Sponsor:</b> " + sponsor + "<br><b>Program:</b> " + program + "<br><b>Amount:</b> " + amt + "<br><b>Proposal Status:</b> " + pstatus + "<br><b>Award Status:</b> " + astatus + "<br><b>Begin Date:</b> " + begin + "<br><b>End Date:</b> " + end;
+					return text;
+				}
+			
+				if ( $(this).attr("class") == "cell labelbar" || $(this).attr("class") == "cell parent") {
+					var numChildren = this.__data__.children.length;
+					var total = this.__data__.value;
+					var text = "<b>Faculty of Science</b>" + "<br><b>" + $('#arrangetreemap').val() + ":</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
+					return text;
+				}
+			}
+		});
+	
+	
+	
+	}); // end of document.ready
+	
+	
+	
+	 /*
+	 $( "#rightTreemap").tooltip({
+      items: "g",
+      content: function() {
+        if ( $(this).attr("class") == "cell child" ) {
+          var title = this.__data__.Title;
+          var PI = this.__data__.PI;
+          var coI = this.__data__.CoI;
+          var sponsor = this.__data__.Sponsor;
+          var program = this.__data__.PgmName;
+          var amt = this.__data__.RequestAmt;
+          var pstatus = this.__data__.ProposalStatus;
+          var astatus = this.__data__.AwardStatus;
+          var begin = this.__data__.BeginDate;
+          var end = this.__data__.EndDate;
+          var text = "<b>Title:</b> " + title + "<br><b>PI:</b> " + PI + "<br><b>Co I:</b> " + coI + "<br><b>Sponsor:</b> " + sponsor + "<br><b>Program:</b> " + program + "<br><b>Amount:</b> " + amt + "<br><b>Proposal Status:</b> " + pstatus + "<br><b>Award Status:</b> " + astatus + "<br><b>Begin Date:</b> " + begin + "<br><b>End Date:</b> " + end;
+          return text;
+        }
+        else if ( $(this).attr("class") == "cell labelbar" || $(this).attr("class") == "cell parent") {
+          if (this.__data__ == root){
+            var numChildren = this.__data__.children.length;
+            var total = this.__data__.value;
+            var text = "<b>Faculty of Science</b>" + "<br><b>" + $('#arrangetreemap').val() + ":</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
+            return text;
+          }
+          else{
+            var numChildren = this.__data__.children.length;
+            var total = this.__data__.value;
+            var text;
+            if($('#arrangetreemap').val() == "department")
+              text = "<b>Department:</b> " + this.__data__.name + "<br><b>Grant Requests:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
+            else
+              text = "<b>Sponsor:</b> " + this.__data__.name + "<br><b>Program Numbers:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
+            return text;
+          }
+
+        }
+        else if ( $(this).attr("class") == "cell labelbar labelbar2" || $(this).attr("class") == "cell parent2") { //for sponsor treemap(programs)
+          var numChildren = this.__data__.children.length;
+          var total = this.__data__.value;
+          var text = "<b>Program:</b> " + this.__data__.name + "<br><b>Grant Requests:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
+          return text;
+        }
+      }
+    });
+	 
+	*/
+		
 
 	function constructTreemap () {
 	
-	var xpos = $('#grantpubContainer').width()/2 - $('#vizloader').width()/2;
-   var ypos = $('#grantpubContainer').height()/2 - $('#vizloader').height()/2;
-   $('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
-	
+	var xpos = $('#grantpubContainer').width()/2 - $('#vizloader').width()/2-45;
+	var ypos = $('#grantpubContainer').height()/2 - $('#vizloader').height()/2-70;
+	$('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px","margin": "0 auto"}).show();
 	$('#vizloader').show();
-    //var xpos = $('#vizcontainer').width()/2 - $('#vizloader').width()/2;
-    //var ypos = $('#vizcontainer').height()/2 - $('#vizloader').height()/2;
-    //$('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px"}).show();
-
-    getTreemapData(prebuildTreemap);
+	// get data from server
+	getTreemapData(prebuildTreemap);
 	 
   }//end constructTreemap
 	
 	
 	function getTreemapData (callback) {
-		 var nested_by_sponsor, nested_by_department, grants_unique, grant_sponsors, all_grants;
-		var sponsorData, departmentData;
+		var nested_by_sponsor, nested_by_department, grants_unique, all_grants;
 		
 		async.parallel([
 			function(callback) {
@@ -326,81 +529,22 @@ var GRANTPUB = (function () {
 			  top20 = topSponsors(20, grant_sponsors, all_grants);
 			  //yearRangeArrayBuilt = false;
 			  //initTreemapFilter(all_grants);
-			  callback(grant_sponsors , departmentData, sponsorData);
+			  callback();
 			}
 		);
 	}//end getTreemapData
 	
 	
 	// calls two version of buildTreemap 	
-	function prebuildTreemap(grant_sponsors,departmentData,sponsorData) {
+	function prebuildTreemap() {
 		$('#vizloader').hide();
 	
-	
-		var margin = {top: 5, right: 0, bottom: 5, left: 0};
-
-		
-		// nestedData = "department"
-		var leftWidth = $('#leftTreemap').width() - margin.left - margin.right;
-		var leftHeight = $('#leftTreemap').height() - margin.top - margin.bottom; 
-		
-		var leftTreemap = d3.layout.treemap()
-			.round(false)
-			.size([leftWidth, leftHeight])
-			.mode("squarify")
-			.sticky(true)
-			.padding([headerHeight + 1, 1, 1, 1])
-			.value(treemapValueAccessor);
-			
-		
-		var leftTreemapviz = d3.select("#leftTreemap").append("div")
-			.attr("class", "chart")
-			.style("width", leftWidth + margin.left + margin.right + "px")
-			.style("height", leftHeight + margin.top + margin.bottom + "px")
-		 .append("svg:svg")
-			.attr("width", leftWidth + margin.left + margin.right)
-			.attr("height", leftHeight + margin.top + margin.bottom);
-		 // .append("svg:g")
-		 //   .attr("transform", "translate(.5,.5)");
-
-	  var leftTreemapsvg = leftTreemapviz.append("svg:g")
-			.attr("id", "departmentsTreemap")
-			.attr("transform", "translate(.5,.5)")
-			.attr("pointer-events", "visible");
-		
-		// nestedData = "sponsor"
-		var rightWidth = $('#rightTreemap').width() - margin.left - margin.right;
-		var rightHeight = $('#rightTreemap').height() - margin.top - margin.bottom; 
-		
-		var rightTreemap = d3.layout.treemap()
-			.round(false)
-			.size([rightWidth, rightHeight])
-			.mode("squarify")
-			.sticky(true)
-			.padding([headerHeight + 1, 1, 1, 1])
-			.value(treemapValueAccessor);
-			
-		
-		var rightTreemapviz = d3.select("#rightTreemap").append("div")
-			.attr("class", "chart")
-			.style("width", rightWidth + margin.left + margin.right + "px")
-			.style("height", rightHeight + margin.top + margin.bottom + "px")
-		 .append("svg:svg")
-			.attr("width", rightWidth + margin.left + margin.right)
-			.attr("height", rightHeight + margin.top + margin.bottom);
-		 // .append("svg:g")
-		 //   .attr("transform", "translate(.5,.5)");
-
-	  var rightTreemapsvg = rightTreemapviz.append("svg:g")
-			.attr("id", "departmentsTreemap")
-			.attr("transform", "translate(.5,.5)")
-			.attr("pointer-events", "visible");
-			
-	
 	// department pannel
+	leftNode = departmentData;
 	buildTreemap (departmentData, grant_sponsors, leftTreemapsvg, leftTreemap ,leftWidth , leftHeight );
 	
 	// Sponsors pannel
+	rightNode = sponsorData;
 	buildTreemap (sponsorData, grant_sponsors, rightTreemapsvg, rightTreemap, rightWidth , rightHeight );
 	
 	}
@@ -532,9 +676,20 @@ var GRANTPUB = (function () {
 						myData.name == "Sponsors" ? sponsorSponsorClick(this) : departmentDepartmentClick(this);
 					})
 					.on("dblclick", function(d) {
-						if (node === d){
-							 zoom(d.parent, myWidth, myHeight, treemapsvg);
+						if (node == d){
+							if(myData.name == "Sponsors") {
+								rightNode=d.parent;
+							}else{
+								leftNode=d.parent;
+							}
+							zoom(d.parent, myWidth, myHeight, treemapsvg);
+							node = d.parent;
 						}else{
+							if(myData.name == "Sponsors") {
+								rightNode=d;
+							}else{
+								leftNode=d;
+							}
 							zoom(d, myWidth, myHeight, treemapsvg);
 							node = d;
 						}
@@ -611,8 +766,19 @@ var GRANTPUB = (function () {
 						})
 					  .on("dblclick", function(d) {
 							if (node === d){
-								zoom(d.parent, myWidth, myHeight, treemapsvg);
+								if(myData.name == "Sponsors") {
+									rightNode=d.parent.parent;
+								}else{
+									leftNode=d.parent.parent;
+								}
+								zoom(d.parent.parent, myWidth, myHeight, treemapsvg);
+								node = d.parent.parent;
 							}else{
+								if(myData.name == "Sponsors") {
+									rightNode=d;
+								}else{
+									leftNode=d;
+								}
 								zoom(d, myWidth, myHeight, treemapsvg);
 								node = d;
 							}
@@ -653,10 +819,129 @@ var GRANTPUB = (function () {
 					  });
 		 }
 
-		 treemap_constructed = true;
+		treemap_constructed = true;
 	 }//end buildTreemap
 	
-	// helper function
+	function refreshTreemaps(){
+		refreshTreemap(departmentData, grant_sponsors, leftTreemapsvg, leftTreemap ,leftWidth , leftHeight);
+		refreshTreemap(sponsorData, grant_sponsors, rightTreemapsvg, rightTreemap, rightWidth , rightHeight);
+	}
+	
+	function refreshTreemap(myData ,grant_sponsors , treemapsvg , treemap , myWidth, myHeight ){
+		
+	
+		//recalculate the layout
+		var nodes = treemap.nodes(myData);
+
+		var children = nodes.filter(function(d) {
+        return !d.children;
+		});
+
+		if($('#arrangetreemap').val() == "department") {
+			var parents = nodes.filter(function(d) {
+				 return d.children;
+			});
+		} else {
+			var parents = nodes.filter(function(d) {
+				 return d.depth < 2; //sponsors
+			});
+			var parents2 = nodes.filter(function(d) {
+				 return d.depth == 2; //programs
+			})
+		}
+
+		treemapsvg.selectAll("g.cell.child")
+					.data(children)
+					//.transition().duration(transitionDuration)
+					.call(function(d, i) {
+					  this.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+					  
+					  this.selectAll("rect")
+							.attr("width", function(d) { return Math.max(0.01, d.dx - 1); })
+							.attr("height", function(d) { return Math.max(0.01, d.dy - 1); });
+						 
+					  this.selectAll("text")
+						 .attr("x", function(d) { return d.dx / 2; })
+						 .attr("y", function(d) { return d.dy / 2; });
+					});
+
+		treemapsvg.selectAll("g.cell.parent")
+					.filter(function(d) {
+					  return d3.select(this).attr("class") == "cell parent";
+					})
+					.data(parents)
+					.transition().duration(transitionDuration)
+					.call(function(d, i) {
+					  this.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+					  
+					  this.selectAll("rect")
+						 .attr("width", function(d) { return parseInt(d3.select(this).attr("width")) ? Math.max(0.01, d.dx - 1) : 0; })
+						 .attr("height", function(d) { return parseInt(d3.select(this).attr("width")) ? Math.max(0.01, d.dy - 1) : 0; })
+					});
+
+		treemapsvg.selectAll("g.cell.labelbar")
+					.filter(function(d) {
+					  return d3.select(this).attr("class") == "cell labelbar";
+					})
+					.data(parents)
+					.transition().duration(transitionDuration)
+					.call(function(d, i) {
+					  this.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+					  
+					  this.selectAll("rect")
+						 .attr("width", function(d) { return Math.max(0.01, d.dx - 1); })
+						 .attr("height", function(d) { return Math.max(0.01, Math.min(headerHeight, d.dy - 1)); });
+						 
+					  this.selectAll("text")
+						 .attr("x", function(d) { return d.dx / 2; })
+						 .attr("y", function(d) { return headerHeight / 2 + 4; });
+					});
+
+		if( myData.name == "Sponsors") {
+			treemapsvg.selectAll("g.cell.labelbar.labelbar2")
+					  .data(parents2)
+					  .transition().duration(transitionDuration)
+					  .call(function(d, i) {
+						 this.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+						 
+						 this.selectAll("rect")
+							.attr("width", function(d) { return Math.max(0.01, d.dx - 1); })
+							.attr("height", function(d) { return Math.max(0.01, Math.min(headerHeight, d.dy - 1)); });
+							
+						 this.selectAll("text")
+							.attr("x", function(d) { return d.dx / 2; })
+							.attr("y", function(d) { return headerHeight / 2 + 4; });
+					  });
+		}
+
+		treemapsvg.selectAll("g.cell.labelbar")
+					.transition().delay(transitionDuration)
+					.call(function(d, i) {
+					  this.selectAll("text")
+						 .style("opacity", function(d) {
+							d.w = this.getComputedTextLength();
+							return d.dx > d.w && headerHeight < d.dy - 1 ? 1 : 0;
+						 })
+						 .style("visibility", function(d) {
+							d.w = this.getComputedTextLength();
+							return d.dx > d.w && headerHeight < d.dy - 1 ? "visible" : "hidden";
+						 });
+					});
+
+		
+		
+		if(myData.name == "Sponsors") {
+			zoom(rightNode, myWidth, myHeight, treemapsvg);
+		}else{
+			zoom(leftNode, myWidth, myHeight, treemapsvg);
+		}
+		
+		
+	}// end refreshTreemap
+	
+	// helper functions 
+	
+	// check for filters
 	function treemapValueAccessor(d) {
     var req = d.RequestAmt;
     req = req.replace(/^\s+|\s+$/g, ''); //remove whitespaces
@@ -664,52 +949,43 @@ var GRANTPUB = (function () {
     req = req.replace(/,/g,""); //remove commas
     req = parseFloat(req);  //convert from string to float and return
 	
-	// TODO: just skip this function
-	return req;
-	 
-    //status filter
-	 
+    //status filter 
     switch(d.AwardStatus) {
       case "Accepted":
-        req = $('input#treemapFilterAccepted').is(':checked') ? req : 0;
+			if(!boolFilterAccepted){
+				return 0;
+			}
         break;
       case "Closed":
-        req = $('input#treemapFilterClosed').is(':checked') ? req : 0;
-        break;
+			if(!boolFilterClosed){
+				return 0;
+			}
+			break;
       case "":
-        if(d.ProposalStatus == "Declined")
-          req = $('input#treemapFilterDeclined').is(':checked') ? req : 0;
-        else //others including Withdrawn, Inst. Approved, Pending Approval, Draft
-          req = $('input#treemapFilterOthers').is(':checked') ? req : 0;
-        break;
+        if(d.ProposalStatus == "Declined"){
+				if(!boolFilterDeclined){
+					return 0;
+				}
+			}else{ //others including Withdrawn, Inst. Approved, Pending Approval, Draft
+				if(!boolFilterOthers){
+					return 0;
+				}
+			}
+			break;
       default:
-        req = 0;
+        return 0;
     }
+	 
 
     //year filter
     if(d.AwardStatus == "Accepted" || d.AwardStatus == "Closed") {
-      var beginLowerLimit = grantBeginYearArray[ $( "#treemapbeginyearrange" ).slider("option", "values")[0] ];
-      var beginUpperLimit = grantBeginYearArray[ $( "#treemapbeginyearrange" ).slider("option", "values")[1] ];
-      var endLowerLimit = grantEndYearArray[ $( "#treemapendyearrange" ).slider("option", "values")[0] ];
-      var endUpperLimit = grantEndYearArray[ $( "#treemapendyearrange" ).slider("option", "values")[1] ];
-
+      var beginYear = $( "#yearSlider" ).slider("option", "values")[0];
+      var endYear = $( "#yearSlider" ).slider("option", "values")[1];
       var begin = parseInt(d.BeginDate.substring(0, 4));
       var end = parseInt(d.EndDate.substring(0, 4));
-      if(!(beginLowerLimit <= begin && begin <= beginUpperLimit && endLowerLimit <= end && end <= endUpperLimit))
-        req = 0;
-    }
-
-    //animation
-    if(animating) {
-      if(d.AwardStatus == "Accepted" || d.AwardStatus == "Closed") {
-        var begin = parseInt(d.BeginDate.substring(0, 4));
-        var end = parseInt(d.EndDate.substring(0, 4));
-        var current = currentYear;
-        if(!(begin <= current && current <= end))
-          req = 0;
-      } else {
-        req = 0;
-      }
+      if(begin < beginYear || end > endYear){
+			req = 0;
+		}
     }
     
     return req;
@@ -774,7 +1050,8 @@ var GRANTPUB = (function () {
     //     console.log("hahahhah");
     // }
 
-    var zoomTransition = treemapsvg.selectAll("g.cell").transition().duration(transitionDuration)
+    var zoomTransition = treemapsvg.selectAll("g.cell")
+				.transition().duration(transitionDuration)
             .attr("transform", function(d) {
                 return "translate(" + xscale(d.x) + "," + yscale(d.y) + ")";
             })
@@ -794,7 +1071,6 @@ var GRANTPUB = (function () {
             .attr("height", function(d) {
                 return ky * Math.max(0.01, Math.min(headerHeight, d.dy - 1));
             });
-
     //if the parent rect has no width&height in this fragmentation, keep it
     zoomTransition.selectAll(".parent rect")
             .attr("width", function(d) {

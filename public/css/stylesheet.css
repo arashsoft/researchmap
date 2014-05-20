@@ -486,37 +486,6 @@ button:hover {
   display: inline-block;
 }
 
-/* ==============================================
-				code by Arash - 21-04-2014
-		add new stylesheet for Grant-Pub layout
-	==============================================*/
-#grantpubContainer{
-	display: inline-block;
-	margin: auto;
-	margin-bottom: 30px;
-	width: 100%;
-	min-height: 750px;
-	border: 1px solid #ebebeb;
-}
-#leftTreemap {
-	margin-top: 20px;
-	margin-left: 20px ;
-	border: 1px solid #ebebeb;
-	width: 48%;
-	height: 80%;
-	min-height: 700px;
-	float:left;
-}
-#rightTreemap {
-	margin-top: 20px;
-	margin-left: 20px ;
-	float:left;
-	border: 1px solid #ebebeb;
-	width: 48%;
-	height: 80%;
-	min-height: 700px;
-}
-
 /*===================================================================
 for matrix
 ===================================================================*/
