@@ -218,7 +218,7 @@ var GRANTPUB = (function () {
 	$('head').append('<link rel="stylesheet" href="css/grantpub.css" type="text/css" />');
 	
 
-	$('#grantpubContainer').css('height', $(window).height()-50+'px');
+	$('#grantpubContainer').css('height', $(window).height()-120+'px');
 	
 	// some global variables
 	var top20 = [],
@@ -355,7 +355,9 @@ var GRANTPUB = (function () {
 		
 		
 		
+		/* old tooltip method
 		//jquery for add tooltip to child cells :
+		// departments
 		$( "#leftTreemap").tooltip({
 			items: "g",
 			content: function() {
@@ -376,68 +378,51 @@ var GRANTPUB = (function () {
 				}
 			
 				if ( $(this).attr("class") == "cell labelbar" || $(this).attr("class") == "cell parent") {
+					var departmentName = this.__data__.name;
 					var numChildren = this.__data__.children.length;
 					var total = this.__data__.value;
-					var text = "<b>Faculty of Science</b>" + "<br><b>" + $('#arrangetreemap').val() + ":</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
+					var text = "<b>Faculty of Science - " + departmentName + "</b><br><b>Number of grants:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
 					return text;
 				}
 			}
 		});
 	
-	
-	
+		// sponsors
+		$( "#rightTreemap").tooltip({
+			items: "g",
+			content: function() {
+				if ( $(this).attr("class") == "cell child" ) {
+					var title = this.__data__.Title;
+					var PI = this.__data__.PI;
+					var coI = this.__data__.CoI;
+					var sponsor = this.__data__.Sponsor;
+					var program = this.__data__.PgmName;
+					var amt = this.__data__.RequestAmt;
+					var pstatus = this.__data__.ProposalStatus;
+					var astatus = this.__data__.AwardStatus;
+					var begin = this.__data__.BeginDate;
+					var end = this.__data__.EndDate;
+					var text = "<b>Title:</b> " + title + "<br><b>PI:</b> " + PI + "<br><b>Co I:</b> " + coI + "<br><b>Sponsor:</b> " + sponsor + "<br><b>Program:</b> " + program + "<br><b>Amount:</b> " + amt + "<br><b>Proposal Status:</b> " + pstatus + "<br><b>Award Status:</b> " + astatus + "<br><b>Begin Date:</b> " + begin + "<br><b>End Date:</b> " + end;
+					return text;
+				}
+				if ( $(this).attr("class") == "cell labelbar" || $(this).attr("class") == "cell parent") {
+					var programName = this.__data__.name;
+					var numChildren = this.__data__.children.length;
+					var total = this.__data__.value;
+					var text = "<b>Sponsor :"+ programName +"</b><br><b>Number of grants:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
+					return text;
+				}
+				if ( $(this).attr("class") == "cell labelbar labelbar2" || $(this).attr("class") == "cell parent2") {
+					var numChildren = this.__data__.children.length;
+					var total = this.__data__.value;
+					var text = "<b>Program :</b> " + this.__data__.name + "<br><b>Number of grants:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
+					return text;
+				}
+			}
+		});
+		*/
 	}); // end of document.ready
 	
-	
-	
-	 /*
-	 $( "#rightTreemap").tooltip({
-      items: "g",
-      content: function() {
-        if ( $(this).attr("class") == "cell child" ) {
-          var title = this.__data__.Title;
-          var PI = this.__data__.PI;
-          var coI = this.__data__.CoI;
-          var sponsor = this.__data__.Sponsor;
-          var program = this.__data__.PgmName;
-          var amt = this.__data__.RequestAmt;
-          var pstatus = this.__data__.ProposalStatus;
-          var astatus = this.__data__.AwardStatus;
-          var begin = this.__data__.BeginDate;
-          var end = this.__data__.EndDate;
-          var text = "<b>Title:</b> " + title + "<br><b>PI:</b> " + PI + "<br><b>Co I:</b> " + coI + "<br><b>Sponsor:</b> " + sponsor + "<br><b>Program:</b> " + program + "<br><b>Amount:</b> " + amt + "<br><b>Proposal Status:</b> " + pstatus + "<br><b>Award Status:</b> " + astatus + "<br><b>Begin Date:</b> " + begin + "<br><b>End Date:</b> " + end;
-          return text;
-        }
-        else if ( $(this).attr("class") == "cell labelbar" || $(this).attr("class") == "cell parent") {
-          if (this.__data__ == root){
-            var numChildren = this.__data__.children.length;
-            var total = this.__data__.value;
-            var text = "<b>Faculty of Science</b>" + "<br><b>" + $('#arrangetreemap').val() + ":</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
-            return text;
-          }
-          else{
-            var numChildren = this.__data__.children.length;
-            var total = this.__data__.value;
-            var text;
-            if($('#arrangetreemap').val() == "department")
-              text = "<b>Department:</b> " + this.__data__.name + "<br><b>Grant Requests:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
-            else
-              text = "<b>Sponsor:</b> " + this.__data__.name + "<br><b>Program Numbers:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
-            return text;
-          }
-
-        }
-        else if ( $(this).attr("class") == "cell labelbar labelbar2" || $(this).attr("class") == "cell parent2") { //for sponsor treemap(programs)
-          var numChildren = this.__data__.children.length;
-          var total = this.__data__.value;
-          var text = "<b>Program:</b> " + this.__data__.name + "<br><b>Grant Requests:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
-          return text;
-        }
-      }
-    });
-	 
-	*/
-		
 
 	function constructTreemap () {
 	
@@ -612,7 +597,25 @@ var GRANTPUB = (function () {
 					.text(function(d) {
 					  return d.Sponsor;
 					});*/
-
+		
+		// add title to childs
+		childCells.append("svg:title")
+			.text(function(d) {
+				var title = d.Title;
+				var PI = d.PI;
+				var coI = d.CoI;
+				var sponsor = d.Sponsor;
+				var program = d.PgmName;
+				var amt = d.RequestAmt;
+				var pstatus = d.ProposalStatus;
+				var astatus = d.AwardStatus;
+				var begin = d.BeginDate;
+				var end = d.EndDate;
+				var text = "Title: " + title + "\nPI: " + PI + "\nCo I:" + coI + "\nSponsor: " + sponsor + "\nProgram: " + program + "\nAmount: " + amt + "\nProposal Status: " + pstatus + "\nAward Status: " + astatus + "\nBegin Date: " + begin + "\nEnd Date: " + end;
+				return text;
+			});
+			
+			
 		 // update transition
 		 childCells//.transition().duration(transitionDuration)
 					.attr("transform", function(d) {
@@ -931,9 +934,13 @@ var GRANTPUB = (function () {
 		
 		
 		if(myData.name == "Sponsors") {
-			zoom(rightNode, myWidth, myHeight, treemapsvg);
+			if (rightNode!=myData){
+				zoom(rightNode, myWidth, myHeight, treemapsvg);
+			}
 		}else{
-			zoom(leftNode, myWidth, myHeight, treemapsvg);
+			if (leftNode!=myData){
+				zoom(leftNode, myWidth, myHeight, treemapsvg);
+			}
 		}
 		
 		

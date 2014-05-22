@@ -36,25 +36,48 @@
 */
 
 /* new code 28-04-2014*/
+
 .cell.child:hover {
 	stroke : #ffffff;
 	stroke-width: 4px;
 }
 
+
+
+
 .cell.child.highlighted{
-	stroke : #ffff00;
 	stroke-width: 3px;
+	stroke : yellow;
 }
 
+/*
+-webkit-animation: strokeHighlight 2s infinite 0s;
+animation: strokeHighlight 2s infinite 0s;
+@-webkit-keyframes strokeHighlight
+{
+	0%  {stroke : yellow;}
+	50% {stroke : #E6E600;}
+	100% {stroke : yellow;}
+}
+
+@keyframes strokeHighlight
+{
+	0%  {stroke : yellow;}
+	50% {stroke : #E6E600;}
+	100% {stroke : yellow;}
+} 
+*/
+
 .cell.labelbar.highlighted  rect{
-	stroke : #ffff00;
+	stroke : yellow;
 	stroke-width: 3px;
 }
 
 .cell.labelbar.labelbar2.highlighted  rect{
-	stroke : #ffff00;
+	stroke : yellow;
 	stroke-width: 3px;
 }
+
 
 /* ==============================================
 				code by Arash - 21-04-2014
