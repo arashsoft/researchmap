@@ -1,96 +1,28 @@
 /*	Code by Arash
-		27-2-2014
 			CSS style for grant-publication
 */
-/* old code
-.node {
-  cursor: pointer;
-}
-
-.node:hover {
-  stroke: #000;
-  stroke-width: 1.5px;
-}
-
-.node--root {
-  stroke: #777;
-  stroke-width: 2px;
-}
-
-.node--leaf {
-  fill: white;
-}
-
-.label {
-  font: 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
-  text-anchor: middle;
-  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 -1px 0 #fff;
-}
-
-.label,
-.node--root,
-.node--leaf {
-  pointer-events: none;
-}
-
-*/
-
-/* new code 28-04-2014*/
 
 .cell.child:hover {
 	stroke : #ffffff;
 	stroke-width: 4px;
 }
-
-
-
-
 .cell.child.highlighted{
 	stroke-width: 3px;
 	stroke : yellow;
 }
-
-/*
--webkit-animation: strokeHighlight 2s infinite 0s;
-animation: strokeHighlight 2s infinite 0s;
-@-webkit-keyframes strokeHighlight
-{
-	0%  {stroke : yellow;}
-	50% {stroke : #E6E600;}
-	100% {stroke : yellow;}
-}
-
-@keyframes strokeHighlight
-{
-	0%  {stroke : yellow;}
-	50% {stroke : #E6E600;}
-	100% {stroke : yellow;}
-} 
-*/
-
 .cell.labelbar.highlighted  rect{
 	stroke : yellow;
 	stroke-width: 3px;
 }
-
 .cell.labelbar.labelbar2.highlighted  rect{
 	stroke : yellow;
 	stroke-width: 3px;
 }
 
-
 /* ==============================================
 				code by Arash - 21-04-2014
 		add new stylesheet for Grant-Pub layout
 	==============================================*/
-#grantpubContainer{
-	margin: 0px;
-	width: 100%;
-	min-height: 750px;
-	border: 1px solid #ebebeb;
-	position:relative;
-	overflow: hidden;
-}
 #leftTreemap {
 	border: 1px solid #ebebeb;
 	width: calc(49% - 20px);
@@ -117,7 +49,6 @@ animation: strokeHighlight 2s infinite 0s;
 	right: -210px;
 	z-index : 2;
 	background: #fff;
-
 }
 #verticalText{
 	position: absolute;
@@ -135,10 +66,6 @@ animation: strokeHighlight 2s infinite 0s;
 	z-index:3;
 	font-size:large;
 }
-
-#filterOptions{
-	padding-left:40px;
-}
 .panelText{
 	font-family: 'Fjalla One', sans-serif;
 	color: black;
@@ -147,4 +74,70 @@ animation: strokeHighlight 2s infinite 0s;
 	font-size: x-large;
 	margin-top:10px;
 	margin-left: 100px;
+}
+#grantpubRelation{
+	height: 600px;
+	width: 100%;
+	margin: -35px 0.5% 10px 0px;
+	border: 1px solid #ebebeb;
+	display:none;
+}
+#imgArrow{
+	position: relative;
+	top: -15px;
+	left: -15px;
+	z-index:1;
+	cursor: hand;
+}
+
+/* grantPub relation   */
+.relationNode {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+.relationLink {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+.relationText{
+	font-family: sans-serif;
+	font-size: 20px;
+	text-anchor:middle;
+	pointer-events: none;
+}
+.boxParagraph{
+	font-family: sans-serif;
+	font-size: 14px;
+	color:black;
+	margin: 0px 0px 4px 0px;
+}
+.relationBox{
+	border:3px solid lightgray;
+	min-width:200px; padding :10px;
+}
+.keywordText{
+	font-family: sans-serif;
+	font-size: 14px;
+	font-weight:bold;
+	color:black;
+	padding: 7px;
+	margin: 3px;
+	cursor:pointer;
+	position:relative;
+	/*make it not selectable*/
+	-moz-user-select: -moz-none;
+   -webkit-user-select: none;
+	float:left;
+	border:1px solid;
+	border-radius:10px 2px 10px 2px;
+	box-shadow: 2px 2px 5px #888888;
+}
+.keywordText:hover{
+	border-color:blue;
+}
+.keywordText.active{
+	background-color:lightgreen;
+}
+.keywordText.inactive{
+	background-color:lightgray;
 }

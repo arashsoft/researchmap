@@ -4,216 +4,6 @@
 var GRANTPUB = (function () { 
 
 
-/* ---------------------------------
-					Old code
-	---------------------------------
-
-	//this list of 20 colors is calculated such that they are optimally disctinct. See 		http://tools.medialab.sciences-po.fr/iwanthue/
-	var color20 = d3.scale.ordinal().range(["#D24B32","#73D74B","#7971D9","#75CCC1","#4F2A3F","#CA4477","#C78D38","#5D8737","#75A0D2","#C08074","#CD50CC","#D0D248","#CA8BC2","#BFC98D","#516875","#434E2F","#66D593","#713521","#644182","#C9C0C3"]);
-
-
-	// CSS file
-	$('head').append('<link rel="stylesheet" href="css/grantpub.css" type="text/css" />');
-			
-	var margin = 10,
-		 //outerDiameter = 900,
-		 //innerDiameter = outerDiameter - margin - margin;
-		 outerDiameter= $('#vizcontainer').width(),
-		 innerDiameter= $('#vizcontainer').height();
-		 
-		 
-		//var svgwidth = $('#vizcontainer').width();
-		//var svgheight = $('#vizcontainer').height();
-
-	var x = d3.scale.linear()
-		 .range([0, innerDiameter]);
-
-	var y = d3.scale.linear()
-		 .range([0, innerDiameter]);
-
-	var color = d3.scale.linear()
-		 .domain([-1, 5])
-		 .range(["hsl(152,80%,80%)", "hsl(228,30%,40%)"])
-		 .interpolate(d3.interpolateHcl);
-
-	var pack = d3.layout.pack()
-		 .padding(2)
-		 .size([innerDiameter, innerDiameter])
-		 .value(function(d) { return d.size; })
-
-	var svg = d3.select("#networkviz").append("svg")
-		 .attr("width", outerDiameter)
-		 .attr("height", outerDiameter)
-	  .append("g")
-		 .attr("transform", "translate(" + margin+1 + "," + margin + ")");
-
-		 
-		 
-	
-	//d3.json("json/sponsor_grant_publication_data.json",function(error,bigData){
-	//d3.json("json/faculty_grant_publication_data.json",function(error,bigData){
-	
-	d3.json("json/grantpub-sample.json", function(error, root) {
-	
-		//var root = bigData["faculty_circle_packing_data"][0];
-		//var root = bigData["sponsor_circle_packing_data"];
-		var focus = root,
-			nodes = pack.nodes(root);
-		
-		svg.append("g").selectAll("circle")
-			.data(nodes)
-			.enter().append("circle")
-			.attr("class", function(d) { return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root"; })
-			.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-			.attr("r", function(d) { return d.r; })
-			.style("fill", function(d) {
-				switch(d.depth)
-				{
-				case 0:
-				  return "#C3F1F7";
-				  break;
-				case 1:
-				  return color20(d.name);
-				  break;
-				case 2:
-				  return lighterColor(color20(d.parent.name),0.2);
-				  break;
-				case 3:
-					return d.children ? lighterColor(color20(d.parent.parent.name),0.4) : lighterColor(color20(d.parent.parent.name),0.6)
-				default:
-				  return  lighterColor(color20(d.parent.parent.parent.name),0.8)
-				}
-			})
-			.on("click", function(d) { return zoom(focus == d ? root : d); });
-
-		svg.append("g").selectAll("text")
-			.data(nodes)
-		 .enter().append("text")
-			.attr("class", "label")
-			.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-			.style("fill-opacity", function(d) { return d.parent === root ? 1 : 0; })
-			.style("display", function(d) { return d.parent === root ? null : "none"; })
-			.text(function(d) { return d.name; });
-			
-		d3.select(window)
-			.on("click", function() { zoom(root); });
-
-		function zoom(d, i) {
-			var focus0 = focus;
-			focus = d;
-
-			var k = innerDiameter / d.r / 2;
-			x.domain([d.x - d.r, d.x + d.r]);
-			y.domain([d.y - d.r, d.y + d.r]);
-			d3.event.stopPropagation();
-
-			var transition = d3.selectAll("text,circle").transition()
-			  .duration(d3.event.altKey ? 7500 : 750)
-			  .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
-
-			transition.filter("circle")
-			  .attr("r", function(d) { return k * d.r; });
-
-			transition.filter("text")
-				.filter(function(d) { return d.parent === focus || d.parent === focus0; })
-				.style("fill-opacity", function(d) { return d.parent === focus ? 1 : 0; })
-				.each("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
-				.each("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
-		}
-	});
-
-	d3.select(self.frameElement).style("height", outerDiameter + "px");
-
-
-	// Extra functions for working with colors:
-	var pad = function(num, totalChars) {
-		 var pad = '0';
-		 num = num + '';
-		 while (num.length < totalChars) {
-			  num = pad + num;
-		 }
-		 return num;
-	};
-
-	// Ratio is between 0 and 1
-	var changeColor = function(color, ratio, darker) {
-		 // Trim trailing/leading whitespace
-		 color = color.replace(/^\s*|\s*$/, '');
-
-		 // Expand three-digit hex
-		 color = color.replace(
-			  /^#?([a-f0-9])([a-f0-9])([a-f0-9])$/i,
-			  '#$1$1$2$2$3$3'
-		 );
-
-		 // Calculate ratio
-		 var difference = Math.round(ratio * 256) * (darker ? -1 : 1),
-			  // Determine if input is RGB(A)
-			  rgb = color.match(new RegExp('^rgba?\\(\\s*' +
-					'(\\d|[1-9]\\d|1\\d{2}|2[0-4][0-9]|25[0-5])' +
-					'\\s*,\\s*' +
-					'(\\d|[1-9]\\d|1\\d{2}|2[0-4][0-9]|25[0-5])' +
-					'\\s*,\\s*' +
-					'(\\d|[1-9]\\d|1\\d{2}|2[0-4][0-9]|25[0-5])' +
-					'(?:\\s*,\\s*' +
-					'(0|1|0?\\.\\d+))?' +
-					'\\s*\\)$'
-			  , 'i')),
-			  alpha = !!rgb && rgb[4] != null ? rgb[4] : null,
-
-			  // Convert hex to decimal
-			  decimal = !!rgb? [rgb[1], rgb[2], rgb[3]] : color.replace(
-					/^#?([a-f0-9][a-f0-9])([a-f0-9][a-f0-9])([a-f0-9][a-f0-9])/i,
-					function() {
-						 return parseInt(arguments[1], 16) + ',' +
-							  parseInt(arguments[2], 16) + ',' +
-							  parseInt(arguments[3], 16);
-					}
-			  ).split(/,/),
-			  returnValue;
-
-		 // Return RGB(A)
-		 return !!rgb ?
-			  'rgb' + (alpha !== null ? 'a' : '') + '(' +
-					Math[darker ? 'max' : 'min'](
-						 parseInt(decimal[0], 10) + difference, darker ? 0 : 255
-					) + ', ' +
-					Math[darker ? 'max' : 'min'](
-						 parseInt(decimal[1], 10) + difference, darker ? 0 : 255
-					) + ', ' +
-					Math[darker ? 'max' : 'min'](
-						 parseInt(decimal[2], 10) + difference, darker ? 0 : 255
-					) +
-					(alpha !== null ? ', ' + alpha : '') +
-					')' :
-			  // Return hex
-			  [
-					'#',
-					pad(Math[darker ? 'max' : 'min'](
-						 parseInt(decimal[0], 10) + difference, darker ? 0 : 255
-					).toString(16), 2),
-					pad(Math[darker ? 'max' : 'min'](
-						 parseInt(decimal[1], 10) + difference, darker ? 0 : 255
-					).toString(16), 2),
-					pad(Math[darker ? 'max' : 'min'](
-						 parseInt(decimal[2], 10) + difference, darker ? 0 : 255
-					).toString(16), 2)
-			  ].join('');
-	};
-	var lighterColor = function(color, ratio) {
-		 return changeColor(color, ratio, false);
-	};
-	var darkerColor = function(color, ratio) {
-		 return changeColor(color, ratio, true);
-	};
-	
-	----------------------------------
-				End of old Code
-	---------------------------------- */
-	
-	
-	// New code - 22/04/2014
-	
 	// CSS file
 	$('head').append('<link rel="stylesheet" href="css/grantpub.css" type="text/css" />');
 	
@@ -266,8 +56,8 @@ var GRANTPUB = (function () {
 		});	
 		
 		$('input').iCheck({
-      checkboxClass: 'icheckbox_square-blue',
-      radioClass: 'iradio_square-blue',
+			checkboxClass: 'icheckbox_square-blue',
+			radioClass: 'iradio_square-blue',
 		});
 		
 		$("#yearSlider").slider({
@@ -277,12 +67,41 @@ var GRANTPUB = (function () {
 			max: 2018,
 			step: 1,
 			slide: function( event, ui ) {
-				$( "#yearText" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+				$( "#yearText" ).text( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
 				refreshTreemaps();
 			}
 		});
-		$("#yearText").val( "$" + $("#yearSlider").slider( "values", 0 ) + " - $" + $( "#yearSlider" ).slider( "values", 1 ) );
+		$("#yearText").text( $("#yearSlider").slider( "values", 0 ) + " - " + $( "#yearSlider" ).slider( "values", 1 ) );
 		
+		$("#probabilityFunction").slider({
+			value: 0.5,
+			min: 0,
+			max: 1,
+			step: 0.1,
+			slide: function( event, ui ) {
+				// TODO: update relation graph
+			}
+		});
+		
+		$("#relationYearSlider").slider({
+			range: true,
+			values: [1973, 2018 ],
+			min: 1973,
+			max: 2018,
+			step: 1,
+			slide: function( event, ui ) {
+				$( "#relationYearText" ).text( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+				// TODO: update relation graph
+			}
+		});
+		
+		$(".keywordText").click(function(){
+			if ($(this).hasClass("active")==true){
+				$(this).removeClass("active").addClass('inactive');
+			}else{
+				$(this).removeClass("inactive").addClass('active');
+			}
+		});
 		
 		$('input#treemapFilterAccepted').on('ifChecked', function(){boolFilterAccepted=true;refreshTreemaps();});
 		$('input#treemapFilterAccepted').on('ifUnchecked', function(){boolFilterAccepted=false;refreshTreemaps();});
@@ -293,6 +112,17 @@ var GRANTPUB = (function () {
 		$('input#treemapFilterOthers').on('ifChecked', function(){boolFilterOthers=true;refreshTreemaps();});
 		$('input#treemapFilterOthers').on('ifUnchecked', function(){boolFilterOthers=false;refreshTreemaps();});
 		
+		$("#imgArrow").click(function(){
+			if($("#imgArrow").hasClass('active') == true) {
+			
+				$("#imgArrow").removeClass('active').attr('src', '/img/arrowdown.png');
+				$('#grantpubRelation').slideUp(500);
+			
+			}else{
+				$("#imgArrow").addClass('active').attr('src', '/img/arrowup.png');
+				$('#grantpubRelation').slideDown(500);
+			}
+		});
 		
 		margin = {top: 5, right: 0, bottom: 5, left: 0};
 		leftWidth = $('#leftTreemap').width() - margin.left - margin.right;
@@ -341,8 +171,6 @@ var GRANTPUB = (function () {
 		 .append("svg:svg")
 			.attr("width", rightWidth + margin.left + margin.right)
 			.attr("height", rightHeight + margin.top + margin.bottom);
-		 // .append("svg:g")
-		 //   .attr("transform", "translate(.5,.5)");
 
 		rightTreemapsvg = rightTreemapviz.append("svg:g")
 			.attr("id", "departmentsTreemap")
@@ -353,74 +181,9 @@ var GRANTPUB = (function () {
 		// Start the Treemap
 		constructTreemap();	
 		
-		
-		
-		/* old tooltip method
-		//jquery for add tooltip to child cells :
-		// departments
-		$( "#leftTreemap").tooltip({
-			items: "g",
-			content: function() {
-			
-				if ( $(this).attr("class") == "cell child" ) {
-					var title = this.__data__.Title;
-					var PI = this.__data__.PI;
-					var coI = this.__data__.CoI;
-					var sponsor = this.__data__.Sponsor;
-					var program = this.__data__.PgmName;
-					var amt = this.__data__.RequestAmt;
-					var pstatus = this.__data__.ProposalStatus;
-					var astatus = this.__data__.AwardStatus;
-					var begin = this.__data__.BeginDate;
-					var end = this.__data__.EndDate;
-					var text = "<b>Title:</b> " + title + "<br><b>PI:</b> " + PI + "<br><b>Co I:</b> " + coI + "<br><b>Sponsor:</b> " + sponsor + "<br><b>Program:</b> " + program + "<br><b>Amount:</b> " + amt + "<br><b>Proposal Status:</b> " + pstatus + "<br><b>Award Status:</b> " + astatus + "<br><b>Begin Date:</b> " + begin + "<br><b>End Date:</b> " + end;
-					return text;
-				}
-			
-				if ( $(this).attr("class") == "cell labelbar" || $(this).attr("class") == "cell parent") {
-					var departmentName = this.__data__.name;
-					var numChildren = this.__data__.children.length;
-					var total = this.__data__.value;
-					var text = "<b>Faculty of Science - " + departmentName + "</b><br><b>Number of grants:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
-					return text;
-				}
-			}
-		});
+		// create relation layout
+		constructRelation();
 	
-		// sponsors
-		$( "#rightTreemap").tooltip({
-			items: "g",
-			content: function() {
-				if ( $(this).attr("class") == "cell child" ) {
-					var title = this.__data__.Title;
-					var PI = this.__data__.PI;
-					var coI = this.__data__.CoI;
-					var sponsor = this.__data__.Sponsor;
-					var program = this.__data__.PgmName;
-					var amt = this.__data__.RequestAmt;
-					var pstatus = this.__data__.ProposalStatus;
-					var astatus = this.__data__.AwardStatus;
-					var begin = this.__data__.BeginDate;
-					var end = this.__data__.EndDate;
-					var text = "<b>Title:</b> " + title + "<br><b>PI:</b> " + PI + "<br><b>Co I:</b> " + coI + "<br><b>Sponsor:</b> " + sponsor + "<br><b>Program:</b> " + program + "<br><b>Amount:</b> " + amt + "<br><b>Proposal Status:</b> " + pstatus + "<br><b>Award Status:</b> " + astatus + "<br><b>Begin Date:</b> " + begin + "<br><b>End Date:</b> " + end;
-					return text;
-				}
-				if ( $(this).attr("class") == "cell labelbar" || $(this).attr("class") == "cell parent") {
-					var programName = this.__data__.name;
-					var numChildren = this.__data__.children.length;
-					var total = this.__data__.value;
-					var text = "<b>Sponsor :"+ programName +"</b><br><b>Number of grants:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
-					return text;
-				}
-				if ( $(this).attr("class") == "cell labelbar labelbar2" || $(this).attr("class") == "cell parent2") {
-					var numChildren = this.__data__.children.length;
-					var total = this.__data__.value;
-					var text = "<b>Program :</b> " + this.__data__.name + "<br><b>Number of grants:</b> " + numChildren + "<br><b>Total Request Amount:</b> $" + total;
-					return text;
-				}
-			}
-		});
-		*/
 	}); // end of document.ready
 	
 
@@ -428,8 +191,8 @@ var GRANTPUB = (function () {
 	
 	var xpos = $('#grantpubContainer').width()/2 - $('#vizloader').width()/2-45;
 	var ypos = $('#grantpubContainer').height()/2 - $('#vizloader').height()/2-70;
-	$('#vizloader').css({"position": "absolute", "left":  xpos + "px", "top": ypos + "px","margin": "0 auto"}).show();
-	$('#vizloader').show();
+	$('#vizloader').css({"position":"absolute" ,"left":  xpos + "px", "top": ypos + "px","margin": "0 auto"}).show();
+	
 	// get data from server
 	getTreemapData(prebuildTreemap);
 	 
@@ -579,7 +342,20 @@ var GRANTPUB = (function () {
 						d3.select(this).attr("class","cell child highlighted");
 						// call the related function to highlight related grants
 						myData.name == "Sponsors" ? sponsorGrantClick(this) : departmentGrantClick(this);
+						// create the relation layout at bottom
+					})
+					.on("dblclick", function(d) {
+						updateGrantpubRelation(d);
+						
+						// scroll to related area
+						if($("#imgArrow").hasClass('active') == false) {
+							$("#imgArrow").addClass('active').attr('src', '/img/arrowup.png');
+							$('#grantpubRelation').slideDown(500);
+						}
+						$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 620 - $(window).height()}, 500);
+						
 					});
+					
 		 childCells.append("rect")
 					.style("fill", function(d) {
 					  if(_.contains(top20, d.Sponsor))
@@ -946,7 +722,75 @@ var GRANTPUB = (function () {
 		
 	}// end refreshTreemap
 	
-	// helper functions 
+	
+	// create relation layout
+	function constructRelation(){
+				
+		var width = $("#grantpubRelation").width();
+		var height = 600;
+
+		var color = d3.scale.category20();
+
+		var force = d3.layout.force()
+			 .charge(-2000)
+			 .linkDistance(150)
+			 .size([width, height]);
+
+		var svg = d3.select("#grantpubRelation").append("svg")
+			 .attr("width", width)
+			 .attr("height", height);
+
+		d3.json("/json/tempGrantPubRelation.json", function(error, graph) {
+		  force
+				.nodes(graph.nodes)
+				.links(graph.links)
+				.start();
+
+		  var link = svg.selectAll(".relationLink")
+				.data(graph.links)
+			 .enter().append("line")
+				.attr("class", "relationLink")
+				.style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+		  var node = svg.selectAll(".relationNode")
+				.data(graph.nodes)
+				.enter().append("circle")
+				.attr("class", "relationNode")
+				.attr("r", function(d){return d.size;})
+				.style("fill", function(d) { return color(d.group); })
+				.call(force.drag);
+
+			node.append("title")
+				.text(function(d) { return d.name; });
+				
+				
+			var text = svg.selectAll(".relationText")
+				.data(graph.nodes)
+				.enter().append("text")
+				.attr("class", "relationText")
+				.attr("x", function(d){return d.x;})
+				.attr("y", function(d){return d.y;})
+				.attr("fill","black")
+				.text(function(d){return d.name});
+				
+		
+
+			force.on("tick", function() {
+				link.attr("x1", function(d) { return d.source.x; })
+				  .attr("y1", function(d) { return d.source.y; })
+				  .attr("x2", function(d) { return d.target.x; })
+				  .attr("y2", function(d) { return d.target.y; });
+
+				node.attr("cx", function(d) { return d.x; })
+				  .attr("cy", function(d) { return d.y; });
+			
+				text.attr("x", function(d){return d.x;})
+					.attr("y", function(d){return d.y;});
+			
+			});
+		});
+	}
+	
 	
 	// check for filters
 	function treemapValueAccessor(d) {
@@ -1108,26 +952,20 @@ var GRANTPUB = (function () {
 		
 	// grants highliter functions
 	function departmentGrantClick(myGrant){
-		
 		var temp1 = d3.select("#rightTreemap").selectAll(".cell.child");
-		
 		for ( var i=0;i< temp1[0].length ; i++){
 			if (temp1[0][i].__data__.Proposal == myGrant.__data__.Proposal){
 				temp1[0][i].setAttribute("class", "cell child highlighted");
 			}
 		}
-	
 	}
-	function sponsorGrantClick(myGrant){
-		
+	function sponsorGrantClick(myGrant){	
 		var temp1 = d3.select("#leftTreemap").selectAll(".cell.child");
-		
 		for ( var i=0;i< temp1[0].length ; i++){
 			if (temp1[0][i].__data__.Proposal == myGrant.__data__.Proposal){
 				temp1[0][i].setAttribute("class", "cell child highlighted");
 			}
 		}
-	
 	}
 	function departmentDepartmentClick(myDepartment){
 		var temp1 = d3.select("#rightTreemap").selectAll(".cell.child");
@@ -1153,5 +991,72 @@ var GRANTPUB = (function () {
 			}
 		}
 	}
+	
+	function updateGrantpubRelation(myGrant){
+	
+		// Clean keywords and add new ones:
+		$("#keywordBox").empty();
+		var myKeywords= myGrant.Keyword.split(",");
+		for (var i=0;i<myKeywords.length;i++)
+		{
+			$("#keywordBox").append('<div class="keywordText active">' + myKeywords[i] + '</div>');
+		}
+		$(".keywordText").click(function(){
+			if ($(this).hasClass("active")==true){
+				$(this).removeClass("active").addClass('inactive');
+			}else{
+				$(this).removeClass("inactive").addClass('active');
+			}
+		});
+		
+		// show grant data :
+		$("#grantTitle").text("Grant title: "+myGrant.Title);
+		$("#grantAmount").text("Amount: "+myGrant.RequestAmt);
+		$("#grantDepartment").text("Department: "+myGrant.Department);
+		$("#grantSponsor").text("Sponsor: "+myGrant.Sponsor);
+		$("#grantProgram").text("Program: "+myGrant.PgmName);
+		$("#grantBeginDate").text("Begin date: "+myGrant.BeginDate);
+		$("#grantEndDate").text("End date: "+myGrant.EndDate);
+	
+		// TODO: add investigators
+		
+		$("#notAcceptedGrant").hide();
+		if (!(myGrant.ProposalStatus == "Accepted" || myGrant.ProposalStatus == "Closed")){
+			$("#notAcceptedGrant").show();
+			// set years to 0-0
+			$("#relationYearSlider").slider({
+				range: true,
+				values: [0, 0 ],
+				min: 0,
+				max: 0,
+				step: 0,
+			});			
+			$( "#relationYearText" ).text("0 - 0");
+			return;
+		}
+		
+		// set years
+		var startYear = myGrant.BeginDate.substring(0,4)-5;
+		var endYear = parseInt(myGrant.EndDate.substring(0,4))+5;
+		$( "#relationYearText" ).text( startYear + " - " + endYear );
+		$("#relationYearSlider").slider({
+			range: true,
+			values: [startYear, endYear ],
+			min: startYear,
+			max: endYear,
+			step: 1,
+			slide: function( event, ui ) {
+				$( "#relationYearText" ).text( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+				// TODO: update relation graph
+			}
+		});
+			
+			
+		// TODO: show progress bar
+		// TODO: call arman function
+		
+		
+	}
+	
 		
 }()); // end of GRANTPUB

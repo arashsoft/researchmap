@@ -1,49 +1,107 @@
-
-
-<div id="grantpubContainer">
-	<img id="vizloader" src="img/viz-loader.gif" style="display: none;"></img>
-	<div id="leftTreemap">
+<div style="overflow: hidden;">
+	<div id = "grantpubContainer" style="margin: 0px; width: 100%; min-height: 750px; border: 1px solid #ebebeb; position:relative;">
+		<img id="vizloader" src="img/viz-loader.gif" style="display: none;"></img>
+		<div id="leftTreemap">
+		</div>
+		<div id="rightTreemap">
+		</div>
+		<div id="rightPanel" >
+			<div id="verticalText">Show Filter</div>
+			<div class="panelText">filter</div>
+			<div class="action" style="padding-left:40px">        
+			  <p>grant status</p>
+				<ul class="actionlist"> 
+				 <li>
+					<input type="checkbox" checked id="treemapFilterAccepted"></input> 
+					<label for="treemapFilterAccepted">accepted</label>
+				 </li>  
+				 <li>
+					<input type="checkbox" checked id="treemapFilterClosed"></input> 
+					<label for="treemapFilterClosed">closed</label>
+				 </li>
+				 <li>
+					<input type="checkbox" checked id="treemapFilterDeclined"></input> 
+					<label for="treemapFilterDeclined">declined</label>
+				 </li>
+				 <li>
+					<input type="checkbox" checked id="treemapFilterOthers"></input> 
+					<label for="treemapFilterOthers">others</label>
+				 </li>
+				</ul>
+				<p style="text-align:initial;">years<br>
+					<label style="font-size:small;color:black;">Grants (from-to):</label> <br>
+					<label id="yearText" style="border:0; color:#f6931f; font-weight:bold; font-size:14px;"></label>
+				</p>
+				<div id="yearSlider"></div>
+			</div>  	
+		</div>
+	</div> 
+	<div align="center">
+		<img id="imgArrow" src="/img/arrowdown.png" alt="Show Grant-Pub relation" title="Show/Hide Grant-Pub relation" height="42" width="42"> 
 	</div>
-	<div id="rightTreemap">
-	</div>
-	<div id="rightPanel" >
-		<div id="verticalText">Show Filter</div>
-		<div class="panelText">filter</div>
-      <div class="action" id="filterOptions">        
+	
+	<div id="grantpubRelation" style="position:relative;">
+		<div id="notAcceptedGrant" class="relationBox" style="position:absolute; top:60px; left: calc(50% - 250px); display:none;background-color:white;z-index:2;" align="center">
+			<img src="/img/warning.png" alt="Warning sign" height="100" width="100">
+			<br><br>
+			<p class="boxParagraph">The selected grant is not accepted therefore there is not any related publication</p>
+		</div>
 
-        <p>grant status</p>
-			<ul class="actionlist"> 
-          <li>
-            <input type="checkbox" checked id="treemapFilterAccepted"></input> 
-            <label for="treemapFilterAccepted">accepted</label>
-          </li>  
-          <li>
-            <input type="checkbox" checked id="treemapFilterClosed"></input> 
-            <label for="treemapFilterClosed">closed</label>
-          </li>
-          <li>
-            <input type="checkbox" checked id="treemapFilterDeclined"></input> 
-            <label for="treemapFilterDeclined">declined</label>
-          </li>
-          <li>
-            <input type="checkbox" checked id="treemapFilterOthers"></input> 
-            <label for="treemapFilterOthers">others</label>
-          </li>
-			</ul>
-
-			<p style="text-align:initial;">years<br>
-				<label style="font-size:small;color:black;">Grants (from-to):</label>
-				<input id="yearText" type="text" style="border:0; color:#f6931f; font-weight:bold;">
-			</p>
-			<div id="yearSlider"></div>
-			
-			
-      </div>  
+		<h2 style='position:absolute; color:black; font:bold 30px serif; margin-top:15px;margin-left:15px ' >Grant-Publications relation :</h2>
+		
+		<div class="relationBox" style="position:absolute;top:80px;left:30px;">
+			<p id="grantTitle" class="boxParagraph">Grant title:</p>
+			<p id="grantAmount" class="boxParagraph">Amount:</p>
+			<br>
+			<p id="grantDepartment" class="boxParagraph">Department:</p>
+			<p id="grantSponsor" class="boxParagraph">Sponsor:</p>
+			<p id="grantProgram" class="boxParagraph">Program:</p>
+			<br>
+			<div id="investigators"></div>
+			<br>
+			<p id="grantBeginDate" class="boxParagraph">Begin date:</p>
+			<p id="grantEndDate" class="boxParagraph">End date:</p>
+		</div>
+		
+		<div class="relationBox" align="center" style="position:absolute;top:30px;right:30px;">
+			<p class="boxParagraph" >Analysis algorithms</p>
+			<br>
+			<div style="border:1px dashed lightgray;">
+				<input type="radio" name="analysisAlgorithm" value="algorithm1" id="algorithm1"checked>
+				<p class="boxParagraph">Algorithm1</label>
+			</div>
+			<div style="border:1px dashed lightgray;">
+				<input type="radio" name="analysisAlgorithm" value="algorithm2" id="algorithm2">
+				<p class="boxParagraph" >Algorithm2</label>
+			</div>
+			<br>
+			<br>
+			<p class="boxParagraph" >Probability Function:</p><br>
+			<p class="boxParagraph" style="color:orange;">0&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;0.5&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;1</p>
+			<div id="probabilityFunction"></div>
+		</div>
+		
+		<div class="relationBox" style="position:absolute;top:350px;right:30px;">
+			<p style="font:1.6em 'Oswald' sans-serif; color:rgb(150,150,150);">years </p>
+			<br>
+			<p class="boxParagraph" >Publications (from-to):</p>
+			<br>
+			<label id="relationYearText" style="border:0; color:#f6931f; font:bold 14px 'Arimo', sans-serif;">1973 - 2018</label>
+			<br> <br>
+			<div id="relationYearSlider"></div>
+		</div>
+		
+		<div style="position:absolute; bottom:0px; right:0px; left:0px; border-top:3px solid lightgray; padding:10px;">
+			<p style="font-weight:bold; font-family: sans-serif; font-size: 18px; color:black; float:left; margin:8px 10px 0px 0px;;">Keywords:</p>
+			<div id="keywordBox">
+				<div class="keywordText active">Visual Analytic</div>
+				<div class="keywordText active">Information Visualization</div>
+				<div class="keywordText active">Big data</div>
+			</div>
+		</div>
 		
 	</div>
-</div> 
-
-
+</div>
  
  
 {{#scripts}}

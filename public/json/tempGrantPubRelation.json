@@ -1,0 +1,19 @@
+{
+  "nodes":[
+    {"name":"Big Grant","group":1,"size":50},
+    {"name":"Publication1","group":2,"size":30},
+    {"name":"Pub 1231","group":2,"size":60},
+    {"name":"Another Pub","group":2,"size":45},
+    {"name":"Pub abc","group":2,"size":30},
+    {"name":"Pub zxc","group":2,"size":55},
+    {"name":"test Pub","group":2,"size":38}
+  ],
+  "links":[
+    {"source":1,"target":0,"value":3},
+    {"source":2,"target":0,"value":3},
+	 {"source":3,"target":0,"value":3},
+	 {"source":4,"target":0,"value":3},
+	 {"source":5,"target":0,"value":3},
+	 {"source":6,"target":0,"value":3}
+  ]
+}
