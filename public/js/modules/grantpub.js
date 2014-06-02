@@ -738,7 +738,8 @@ var GRANTPUB = (function () {
 
 		var svg = d3.select("#grantpubRelation").append("svg")
 			 .attr("width", width)
-			 .attr("height", height);
+			 .attr("height", height)
+			 .attr("id", "relationSVG")
 
 		d3.json("/json/tempGrantPubRelation.json", function(error, graph) {
 		  force
@@ -1020,9 +1021,11 @@ var GRANTPUB = (function () {
 	
 		// TODO: add investigators
 		
+		// check if selected grant is accepted or not
 		$("#notAcceptedGrant").hide();
 		if (!(myGrant.ProposalStatus == "Accepted" || myGrant.ProposalStatus == "Closed")){
 			$("#notAcceptedGrant").show();
+			$("#relationSVG").hide();
 			// set years to 0-0
 			$("#relationYearSlider").slider({
 				range: true,
@@ -1034,6 +1037,7 @@ var GRANTPUB = (function () {
 			$( "#relationYearText" ).text("0 - 0");
 			return;
 		}
+		$("#relationSVG").show();
 		
 		// set years
 		var startYear = myGrant.BeginDate.substring(0,4)-5;
