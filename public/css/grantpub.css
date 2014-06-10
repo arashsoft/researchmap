@@ -76,9 +76,9 @@
 	margin-left: 100px;
 }
 #grantpubRelation{
-	height: 600px;
+	height: 700px;
 	width: 100%;
-	margin: -35px 0.5% 10px 0px;
+	margin: -35px 0px 2px 0px;
 	border: 1px solid #ebebeb;
 	display:none;
 }
@@ -92,7 +92,7 @@
 
 /* grantPub relation   */
 .relationNode {
-  stroke: #fff;
+  stroke: #000;
   stroke-width: 1.5px;
 }
 .relationLink {
@@ -101,7 +101,7 @@
 }
 .relationText{
 	font-family: sans-serif;
-	font-size: 20px;
+	font-size: 18px;
 	text-anchor:middle;
 	pointer-events: none;
 }
@@ -132,12 +132,36 @@
 	border-radius:10px 2px 10px 2px;
 	box-shadow: 2px 2px 5px #888888;
 }
-.keywordText:hover{
+.keywordText.active:hover , .keywordText.inactive:hover{
 	border-color:blue;
 }
-.keywordText.active{
+.keywordText.pub.active{
 	background-color:lightgreen;
 }
-.keywordText.inactive{
+.keywordText.pub.inactive{
 	background-color:lightgray;
+}
+.keywordText.author.active{
+	background-color:rgb(253, 174, 107);
+}
+.keywordText.author.inactive{
+	background-color:lightgray;
+}
+
+.keywordText2{
+	font-family: sans-serif;
+	font-size: 12px;
+	font-weight:bold;
+	color:black;
+	padding: 3px;
+	margin: 3px 2px 3px 2px;
+	position:relative;
+	top:-6px;
+	/*make it not selectable*/
+	-moz-user-select: -moz-none;
+   -webkit-user-select: none;
+	float:left;
+	border:1px solid;
+	border-radius:4px;
+	background-color:lightblue;
 }

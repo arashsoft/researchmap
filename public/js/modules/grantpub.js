@@ -95,13 +95,6 @@ var GRANTPUB = (function () {
 			}
 		});
 		
-		$(".keywordText").click(function(){
-			if ($(this).hasClass("active")==true){
-				$(this).removeClass("active").addClass('inactive');
-			}else{
-				$(this).removeClass("inactive").addClass('active');
-			}
-		});
 		
 		$('input#treemapFilterAccepted').on('ifChecked', function(){boolFilterAccepted=true;refreshTreemaps();});
 		$('input#treemapFilterAccepted').on('ifUnchecked', function(){boolFilterAccepted=false;refreshTreemaps();});
@@ -352,7 +345,8 @@ var GRANTPUB = (function () {
 							$("#imgArrow").addClass('active').attr('src', '/img/arrowup.png');
 							$('#grantpubRelation').slideDown(500);
 						}
-						$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 620 - $(window).height()}, 500);
+						// 700 is grantPubRelation height
+						$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 700 - $(window).height()}, 500);
 						
 					});
 					
@@ -727,54 +721,73 @@ var GRANTPUB = (function () {
 	function constructRelation(){
 				
 		var width = $("#grantpubRelation").width();
-		var height = 600;
+		var height = $("#grantpubRelation").height();
 
 		var color = d3.scale.category20();
 
 		var force = d3.layout.force()
 			 .charge(-2000)
 			 .linkDistance(150)
-			 .size([width, height]);
+			 .size([width, 550]);
 
 		var svg = d3.select("#grantpubRelation").append("svg")
 			 .attr("width", width)
 			 .attr("height", height)
 			 .attr("id", "relationSVG")
 
-		d3.json("/json/tempGrantPubRelation.json", function(error, graph) {
-		  force
+		//d3.json("/json/tempGrantPubRelation.json", function(error, graph) {
+		
+		d3.json("/json/Beauchemin/beauchemin_results1-1.json", function(error, myData) {
+
+			var graph = new Array();
+			graph["nodes"]= new Array();
+			graph["links"]= new Array();
+			
+			graph["nodes"].push({"name":myData["beauchemin_grant_data"].RequestAmt,"name2":"","group":1,"size":50});
+			
+			for (var i = 0 ; i < myData["related_publications"].length; i++){
+				var size = myData["related_publications"][i]["radius"]=="MIN"?30:30+myData["related_publications"][i]["radius"]/2.85;
+				graph["nodes"].push({
+					"name": myData["related_publications"][i]["publication"].Type,
+					"name2": myData["related_publications"][i]["publication"].Year,
+					"group": 2,
+					"size": size});
+				graph["links"].push({"source":i+1,"target":0,"value":3});
+				//+(size-29)/20
+			}
+		  
+			force
 				.nodes(graph.nodes)
 				.links(graph.links)
 				.start();
 
-		  var link = svg.selectAll(".relationLink")
+			var link = svg.selectAll(".relationLink")
 				.data(graph.links)
 			 .enter().append("line")
 				.attr("class", "relationLink")
 				.style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
-		  var node = svg.selectAll(".relationNode")
+			var node = svg.selectAll(".relationNode")
 				.data(graph.nodes)
 				.enter().append("circle")
 				.attr("class", "relationNode")
 				.attr("r", function(d){return d.size;})
-				.style("fill", function(d) { return color(d.group); })
+				.style("fill", function(d) { return d.group==1? "lightblue":"lightgreen"})
 				.call(force.drag);
 
 			node.append("title")
-				.text(function(d) { return d.name; });
+				.text(function(d) {return d.group==1? d.name: "Type: "+d.name+"\nYear: " + d.name2; });
 				
-				
-			var text = svg.selectAll(".relationText")
-				.data(graph.nodes)
+			
+			var text = svg.selectAll(".relationText").data(graph.nodes)
 				.enter().append("text")
 				.attr("class", "relationText")
 				.attr("x", function(d){return d.x;})
 				.attr("y", function(d){return d.y;})
 				.attr("fill","black")
-				.text(function(d){return d.name});
+				.text(function(d){return d.group==1?d.name:"";});
 				
-		
+			
 
 			force.on("tick", function() {
 				link.attr("x1", function(d) { return d.source.x; })
@@ -787,7 +800,6 @@ var GRANTPUB = (function () {
 			
 				text.attr("x", function(d){return d.x;})
 					.attr("y", function(d){return d.y;});
-			
 			});
 		});
 	}
@@ -994,7 +1006,10 @@ var GRANTPUB = (function () {
 	}
 	
 	function updateGrantpubRelation(myGrant){
-	
+		
+		//temp code just for screenshot
+		return updateGrantpubRelation2();
+		
 		// Clean keywords and add new ones:
 		$("#keywordBox").empty();
 		var myKeywords= myGrant.Keyword.split(",");
@@ -1055,12 +1070,76 @@ var GRANTPUB = (function () {
 			}
 		});
 			
-			
 		// TODO: show progress bar
 		// TODO: call arman function
 		
 		
 	}
+	
+	// temp function just for making screenshots
+	function updateGrantpubRelation2(){
+		d3.json("/json/Beauchemin/beauchemin_results1-1.json", function(error, myData) {
+		
+			// Clean grant keywords and add new ones:
+			$("#grantKeywordBox").empty();
+			for (var i=0;i< myData["main_keywords_list"].length;i++)
+			{
+				$("#grantKeywordBox").append('<div class="keywordText2">' + myData["main_keywords_list"][i] + '</div>');
+			}
+			// Clean pub keywords and add new ones;
+			$("#pubKeywordBox").empty();
+			for (var i=0;i< myData["added_keywords_list"].length;i++)
+			{
+				$("#pubKeywordBox").append('<div class="keywordText pub active">' + myData["added_keywords_list"][i].word + '</div>');
+			}
+			// Clean authors and add new ones;
+			$("#authorBox").empty();
+			for (var i=0;i< myData["co_authors"].length;i++)
+			{
+				$("#authorBox").append('<div class="keywordText author active">' + myData["added_keywords_list"][i].word + '</div>');
+			}
+			
+			$(".keywordText.active").click(function(){
+				if ($(this).hasClass("active")==true){
+					$(this).removeClass("active").addClass('inactive');
+				}else{
+					$(this).removeClass("inactive").addClass('active');
+				}
+			});
+			
+			// show grant data :
+			$("#grantTitle").text("Grant title: "+myData["beauchemin_grant_data"].Title);
+			$("#grantAmount").text("Amount: "+myData["beauchemin_grant_data"].RequestAmt);
+			$("#grantInvestigator").text("Investigator(s): " + myData["beauchemin_grant_data"].Investigators.toString());
+			$("#grantDepartment").text("Department: Computer Science");
+			$("#grantSponsor").text("Sponsor: "+myData["beauchemin_grant_data"].Sponsor);
+			$("#grantProgram").text("Program: "+myData["beauchemin_grant_data"].PgmName);
+			$("#grantBeginDate").text("Begin date: "+myData["beauchemin_grant_data"].BeginDate);
+			$("#grantEndDate").text("End date: "+myData["beauchemin_grant_data"].EndDate);
+			
+			// set years
+			var startYear = myData["beauchemin_grant_data"].BeginDate.substring(0,4)-5;
+			var endYear = parseInt(myData["beauchemin_grant_data"].EndDate.substring(0,4))+5;
+			$( "#relationYearText" ).text( startYear + " - " + endYear );
+			$("#relationYearSlider").slider({
+				range: true,
+				values: [startYear, endYear ],
+				min: startYear,
+				max: endYear,
+				step: 1,
+				slide: function( event, ui ) {
+					$( "#relationYearText" ).text( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+					// TODO: update relation graph
+				}
+			});
+			
+			
+			
+			
+		
+		});
+	}
+	
 	
 		
 }()); // end of GRANTPUB

@@ -47,57 +47,69 @@
 			<p class="boxParagraph">The selected grant is not accepted therefore there is not any related publication</p>
 		</div>
 
-		<h2 style='position:absolute; color:black; font:bold 26px sans-serif; margin-top:15px;margin-left:15px ' >Publications related to selected grant:</h2>
+		<div style="position:absolute; z-index:-1;" >
+			<p style="font:1.6em 'Oswald' sans-serif; color:black; margin-left:10px;">Publications related to selected grant:</p>
+		</div>
 		
-		<div class="relationBox" style="position:absolute;top:80px;left:30px;z-index:-1;">
+		<div class="relationBox" style="position:absolute;top:60px;left:10px;z-index:-1;max-width:30%;">
 			<p id="grantTitle" class="boxParagraph">Grant title:</p>
 			<p id="grantAmount" class="boxParagraph">Amount:</p>
+			<p id="grantInvestigator" class="boxParagraph">Investigators:</p>
 			<br>
 			<p id="grantDepartment" class="boxParagraph">Department:</p>
 			<p id="grantSponsor" class="boxParagraph">Sponsor:</p>
 			<p id="grantProgram" class="boxParagraph">Program:</p>
 			<br>
-			<div id="investigators"></div>
-			<br>
-			<p id="grantBeginDate" class="boxParagraph">Begin date:</p>
+			<p class="boxParagraph" style="float:left">Grant Keywords:</p>
+			<div id="grantKeywordBox" >
+			</div>
+			<br style="clear:left;"><br>
+			<p id="grantBeginDate" class="boxParagraph" >Begin date:</p>
 			<p id="grantEndDate" class="boxParagraph">End date:</p>
 		</div>
 		
-		<div class="relationBox" align="center" style="position:absolute;top:30px;right:30px;">
-			<p class="boxParagraph" >Analysis algorithms</p>
+		<div class="relationBox" align="center" style="position:absolute;top:30px;right:10px;">
+			<p class="boxParagraph" style="font-weight:bold;">Analytics Interaction</p>
 			<br>
+			<p align="left" class="boxParagraph">Algorithem Selection</p>
 			<div style="border:1px dashed lightgray;">
 				<input type="radio" name="analysisAlgorithm" value="algorithm1" id="algorithm1"checked>
-				<p class="boxParagraph">Algorithm1</label>
+				<p class="boxParagraph">Relationship Extractor1</label>
 			</div>
 			<div style="border:1px dashed lightgray;">
 				<input type="radio" name="analysisAlgorithm" value="algorithm2" id="algorithm2">
-				<p class="boxParagraph" >Algorithm2</label>
+				<p class="boxParagraph" style="color:lightgray;" >Relationship Extractor2</label>
+			</div>
+			<br> 
+			<p align="left"  class="boxParagraph">Score Kernel Selection</p>
+			<div style="border:1px dashed lightgray;">
+				<input type="radio" name="scoreKernel" value="Uniform" id="Uniform"checked>
+				<p class="boxParagraph">Uniform</label>
+			</div>
+			<div style="border:1px dashed lightgray;">
+				<input type="radio" name="scoreKernel" value="Weighted" id="Weighted">
+				<p class="boxParagraph">Weighted</label>
 			</div>
 			<br>
 			<br>
-			<p class="boxParagraph" >Probability Function:</p><br>
+			<p align="left" class="boxParagraph" >Score Threshold</p>
 			<p class="boxParagraph" style="color:orange;">0&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;0.5&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;1</p>
 			<div id="probabilityFunction"></div>
-		</div>
-		
-		<div class="relationBox" style="position:absolute;top:350px;right:30px;">
-			<p style="font:1.6em 'Oswald' sans-serif; color:rgb(150,150,150);">years </p>
 			<br>
-			<p class="boxParagraph" >Publications (from-to):</p>
-			<br>
+			<p align="left" class="boxParagraph" >Publications years(from-to)</p>
 			<label id="relationYearText" style="border:0; color:#f6931f; font:bold 14px 'Arimo', sans-serif;">1973 - 2018</label>
-			<br> <br>
 			<div id="relationYearSlider"></div>
 		</div>
 		
-		<div style="position:absolute; bottom:0px; right:0px; left:0px; border-top:3px solid lightgray; padding:10px;">
-			<p style="font-weight:bold; font-family: sans-serif; font-size: 18px; color:black; float:left; margin:8px 10px 0px 0px;;">Keywords:</p>
-			<div id="keywordBox">
-				<div class="keywordText active">Visual Analytic</div>
-				<div class="keywordText active">Information Visualization</div>
-				<div class="keywordText active">Big data</div>
+		<div id="divKeyword" style="position:absolute; bottom:0px; right:0px; left:0px; border-top:3px solid lightgray; padding:10px;">
+			<p style="font-weight:bold; font-family: sans-serif; font-size: 18px; color:black; float:left; margin:8px 10px 0px 0px;;">Authors:</p>
+			<div id="authorBox">
 			</div>
+			<hr style="clear:both; width:100%;position:relative;top:7px;">
+			<p style="font-weight:bold; font-family: sans-serif; font-size: 18px; color:black; clear:left; float:left; margin:8px 10px 0px 0px;;">Publication Keywords:</p>
+			<div id="pubKeywordBox">
+			</div>
+			
 		</div>
 		
 	</div>
