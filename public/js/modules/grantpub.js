@@ -1096,7 +1096,7 @@ var GRANTPUB = (function () {
 			$("#authorBox").empty();
 			for (var i=0;i< myData["co_authors"].length;i++)
 			{
-				$("#authorBox").append('<div class="keywordText author active">' + myData["added_keywords_list"][i].word + '</div>');
+				$("#authorBox").append('<div class="keywordText author active">' + myData["co_authors"][i] + '</div>');
 			}
 			
 			$(".keywordText.active").click(function(){
