@@ -1,29 +1,23 @@
 {
   	"_id": "beauchemin_test_data",
-  	"_comments": "analysis begin and end set to the grant begin and end",
+  	"_comments": "analysis begin and end set to the grant begin and end plus 5 years, with different scoring kernel, after removing author {Hamshari H.O.}, resulting into the publication co-authored with him being removed",
   	"main_keywords_list":
   		[
-  		"speed-q",
-  		"safe",
-  		"platform",
-  		"evaluation",
-  		"enhancement"
+  		"convis-d",
+  		"simulation",
+  		"environment",
+  		"evaluation"
   		],
   	"added_keywords_list":
   		[
-  		{"word": "passive", "weight": "1"},
-  		{"word": "atmospheric", "weight": "1"},
-  		{"word": "diffusion", "weight": "1"},
   		{"word": "evaluation", "weight": "1"},
-  		{"word": "gaussian", "weight": "1"},
-  		{"word": "fragmentation", "weight": "1"},
   		{"word": "cobvis-d", "weight": "1"},
-  		{"word": "computer", "weight": "2"},
-  		{"word": "vision", "weight": "2"},
+  		{"word": "computer", "weight": "3"},
+  		{"word": "vision", "weight": "4"},
   		{"word": "system", "weight": "2"},
-  		{"word": "cephalo-ocular", "weight": "2"},
-  		{"word": "behavior", "weight": "2"},
-  		{"word": "drivers", "weight": "2"},
+  		{"word": "cephalo-ocular", "weight": "3"},
+  		{"word": "behavior", "weight": "3"},
+  		{"word": "drivers", "weight": "4"},
   		{"word": "driving", "weight": "2"},
   		{"word": "simulator", "weight": "1"},
   		{"word": "analyzing", "weight": "1"},
@@ -31,81 +25,62 @@
   		{"word": "simulated", "weight": "1"},
   		{"word": "context", "weight": "1"},
   		{"word": "real-time", "weight": "1"},
-  		{"word": "framework", "weight": "1"},
+  		{"word": "framework", "weight": "2"},
   		{"word": "eye", "weight": "1"},
   		{"word": "detection", "weight": "1"},
-  		{"word": "tracking", "weight": "1"}
+  		{"word": "tracking", "weight": "1"},
+  		{"word": "analysis", "weight": "2"},
+  		{"word": "interpretation", "weight": "1"},
+  		{"word": "portable", "weight": "1"},
+  		{"word": "scalable", "weight": "1"},
+  		{"word": "vehicular", "weight": "1"},
+  		{"word": "instrumentation", "weight": "1"},
+  		{"word": "intentionality", "weight": "1"}
   		],
   	"inactive_keywords": [
   	],
   	"beauchemin_grant_data": {
 		"Investigators": ["Beauchemin,Steven"],
-		"Proposal": "17694",
-		"AwardID": "R3142A03",
-		"Title": "SPEED-Q SAFE PLATFORM FOR THE EVALUATION AND ENHANCEMENT",
+		"Proposal": "17691",
+		"AwardID": "R3142A02",
+		"Title": "COBVIS-D: A SIMULATION ENVIRONMENT FOR THE EVALUATION OF",
 		"Created": "2009-09-11",
-		"Deadline": "2007-05-15",
+		"Deadline": "2005-08-04",
 		"Type": "NEW",
 		"ProposalStatus": "Accepted",
 		"AwardStatus": "Closed",
-		"BeginDate": "2008-04-01",
-		"EndDate": "2012-09-28",
+		"BeginDate": "2005-04-01",
+		"EndDate": "2009-09-30",
 		"IndirectCosts": "N",
 		"IndirectCostPercent": "0",
 		"MatchingFunds": "N",
 		"PartnerContrib": "N",
-		"RequestAmt": "$29,800.00 ",
+		"RequestAmt": "$17,000.00 ",
 		"Sponsor": "NETWORK CENTRES OF EXCELLENCE",
 		"PgmName": "AUTOMOBILE OF THE 21ST CENTURY",
-		"CompName": "2007 - CONVERSION",
+		"CompName": "2005 - CONVERSION",
 		"Keyword": [""]
     },
     "co_authors": [
     	"Bauer M.A.",
+    	"Cho Ji",
     	"Gagnon L.",
     	"Hamshari H.O.",
+    	"Kowsari Taha",
     	"Lavalliere M.",
     	"Laurendeau D.",
     	"Metari S.",
     	"Moszkowicz T.",
     	"Prel F.",
+    	"Simoneau M.",
     	"Teasdale N.",
     	"Varcheie P.D.Z."
     ],
     "inactive_co_authors": [
+    	"Hamshari H.O."
     ],
     "related_publications": [
 	{
-	"publication": {
-		"Type": "Article",
-		"Authors": "Beauchemin S.S.; Hamshari H.O.; Bauer M.A.",
-		"Title": "Passive Atmospheric Diffusion With Gaussian Fragmentation",
-		"Year": "2009",
-		"SourceTitle": "International Journal Of Computers And Applications",
-		"Volume": "31",
-		"Issue": "2",
-		"Art. No.": "",
-		"Page start": "97",
-		"Page end": "108",
-		"Page count": "12",
-		"CitationCount": "NULL",
-		"URL": "https://www.scopus.com/inward/record.url?eid=2-s2.0-77950793971&partnerID=40&md5=457f092462d90f80bbc1421b4311dfb0",
-		"Affiliations": "Department of Computer Science, University of Western Ontario, 1151 Richmond Street, London ON N6A 5B7, Canada",
-		"Authors with affiliations": "Beauchemin, S.S., Department of Computer Science, University of Western Ontario, 1151 Richmond Street, London ON N6A 5B7, Canada; Hamshari, H.O., Department of Computer Science, University of Western Ontario, 1151 Richmond Street, London ON N6A 5B7, Canada; Bauer, M.A., Department of Computer Science, University of Western Ontario, 1151 Richmond Street, London ON N6A 5B7, Canada",
-		"Author Keywords": "Atmospheric plume; Gaussian cloud; Hexagonal sphere packing; Integral model; Parallel simulation",
-		"Index Keywords": "Gaussian cloud; Gaussians; Integral model; Parallel simulations; Sphere packings; Accidents; Channel coding; Dispersions; Gas emissions; Industrial emissions; Industrial hygiene; Leakage (fluid); Occupational diseases; Packing; Thermal plumes; Atmospheric movements",
-		"Correspondence Address": "Beauchemin, S. S.; Department of Computer Science, University of Western Ontario, 1151 Richmond Street, London ON N6A 5B7, Canada; email: beau@csd.uwo.ca",
-		"DOI": "10.2316/Journal.202.2009.2.202-2338",
-		"Conference name": "",
-		"Conference date": "",
-		"Conference location": "",
-		"ISSN": "1206212X",
-		"ISBN": "",
-		"DataFrom": "Scopus"
-	},
-	"radius": "MIN"
-	},
-    {
 	"publication": {
 		"Type": "Conference Paper",
 		"Authors": "Beauchemin S.; Varcheie P.D.Z.; Gagnon L.; Laurendeau D.; Lavalliere M.; Moszkowicz T.; Prel F.; Teasdale N.",
@@ -133,7 +108,7 @@
 		"ISBN": "3642026109; 978",
 		"DataFrom": "Scopus"
     },
-    "radius": "MIN"
+    "radius": "1.25"
     },
     {
     "publication": {
@@ -163,7 +138,7 @@
 		"ISBN": "9.78E12",
 		"DataFrom": "Scopus"
     },
-    "radius": "MIN"
+    "radius": "1.50"
     },
     {
  	"publication": {
@@ -192,6 +167,66 @@
 		"ISSN": "1861-8200",
 		"ISBN": "",
 		"DataFrom": "WOS:000297127300004"
+    },
+    "radius": "MIN"
+    },
+    {
+    "publication": {
+		"Type": "Article",
+		"Authors": "Beauchemin Steven S.; Bauer Michael A.; Kowsari Taha; Cho Ji",
+		"Title": "Portable And Scalable Vision-based Vehicular Instrumentation For The Analysis Of Driver Intentionality",
+		"Year": "2012",
+		"SourceTitle": "Ieee Transactions On Instrumentation And Measurement",
+		"Volume": "61",
+		"Issue": "2",
+		"Art. No.": "",
+		"Page start": "391",
+		"Page end": "401",
+		"Page count": "11",
+		"CitationCount": "0",
+		"URL": "",
+		"Affiliations": "",
+		"Authors with affiliations": "",
+		"Author Keywords": "",
+		"Index Keywords": "",
+		"Correspondence Address": "",
+		"DOI": "10.1109/TIM.2011.2164854",
+		"Conference name": "",
+		"Conference date": "",
+		"Conference location": "",
+		"ISSN": "0018-9456",
+		"ISBN": "",
+		"DataFrom": "WOS:000298888000011"
+    },
+    "radius" : "MIN"
+    },
+    {
+    "publication": {
+      "Type": "Article",
+      "Authors": "Metari S.; Prel F.; Moszkowicz T.; Laurendeau D.; Teasdale N.; Beauchemin S.; Simoneau M.",
+      "Title": "A Computer Vision Framework For The Analysis And Interpretation Of The Cephalo-ocular Behavior Of Drivers",
+      "Year": "2013",
+      "SourceTitle": "Machine Vision And Applications",
+      "Volume": "24",
+      "Issue": "1",
+      "Art. No.": "",
+      "Page start": "159",
+      "Page end": "173",
+      "Page count": "15",
+      "CitationCount": "NULL",
+      "URL": "https://www.scopus.com/inward/record.url?eid=2-s2.0-84872362817&partnerID=40&md5=1a14bbc8d9b71bbf6491789935e28e73",
+      "Affiliations": "LVSN, Universit?? Laval, Qu??bec, QC G1V 0A6, Canada; GRAME, Universit?? Laval, Qu??bec, QC G1V0A6, Canada; Department of Computer Science, University of Western Ontario, London, ON N6A 5B7, Canada",
+      "Authors with affiliations": "Metari, S., LVSN, Universit?? Laval, Qu??bec, QC G1V 0A6, Canada; Prel, F., LVSN, Universit?? Laval, Qu??bec, QC G1V 0A6, Canada; Moszkowicz, T., LVSN, Universit?? Laval, Qu??bec, QC G1V 0A6, Canada; Laurendeau, D., LVSN, Universit?? Laval, Qu??bec, QC G1V 0A6, Canada; Teasdale, N., GRAME, Universit?? Laval, Qu??bec, QC G1V0A6, Canada; Beauchemin, S., Department of Computer Science, University of Western Ontario, London, ON N6A 5B7, Canada; Simoneau, M., GRAME, Universit?? Laval, Qu??bec, QC G1V0A6, Canada",
+      "Author Keywords": "Boosted classifiers; Cephalo-ocular behavior; Driving simulator; Haar-like features; Pyramidal Lucas-Kanade method; Visual search actions",
+      "Index Keywords": "Boosted classifiers; Cephalo-ocular behavior; Driving simulator; Haar-like features; Pyramidal Lucas-Kanade method; Visual search; Automobile simulators; Computer vision",
+      "Correspondence Address": "Metari, S.; LVSN, Universit?? Laval, Qu??bec, QC G1V 0A6, Canada; email: samy.metari.1@ulaval.ca",
+      "DOI": "10.1007/s00138-011-0381-5",
+      "Conference name": "",
+      "Conference date": "",
+      "Conference location": "",
+      "ISSN": "9328092",
+      "ISBN": "",
+      "DataFrom": "Scopus"
     },
     "radius": "MIN"
     }

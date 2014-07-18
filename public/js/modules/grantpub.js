@@ -3,7 +3,14 @@
 
 var GRANTPUB = (function () { 
 
-
+	// var tempJsonName="/json/Beauchemin/beauchemin_results1-1.json";
+	// var tempJsonName="/json/Beauchemin/beauchemin_results1-2.json";
+	// var tempJsonName="/json/Beauchemin/beauchemin_results2-1.json";
+	var tempJsonName="/json/Beauchemin/beauchemin_results2-2.json";
+	// var tempJsonName="/json/Beauchemin/beauchemin_results2-3.json";
+	// var tempJsonName="/json/Beauchemin/beauchemin_results2-4-1.json";
+	// var tempJsonName="/json/Beauchemin/beauchemin_results2-4-2.json";
+	
 	// CSS file
 	$('head').append('<link rel="stylesheet" href="css/grantpub.css" type="text/css" />');
 	
@@ -95,6 +102,13 @@ var GRANTPUB = (function () {
 			}
 		});
 		
+		
+		$("#grantPubSubmitButton").click(function(){
+			//TODO: call analysis and update data
+		
+			//hide submit
+			$("#submitBox").hide();		
+		});
 		
 		$('input#treemapFilterAccepted').on('ifChecked', function(){boolFilterAccepted=true;refreshTreemaps();});
 		$('input#treemapFilterAccepted').on('ifUnchecked', function(){boolFilterAccepted=false;refreshTreemaps();});
@@ -312,6 +326,10 @@ var GRANTPUB = (function () {
 			var parents = nodes.filter(function(d) {
 				 return d.children;
 			});
+			//Todo temp code
+			//for (var i =0; i< parents.length;i++){
+			//	parents[i].name = "Department "+(i+1);
+			//}
 		 } else {
 			var parents = nodes.filter(function(d) {
 				 return d.depth < 2; //sponsors
@@ -737,7 +755,7 @@ var GRANTPUB = (function () {
 
 		//d3.json("/json/tempGrantPubRelation.json", function(error, graph) {
 		
-		d3.json("/json/Beauchemin/beauchemin_results1-1.json", function(error, myData) {
+		d3.json(tempJsonName, function(error, myData) {
 
 			var graph = new Array();
 			graph["nodes"]= new Array();
@@ -1007,7 +1025,7 @@ var GRANTPUB = (function () {
 	
 	function updateGrantpubRelation(myGrant){
 		
-		//temp code just for screenshot
+		//temp code just for screenshot (hide confidential infos)
 		return updateGrantpubRelation2();
 		
 		// Clean keywords and add new ones:
@@ -1072,13 +1090,12 @@ var GRANTPUB = (function () {
 			
 		// TODO: show progress bar
 		// TODO: call arman function
-		
-		
+
 	}
 	
-	// temp function just for making screenshots
+	// temp function just for making screenshots - hide confidential informations
 	function updateGrantpubRelation2(){
-		d3.json("/json/Beauchemin/beauchemin_results1-1.json", function(error, myData) {
+		d3.json(tempJsonName, function(error, myData) {
 		
 			// Clean grant keywords and add new ones:
 			$("#grantKeywordBox").empty();
@@ -1092,14 +1109,27 @@ var GRANTPUB = (function () {
 			{
 				$("#pubKeywordBox").append('<div class="keywordText pub active">' + myData["added_keywords_list"][i].word + '</div>');
 			}
+			// inactive pubs
+			for (var i=0;i< myData["inactive_keywords"].length;i++)
+			{
+				$(".keywordText.pub.active:contains('"+ myData["inactive_keywords"][i] +"')").removeClass("active").addClass("inactive");
+			}
+			
 			// Clean authors and add new ones;
 			$("#authorBox").empty();
 			for (var i=0;i< myData["co_authors"].length;i++)
 			{
 				$("#authorBox").append('<div class="keywordText author active">' + myData["co_authors"][i] + '</div>');
 			}
+			// inactive authors
+			for (var i=0;i< myData["inactive_co_authors"].length;i++)
+			{
+				$(".keywordText.author.active:contains('"+ myData["inactive_co_authors"][i] +"')").removeClass("active").addClass("inactive");
+			}
 			
-			$(".keywordText.active").click(function(){
+			// add onclick event (toggle active - inactive )
+			$(".keywordText.pub , .keywordText.author ").click(function(){
+				$("#submitBox").show();
 				if ($(this).hasClass("active")==true){
 					$(this).removeClass("active").addClass('inactive');
 				}else{
@@ -1128,18 +1158,15 @@ var GRANTPUB = (function () {
 				max: endYear,
 				step: 1,
 				slide: function( event, ui ) {
+					//show submit button
+					$("#submitBox").show();
+					
 					$( "#relationYearText" ).text( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
 					// TODO: update relation graph
 				}
 			});
-			
-			
-			
-			
 		
 		});
 	}
 	
-	
-		
 }()); // end of GRANTPUB

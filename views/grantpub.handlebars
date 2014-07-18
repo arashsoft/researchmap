@@ -71,7 +71,7 @@
 		<div class="relationBox" align="center" style="position:absolute;top:30px;right:10px;">
 			<p class="boxParagraph" style="font-weight:bold;">Analytics Interaction</p>
 			<br>
-			<p align="left" class="boxParagraph">Algorithem Selection</p>
+			<p align="left" class="boxParagraph">Algorithm Selection</p>
 			<div style="border:1px dashed lightgray;">
 				<input type="radio" name="analysisAlgorithm" value="algorithm1" id="algorithm1"checked>
 				<p class="boxParagraph">Relationship Extractor1</label>
@@ -96,9 +96,14 @@
 			<p class="boxParagraph" style="color:orange;">0&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;0.5&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;1</p>
 			<div id="probabilityFunction"></div>
 			<br>
-			<p align="left" class="boxParagraph" >Publications years(from-to)</p>
+			<p align="left" class="boxParagraph" >Publications years (from-to)</p>
 			<label id="relationYearText" style="border:0; color:#f6931f; font:bold 14px 'Arimo', sans-serif;">1973 - 2018</label>
 			<div id="relationYearSlider"></div>
+		</div>
+		
+		<div align="center" id="submitBox" class="relationBox" style="position:absolute; top:480px; right:10px; background-color:#FAD9D9; z-index:1; display:none;">
+			<p class="boxParagraph" style="color:red;">Submit your changes to see the result</p>
+			<button id="grantPubSubmitButton" >Submit</button>
 		</div>
 		
 		<div id="divKeyword" style="position:absolute; bottom:0px; right:0px; left:0px; border-top:3px solid lightgray; padding:10px;">

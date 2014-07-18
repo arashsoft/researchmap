@@ -1,0 +1,44 @@
+{
+  	"_id": "beauchemin_test_data",
+  	"_comments": "analysis begin and end set to the grant begin and end",
+  	"main_keywords_list":
+  		[
+  		"convis-d",
+  		"simulation",
+  		"environment",
+  		"evaluation"
+  		],
+  	"added_keywords_list":
+  		[
+  		],
+  	"inactive_keywords": [
+  	],
+  	"beauchemin_grant_data": {
+		"Investigators": ["Beauchemin,Steven"],
+		"Proposal": "17691",
+		"AwardID": "R3142A02",
+		"Title": "COBVIS-D: A SIMULATION ENVIRONMENT FOR THE EVALUATION OF",
+		"Created": "2009-09-11",
+		"Deadline": "2005-08-04",
+		"Type": "NEW",
+		"ProposalStatus": "Accepted",
+		"AwardStatus": "Closed",
+		"BeginDate": "2005-04-01",
+		"EndDate": "2009-09-30",
+		"IndirectCosts": "N",
+		"IndirectCostPercent": "0",
+		"MatchingFunds": "N",
+		"PartnerContrib": "N",
+		"RequestAmt": "$17,000.00 ",
+		"Sponsor": "NETWORK CENTRES OF EXCELLENCE",
+		"PgmName": "AUTOMOBILE OF THE 21ST CENTURY",
+		"CompName": "2005 - CONVERSION",
+		"Keyword": [""]
+    },
+    "co_authors": [
+    ],
+    "inactive_co_authors": [
+    ],
+    "related_publications": [
+	]
+}
