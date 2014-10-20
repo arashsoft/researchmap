@@ -1,0 +1,261 @@
+
+<div class="vizarea group">
+  <div id="vizcontainer">
+    <img id="vizloader" src="img/viz-loader.gif" style="display: none;"></img>
+    
+	 
+	   <div id="networkviz">
+        <div id="networkbar">
+          <img id="networkzoomin" src="img/zoomin.png"></img>
+          <img id="networkzoomout" src="img/zoomout.png"></img>
+          <div class="ui-widget">
+            <input id="tags" />
+          </div>
+
+          <button id="networkreset">reset</button>
+        </div>
+      </div>
+  
+  
+  </div>
+
+
+  <div id="actionpaneltoggle">
+    <p>></p>
+  </div>   
+  <div id="actionpanel">
+    <h2>Action Panel</h2>
+<!--         <p>Listed below are the actions that are available for the displayed visualization.</p>
+-->      
+    <div id="sankeyactions">
+      <h3>filter</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+        <p>sources</p>
+        <select id="filtersources" data-placeholder="Click to add sources" style="width:100%;" multiple class="chzn-select" tabindex="8">
+            <option value=""></option>
+        </select>
+        <p>targets</p>
+        <select id="filtertargets" data-placeholder="Click to add targets" style="width:100%;" multiple class="chzn-select" tabindex="8">
+            <option value=""></option>
+        </select>                   
+        <p>years</p>
+          <label for="sankeyyearbegin">start date</label>
+          <input type="text" id="sankeyyearbegin" style="border: 0; color: #f6931f; font-weight: bold;" />
+
+        <div id="sankeyyearbeginrange">
+        </div>
+          <label for="sankeyyearend">end date</label>
+          <input type="text" id="sankeyyearend" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="sankeyyearendrange">
+        </div>          
+      </div>
+
+      <h3>fragmentation</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+          <label for="sankeyfrag">fragmentation level</label>
+          <input type="text" id="sankeyfrag" value="Faculty" style="border: 0; color: #f6931f; font-weight: bold;"/>
+        <div id="sankeyfragslider">
+        </div>
+      </div>
+      <h3>translate</h3><img src="img/info.png"></img><hr>
+      <div class="action">  
+        <select id="sankeytranslate" data-placeholder="Translate to..." class="chzn-select" style="width:250px;" tabindex="4">
+          <option value=""></option>
+          <option value="treemap">treemap</option>
+          <option value="bubble">bubble diagram</option>
+        </select>
+      </div>        
+    </div>
+
+    <div id="treemapactions">
+      <h3>animate</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+        <p>years</p>        
+        <label for="treemapanimateyear">year:</label>
+        <input type="text" id="treemapanimateyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="treemapanimateyearbar">
+        </div>
+        <p>animation speed</p>        
+        <label for="treemapanimatespeed">interval(seconds):</label>
+        <input type="text" id="treemapanimatespeed" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="treemapanimatespeedbar">
+        </div>
+        <button id="treemapAnimateTime" style="margin-top: 15px; position:relative; left:20%; height:2.5em">start</button>
+        <button id="treemapAnimateReset" style="margin-top: 15px; position:relative; left:32%; height:2.5em">reset</button>
+      </div>
+
+      <h3>arrange</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+        <p>sort and categorize according to</p>        
+        <select id="arrangetreemap" class="chzn-select" style="width:50%;"> 
+          <option value="department" selected>Department</option>
+          <option value="sponsor">Sponsor</option>
+        </select>
+      </div>
+
+      <h3>filter</h3><img src="img/info.png"></img><hr>
+      <div class="action">        
+
+        <p>grant status</p>
+        <ul class="actionlist"> 
+          <li>
+            <input type="checkbox" checked id="treemapFilterAccepted"></input> 
+            <label for="treemapFilterAccepted">accepted</label>
+          </li>  
+          <li>
+            <input type="checkbox" checked id="treemapFilterClosed"></input> 
+            <label for="treemapFilterClosed">closed</label>
+          </li>
+          <li>
+            <input type="checkbox" checked id="treemapFilterDeclined"></input> 
+            <label for="treemapFilterDeclined">declined</label>
+          </li>
+          <li>
+            <input type="checkbox" checked id="treemapFilterOthers"></input> 
+            <label for="treemapFilterOthers">others</label>
+          </li>
+        </ul>
+
+        <p>years</p>
+        <label for="treemapbeginyear">begin year:</label>
+        <input type="text" id="treemapbeginyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="treemapbeginyearrange">
+        </div>
+        <label for="treemapendyear">end year:</label>
+        <input type="text" id="treemapendyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="treemapendyearrange">
+        </div>
+
+      </div>  
+
+      <h3>fragmentation</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+        <label for="treemapfrag">fragmentation level</label>
+        <input type="text" id="treemapfrag" value="Individual" style="border: 0; color: #f6931f; font-weight: bold;"/>
+        <div id="treemapdepartmentfragslider">
+        </div>
+        <div id="treemapsponsorfragslider">
+        </div>
+      </div>
+
+      <h3>select</h3><img src="img/info.png"></img><hr>
+      <div class="action">  
+        <ul class="actionlist"> 
+          <li>
+            <input type="radio" name="treemapSelect" id="treemapSelectIndividual" checked></input>
+            <label for="treemapSelectIndividual">individual cells</label>
+          </li> 
+          <li>
+            <input type="radio" name="treemapSelect" id="treemapSelectCategory"></input> 
+            <label for="treemapSelectCategory">categories</label>
+          </li>                     
+        </ul>
+      </div>
+
+      <h3>translate</h3><img src="img/info.png"></img><hr>
+      <div class="action">  
+        <select id="treemaptranslate" data-placeholder="Translate to..." class="chzn-select" style="width:250px;" tabindex="4">
+          <option value=""></option>
+          <option value="sankey">flow diagram</option>
+          <option value="bubble">bubble diagram</option>
+        </select>
+      </div>
+    </div>  
+
+    <div id="bubbleactions">
+      <h3>arrange</h3><img src="img/info.png"></img><hr>
+      <div class="action">        
+          <select id="arrangebubble" class="chzn-select" style="width:75%;" tabindex="1"> 
+            <option value="random" selected>Random</option>
+            <option value="department">Department</option>
+            <option value="grantvalue">Grant Value</option>
+          </select>
+      </div>
+
+      <h3>filter</h3><img src="img/info.png"></img><hr>
+      <div class="action">        
+
+        <p>grant status</p>
+        <ul class="actionlist"> 
+          <li>
+            <input type="checkbox" checked id="filterAccepted"></input> 
+            <label for="filterAccepted">accepted</label>
+          </li>  
+          <li>
+            <input type="checkbox" id="filterClosed"></input> 
+            <label for="filterClosed">closed</label>
+          </li>
+          <li>
+            <input type="checkbox" id="filterDeclined"></input> 
+            <label for="filterDeclined">declined</label>
+          </li>
+          <li>
+            <input type="checkbox" id="filterOthers"></input> 
+            <label for="filterOthers">others</label>
+          </li>
+        </ul>
+
+        <p>years</p>
+        <label for="grantdeadlineyear">deadline:</label>
+        <input type="text" id="grantdeadlineyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+        <div id="grantdeadlineyearrange">
+        </div>
+        <div id="bubbleFilterTips" style="color: rgb(185,185,185); padding-top: 10px;">The begin and end year filters are only available for accepted and closed grants.</div>
+        <div id="bubbleSliderAcceptedType">
+          <label for="grantbeginyear">begin year:</label>
+          <input type="text" id="grantbeginyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="grantbeginyearrange">
+          </div>
+          <label for="grantendyear">end year:</label>
+          <input type="text" id="grantendyear" style="border: 0; color: #f6931f; font-weight: bold;" />
+          <div id="grantendyearrange">
+          </div>
+        </div>
+
+      </div>  
+
+      <h3>fragmentation</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+          <select id="fragmentationbubble" class="chzn-select" style="width:75%;" tabindex="1"> 
+            <option value="individual" selected>individual</option>
+            <option value="department">department</option>
+          </select>        
+      </div>
+
+      <h3>select</h3><img src="img/info.png"></img><hr>
+      <div class="action">
+        <ul class="actionlist"> 
+          <li>
+            <input type="radio" name="bubbleSelect" id="selectNone" checked></input> 
+            <label for="selectNone">none</label>
+          </li>
+          <li>
+            <input type="radio" name="bubbleSelect" id="selectLasso"></input>
+            <label for="selectLasso">group (lasso)</label>
+          </li>
+          <li>
+            <input type="radio" name="bubbleSelect" id="selectIndividual"></input>
+            <label for="selectIndividual">individual</label>
+          </li>            
+        </ul>
+        <div id="bubbleselectactions">
+          <hr>
+          <button id="selectionClone" style="margin: 10px auto; display:block;">clone selections</button>
+          <button id="selectionRemove" style="margin: 10px auto; display:block;">reset</button>  
+          </div>    
+      </div>    
+
+      <h3>translate</h3><img src="img/info.png"></img><hr>
+      <div class="action">  
+        <select id="bubbletranslate" data-placeholder="Translate to..." class="chzn-select" style="width:250px;" tabindex="4">
+          <option value=""></option>
+          <option value="sankey">flow diagram</option>
+          <option value="treemap">treemap</option>
+        </select>
+      </div>
+    </div>           
+  </div>
+</div>
+{{#scripts}}
+<script type="text/javascript" src="js/modules/{{.}}.js"></script>
+{{/scripts}}

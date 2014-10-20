@@ -1,6 +1,6 @@
 var couchdb = require('felix-couchdb'),
-  client = couchdb.createClient(5984, 'localhost', 'insight', 'rki#$2sd'),
-  db = client.db('researchmap');
+  client = couchdb.createClient(5984, 'localhost'),
+  db = client.db('researchmap_arash');
 
 //all of the data needed for the matrix rather than individual sets
 exports.data = function(req, res){
