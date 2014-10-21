@@ -12,3 +12,5 @@ data/
 /node_modules
 routes
 /routes
+/githubKey.pub
+/githubKey
