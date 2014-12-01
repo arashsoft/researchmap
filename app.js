@@ -29,7 +29,7 @@ var home = require ('./routes/home');
 // code by Arash - 10-3-2014
 // add grant-publication link
 var grantpub = require('./routes/grantpub');
-var universities = require('./routes/universities');
+//var universities = require('./routes/universities');
 
 //configuration
 app.configure(function(){
@@ -87,7 +87,7 @@ app.get("/", home.page);
 // code by Arash - 10-3-2014
 // add grant-publication and universities menu
 app.get("/grantpub", grantpub.page);
-app.get("/universities", universities.page);
+//app.get("/universities", universities.page);
 
 // Route that triggers a sample error:
 app.get('/error', function createError(req,
