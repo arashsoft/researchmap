@@ -356,7 +356,7 @@ var GRANTPUB = (function () {
 						// create the relation layout at bottom
 					})
 					.on("dblclick", function(d) {
-						updateGrantpubRelation(d);
+						updateGrantpubRelation2(d);
 						
 						// scroll to related area
 						if($("#imgArrow").hasClass('active') == false) {
@@ -757,20 +757,20 @@ var GRANTPUB = (function () {
 		
 		d3.json(tempJsonName, function(error, myData) {
 
-			var graph = new Array();
-			graph["nodes"]= new Array();
-			graph["links"]= new Array();
+			var graph = new Object();
+			graph.nodes= new Array();
+			graph.links= new Array();
 			
-			graph["nodes"].push({"name":myData["beauchemin_grant_data"].RequestAmt,"name2":"","group":1,"size":50});
+			graph.nodes.push({"name":myData["beauchemin_grant_data"].RequestAmt,"name2":"","group":1,"size":50});
 			
 			for (var i = 0 ; i < myData["related_publications"].length; i++){
 				var size = myData["related_publications"][i]["radius"]=="MIN"?30:30+myData["related_publications"][i]["radius"]/2.85;
-				graph["nodes"].push({
+				graph.nodes.push({
 					"name": myData["related_publications"][i]["publication"].Type,
 					"name2": myData["related_publications"][i]["publication"].Year,
 					"group": 2,
 					"size": size});
-				graph["links"].push({"source":i+1,"target":0,"value":3});
+				graph.links.push({"source":i+1,"target":0,"value":3});
 				//+(size-29)/20
 			}
 		  
@@ -1023,10 +1023,9 @@ var GRANTPUB = (function () {
 		}
 	}
 	
+	/*
+		old code
 	function updateGrantpubRelation(myGrant){
-		
-		//temp code just for screenshot (hide confidential infos)
-		return updateGrantpubRelation2();
 		
 		// Clean keywords and add new ones:
 		$("#keywordBox").empty();
@@ -1092,11 +1091,14 @@ var GRANTPUB = (function () {
 		// TODO: call arman function
 
 	}
+	*/
 	
 	// temp function just for making screenshots - hide confidential informations
-	function updateGrantpubRelation2(){
-		d3.json(tempJsonName, function(error, myData) {
+	function updateGrantpubRelation2( grantObject ){
 		
+		console.log(grantObject);
+		d3.json(tempJsonName, function(error, myData) {
+			
 			// Clean grant keywords and add new ones:
 			$("#grantKeywordBox").empty();
 			for (var i=0;i< myData["main_keywords_list"].length;i++)
@@ -1167,6 +1169,6 @@ var GRANTPUB = (function () {
 			});
 		
 		});
-	}
+	} // end of updateGrantpubRelation2
 	
 }()); // end of GRANTPUB

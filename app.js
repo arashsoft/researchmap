@@ -107,6 +107,7 @@ app.get("/network/:x", network.data);
 app.get("/matrix/:x", matrix.data);
 app.get("/grants/:x", grants.data);
 app.get("/grantpub/:x", grantpub.data);
+app.get("/grantpub/analysis/:type", grantpub.analysis)
 
 // Route that triggers a sample error:
 //app.all('/*', errorHandler.httpError(404));

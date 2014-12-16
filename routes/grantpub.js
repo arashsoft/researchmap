@@ -75,7 +75,9 @@ exports.data = function(req, res){
 			res.send({all_grants: JSON.stringify(doc.grant_data)});
 		});
 	}
-	
-	
-	
+}
+
+// this fucntion handle analysis requests
+exports.analysis = function(req, res){
+	console.log("\n \n code arrived here \n \n" + req.params.type);
 }
