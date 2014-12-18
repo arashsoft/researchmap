@@ -1,5 +1,7 @@
 'use strict';
 
+
+var flash = require('connect-flash');
 var express = require('express');
 var errorHandler = require('express-error-handler');
 var logger = require('bunyan-request-logger');
@@ -10,6 +12,9 @@ var noCache = require('connect-cache-control');
 var app = express();
 var log = logger();
 var port = process.env.myapp_port || 3000;
+
+// authenticate module
+var passport = require('./authenticate');
 
 // Create the server object that we can pass
 // in to the error handler:
@@ -31,13 +36,22 @@ var home = require ('./routes/home');
 var grantpub = require('./routes/grantpub');
 //var universities = require('./routes/universities');
 
+
 //configuration
 app.configure(function(){
+	
 	app.set('port', process.env.PORT || 3000);
 	app.set('views', __dirname + '/views');
 	app.engine('handlebars', exphbs({defaultLayout: 'main' }));
-    app.set('view engine', 'handlebars');
+	app.set('view engine', 'handlebars');
 
+	// authentication
+	app.use(flash());
+	app.use(express.cookieParser('whoknowsthiscookie'));
+  app.use(express.session({ cookie: { maxAge: 6000000 }}));
+  app.use(passport.initialize());
+  app.use(passport.session());
+	
     //use the given middleware functions
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
@@ -51,6 +65,7 @@ app.configure(function(){
 	// so the error handler can shut it down
 	// gracefully:
 	app.use( errorHandler({server: server}) );
+	
 });
 
 
@@ -74,19 +89,65 @@ app.get('/log', noCache,
   res.send(200);
 });
 
+//login request send false login to / and correct login to /main
+app.post('/', passport.authenticate('local-login', { successRedirect: '/', failureRedirect: '/', failureFlash: true }));
 
 //routes for pages
-app.get("/collaborations", collaborations.page);
-app.get("/grants", grants.page);
-app.get("/faculty", faculty.page);
-app.get("/views", views.page);
-app.get("/industry", industry.page);
+app.get("/collaborations", function(req, res) {
+	if (req.isAuthenticated()){
+		collaborations.page(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+app.get("/grants", function(req, res) {
+	if (req.isAuthenticated()){
+		grants.page(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+app.get("/faculty", function(req, res) {
+	if (req.isAuthenticated()){
+		faculty.page(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+app.get("/views", function(req, res) {
+	if (req.isAuthenticated()){
+		views.page(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+
+app.get("/industry", function(req, res) {
+	if (req.isAuthenticated()){
+		industry.page(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+
 //route for default home
-app.get("/", home.page);
+app.get("/", function(req, res) {
+	if (req.isAuthenticated()){
+		home.page(req,res);
+	}else{
+		res.render('loginPage', { message: req.flash('loginMessage'),layout: false });
+	}
+});
 
 // code by Arash - 10-3-2014
 // add grant-publication and universities menu
-app.get("/grantpub", grantpub.page);
+app.get("/grantpub", function(req, res) {
+	if (req.isAuthenticated()){
+		grantpub.page(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
 //app.get("/universities", universities.page);
 
 // Route that triggers a sample error:
@@ -99,15 +160,61 @@ app.get('/error', function createError(req,
 
 
 //routes for processing data
-app.get("/processData", processData.full);
-app.get("/retrieveData", retrieveData.scopus);
+app.get("/processData", function(req, res) {
+	if (req.isAuthenticated()){
+		processData.full(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+
+app.get("/retrieveData", function(req, res) {
+	if (req.isAuthenticated()){
+		retrieveData.scopus(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+
 
 //routes for viz data
-app.get("/network/:x", network.data);
-app.get("/matrix/:x", matrix.data);
-app.get("/grants/:x", grants.data);
-app.get("/grantpub/:x", grantpub.data);
-app.get("/grantpub/analysis/:type", grantpub.analysis)
+app.get("/network/:x", function(req, res) {
+	if (req.isAuthenticated()){
+		network.data(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+app.get("/matrix/:x",function(req, res) {
+	if (req.isAuthenticated()){
+		matrix.data(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+
+app.get("/grants/:x",function(req, res) {
+	if (req.isAuthenticated()){
+		grants.data(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
+
+app.get("/grantpub/:x",function(req, res) {
+	if (req.isAuthenticated()){
+		grantpub.data(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+}); 
+app.get("/grantpub/analysis/:type",function(req, res) {
+	if (req.isAuthenticated()){
+		grantpub.analysis(req,res);
+	}else{
+		res.render('loginPage', { message: "Please login first",layout: false });
+	}
+});
 
 // Route that triggers a sample error:
 //app.all('/*', errorHandler.httpError(404));
