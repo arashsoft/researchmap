@@ -1,28 +1,11 @@
 var couchdb = require('felix-couchdb'),
   client = couchdb.createClient(5984, 'localhost'),
   db = client.db('researchmap_arash');
-//	client = couchdb.createClient(5984,'129.100.19.193', 'arman', 'redirection'),
-//	db = client.db('researchmap_arman');
-	
-/* mysql db connection test
-var mysql      = require('mysql');
-var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password : '',
-  database : 'researchmap'
-});
-connection.connect();
-connection.query('SELECT * from university ', function(err, rows, fields) {
-  if (err) throw err;
 
-  console.log('The result is: ', rows[0]);
-});
-*/
-
-	
 var async = require('async');
 
+// Arman analysis module
+var analysisArman = require('../analysis')
 
 exports.page = function(req, res){
 	var data = {
@@ -34,7 +17,6 @@ exports.page = function(req, res){
 	}
 	res.render('grantpub', data);
 }
-
 
 exports.data = function(req, res){
 	var circle_packing_data;
@@ -79,5 +61,5 @@ exports.data = function(req, res){
 
 // this fucntion handle analysis requests
 exports.analysis = function(req, res){
-	console.log("\n \n code arrived here \n \n" + req.params.type);
+	analysisArman.award_relationship_extractor(req.params.proposal_ID, JSON.parse(req.params.keyword_filter_array), JSON.parse(req.params.name_filter_array), req.params.begin_date, req.params.end_date, req.params.threshold, req.params.kernel_selection, req.params.algorithm_selection, function(result){res.send(result);});
 }

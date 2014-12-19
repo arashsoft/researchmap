@@ -36,9 +36,6 @@ var home = require ('./routes/home');
 var grantpub = require('./routes/grantpub');
 //var universities = require('./routes/universities');
 
-// Arman analysis module
-var analysisArman = require('./analysis')
-
 //configuration
 app.configure(function(){
 	
@@ -212,7 +209,7 @@ app.get("/grantpub/:x",function(req, res) {
 }); 
 app.get("/grantpub/analysis/:proposal_ID/:keyword_filter_array/:name_filter_array/:begin_date/:end_date/:threshold/:kernel_selection/:algorithm_selection",function(req, res) {
 	if (req.isAuthenticated()){
-		analysisArman.award_relationship_extractor(req.params.proposal_ID, JSON.parse(req.params.keyword_filter_array), JSON.parse(req.params.name_filter_array), req.params.begin_date, req.params.end_date, req.params.threshold, req.params.kernel_selection, req.params.algorithm_selection, function(result){res.send(result);});
+		grantpub.analysis(req,res);
 	}else{
 		res.render('loginPage', { message: "Please login first",layout: false });
 	}
