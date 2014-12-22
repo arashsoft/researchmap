@@ -63,3 +63,7 @@ exports.data = function(req, res){
 exports.analysis = function(req, res){
 	analysisArman.award_relationship_extractor(req.params.proposal_ID, JSON.parse(req.params.keyword_filter_array), JSON.parse(req.params.name_filter_array), req.params.begin_date, req.params.end_date, req.params.threshold, req.params.kernel_selection, req.params.algorithm_selection, function(result){res.send(result);});
 }
+
+exports.activeAwards = function(req,res){
+	analysisArman.calculate_analyzable_grants(function(result){res.send(result);});
+}

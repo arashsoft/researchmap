@@ -2,14 +2,6 @@
 // New layout for showing relations between grants and publication:
 
 var GRANTPUB = (function () {
-
-	// var tempJsonName="/json/Beauchemin/beauchemin_results1-1.json";
-	// var tempJsonName="/json/Beauchemin/beauchemin_results1-2.json";
-	// var tempJsonName="/json/Beauchemin/beauchemin_results2-1.json";
-	var tempJsonName="/json/Beauchemin/beauchemin_results2-2.json";
-	// var tempJsonName="/json/Beauchemin/beauchemin_results2-3.json";
-	// var tempJsonName="/json/Beauchemin/beauchemin_results2-4-1.json";
-	// var tempJsonName="/json/Beauchemin/beauchemin_results2-4-2.json";
 	
 	// CSS file
 	$('head').append('<link rel="stylesheet" href="css/grantpub.css" type="text/css" />');
@@ -25,6 +17,15 @@ var GRANTPUB = (function () {
 	 headerColor2 = "#999999",
 	 transitionDuration = 1000;
 
+	// analysis values
+	var analysis_keyword_filter = [];
+	var analysis_name_filter = [];
+	var analysis_begin_date = 2003;
+	var analysis_end_date = 2013;
+	var analysis_threshold = 0.13;
+	var analysis_kernel_selection = 0;
+	var analysis_algorithm_selection = 'Algorithm1';
+	var analysis_selectedGrant = '';
 	
 	// constructTreemap make these variables and prebuildTreemap use them to build treemaps
 	var sponsorData, departmentData , grant_sponsors;
@@ -80,30 +81,59 @@ var GRANTPUB = (function () {
 		});
 		$("#yearText").text( $("#yearSlider").slider( "values", 0 ) + " - " + $( "#yearSlider" ).slider( "values", 1 ) );
 		
+		// handle grant-pub analysis box
+		$("input[name='analysisAlgorithm']").on('ifChanged', function(event){
+			analysis_algorithm_selection = $(this).value;
+			$("#submitBox").show();
+		});
+		
+		$("input[name='scoreKernel']").on('ifChanged', function(event){
+			analysis_kernel_selection = $(this).value;
+			$("#submitBox").show();
+		});
+		$("#availableAnalysis").on('ifChecked', function(event){
+			$.get('/grantpub/analysis/activeAwards' , function(result){
+				var temp1 = d3.select("#grantpubContainer").selectAll(".cell.child");
+				for ( var i=0 , length = result._grantList.length; i< length ; i++){
+					var proposalNumber = parseInt(result._grantList[i].Proposal);
+					temp1.filter(function(d){return parseInt(d.Proposal)== proposalNumber}).classed("activeAnalysis",true);
+				}
+			});
+		});
+		$("#availableAnalysis").on('ifUnchecked', function(event){
+			d3.select("#grantpubContainer").selectAll(".cell.child").classed("activeAnalysis",false);
+		});
+		
 		$("#probabilityFunction").slider({
-			value: 0.5,
-			min: 0,
-			max: 1,
-			step: 0.1,
+			value: 0.13,
+			min: 0.01,
+			max: 0.25,
+			step: 0.01,
 			slide: function( event, ui ) {
-				// TODO: update relation graph
+				analysis_threshold = ui.value;
+				$("#submitBox").show();
 			}
 		});
 		
 		$("#relationYearSlider").slider({
 			range: true,
-			values: [1973, 2018 ],
-			min: 1973,
-			max: 2018,
+			values: [2003, 2013 ],
+			min: 2000,
+			max: 2015,
 			step: 1,
 			slide: function( event, ui ) {
 				$( "#relationYearText" ).text( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
-				// TODO: update relation graph
+				analysis_begin_date = ui.values[ 0 ];
+				analysis_end_date = ui.values[ 1 ];
+				$("#submitBox").show();
 			}
 		});
 		
 		
 		$("#grantPubSubmitButton").click(function(){
+			if(analysis_selectedGrant==''){
+				return;
+			}
 			//TODO: call analysis and update data
 		
 			//hide submit
@@ -319,22 +349,18 @@ var GRANTPUB = (function () {
 		 });
 
 		 
-		 if(myData.name == "Departments") {
+		if(myData.name == "Departments") {
 			var parents = nodes.filter(function(d) {
 				 return d.children;
 			});
-			//Todo temp code
-			//for (var i =0; i< parents.length;i++){
-			//	parents[i].name = "Department "+(i+1);
-			//}
-		 } else {
+		}else {
 			var parents = nodes.filter(function(d) {
 				 return d.depth < 2; //sponsors
 			});
 			var parents2 = nodes.filter(function(d) {
 				 return d.depth == 2; //programs
 			})
-		 }
+		}
 
 		 // create children cells
 		 var childCells = treemapsvg.selectAll("g.cell.child")
@@ -343,11 +369,11 @@ var GRANTPUB = (function () {
 					.attr("class", "cell child")
 					.on("click", function(d) {
 						//resetting
-						d3.selectAll(".cell.child.highlighted").attr("class", "cell child");
-						d3.selectAll(".cell.labelbar.highlighted").attr("class", "cell labelbar");
-						d3.selectAll(".cell.labelbar.labelbar2.highlighted").attr("class", "cell labelbar labelbar2");
+						d3.selectAll('.cell.child').classed('highlighted', false);
+						d3.selectAll('.cell.labelbar').classed('highlighted', false);
+						
 						//set the highlighted one
-						d3.select(this).attr("class","cell child highlighted");
+						d3.select(this).classed("highlighted",true);
 						// call the related function to highlight related grants
 						myData.name == "Sponsors" ? sponsorGrantClick(this) : departmentGrantClick(this);
 						// create the relation layout at bottom
@@ -455,11 +481,11 @@ var GRANTPUB = (function () {
 					.on("click", function(d) {
 						
 						//resetting
-						d3.selectAll(".cell.child.highlighted").attr("class", "cell child");
-						d3.selectAll(".cell.labelbar.highlighted").attr("class", "cell labelbar");
-						d3.selectAll(".cell.labelbar.labelbar2.highlighted").attr("class", "cell labelbar labelbar2");
+						d3.selectAll('.cell.child').classed('highlighted', false);
+						d3.selectAll('.cell.labelbar').classed('highlighted', false);
+						
 						//set the highlighted one
-						d3.select(this).attr("class","cell labelbar highlighted");
+						d3.select(this).classed('highlighted',true);
 						// call the related function to highlight related grants
 						myData.name == "Sponsors" ? sponsorSponsorClick(this) : departmentDepartmentClick(this);
 					})
@@ -544,11 +570,11 @@ var GRANTPUB = (function () {
 					  .on("click", function(d) {
 						
 						//resetting
-						d3.selectAll(".cell.child.highlighted").attr("class", "cell child");
-						d3.selectAll(".cell.labelbar.highlighted").attr("class", "cell labelbar");
-						d3.selectAll(".cell.labelbar.labelbar2.highlighted").attr("class", "cell labelbar labelbar2");
+						d3.selectAll(".cell.child").classed('highlighted',false);
+						d3.selectAll(".cell.labelbar").classed('highlighted',false);
+						
 						//set the highlighted one
-						d3.select(this).attr("class","cell labelbar labelbar2 highlighted");
+						d3.select(this).classed("highlighted",true);
 						// call the related function to highlight related grants
 						sponsorProgramClick(this)
 						})
@@ -968,44 +994,19 @@ var GRANTPUB = (function () {
 		
 	// grants highliter functions
 	function departmentGrantClick(myGrant){
-		var temp1 = d3.select("#rightTreemap").selectAll(".cell.child");
-		for ( var i=0;i< temp1[0].length ; i++){
-			if (temp1[0][i].__data__.Proposal == myGrant.__data__.Proposal){
-				temp1[0][i].setAttribute("class", "cell child highlighted");
-			}
-		}
+		d3.select('#rightTreemap').selectAll('.cell.child').filter(function(d){return d.Proposal == myGrant.__data__.Proposal;}).classed('highlighted', true);
 	}
-	function sponsorGrantClick(myGrant){	
-		var temp1 = d3.select("#leftTreemap").selectAll(".cell.child");
-		for ( var i=0;i< temp1[0].length ; i++){
-			if (temp1[0][i].__data__.Proposal == myGrant.__data__.Proposal){
-				temp1[0][i].setAttribute("class", "cell child highlighted");
-			}
-		}
+	function sponsorGrantClick(myGrant){
+		d3.select("#leftTreemap").selectAll(".cell.child").filter(function(d){return d.Proposal == myGrant.__data__.Proposal;}).classed('highlighted', true);
 	}
 	function departmentDepartmentClick(myDepartment){
-		var temp1 = d3.select("#rightTreemap").selectAll(".cell.child");
-		for ( var i=0;i< temp1[0].length ; i++){
-			if (temp1[0][i].__data__.Department == myDepartment.__data__.name){
-				temp1[0][i].setAttribute("class", "cell child highlighted");
-			}
-		}
+		d3.select("#rightTreemap").selectAll(".cell.child").filter(function(d){return d.Department == myDepartment.__data__.name;}).classed('highlighted',true)
 	}
 	function sponsorSponsorClick(mySponsor){
-		var temp1 = d3.select("#leftTreemap").selectAll(".cell.child");
-		for ( var i=0;i< temp1[0].length ; i++){
-			if (temp1[0][i].__data__.Sponsor == mySponsor.__data__.name){
-				temp1[0][i].setAttribute("class", "cell child highlighted");
-			}
-		}
+		d3.select("#leftTreemap").selectAll(".cell.child").filter(function(d){return d.Sponsor==mySponsor.__data__.name; }).classed('highlighted',true);
 	}
 	function sponsorProgramClick(myProgram){
-		var temp1 = d3.select("#leftTreemap").selectAll(".cell.child");
-		for ( var i=0;i< temp1[0].length ; i++){
-			if (temp1[0][i].__data__.PgmName == myProgram.__data__.name){
-				temp1[0][i].setAttribute("class", "cell child highlighted");
-			}
-		}
+		d3.select("#leftTreemap").selectAll(".cell.child").filter(function(d){return d.PgmName ==myProgram.__data__.name;}).classed('highlighted',true);
 	}
 	
 	/*
@@ -1081,7 +1082,18 @@ var GRANTPUB = (function () {
 	// temp function just for making screenshots - hide confidential informations
 	function updateGrantpubRelation2(grantObject){
 		
-		d3.json(tempJsonName, function(error, myData) {
+		// now we request for analysis fucntion
+		var requestText = '/grantpub/analysis/';
+		requestText += grantObject.Proposal + '/';
+		requestText += JSON.stringify(analysis_keyword_filter) + '/';
+		requestText += JSON.stringify(analysis_name_filter) + '/';
+		requestText += analysis_begin_date + '/';
+		requestText += analysis_end_date + '/';
+		requestText += analysis_threshold + '/';
+		requestText += analysis_kernel_selection +'/';
+		requestText += analysis_algorithm_selection;
+		
+		$.get(requestText, function(result) {
 			
 			// Clean grant keywords and add new ones:
 			$("#grantKeywordBox").empty();
@@ -1124,7 +1136,7 @@ var GRANTPUB = (function () {
 			});
 			
 			// show grant data :
-			$("#grantTitle").text("Grant title: "+myData["beauchemin_grant_data"].Title);
+			$("#grantTitle").text("Title: "+myData["beauchemin_grant_data"].Title);
 			$("#grantAmount").text("Amount: "+myData["beauchemin_grant_data"].RequestAmt);
 			$("#grantInvestigator").text("Investigator(s): " + myData["beauchemin_grant_data"].Investigators.toString());
 			$("#grantDepartment").text("Department: Computer Science");

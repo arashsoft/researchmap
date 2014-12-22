@@ -18,7 +18,10 @@
 	stroke : yellow;
 	stroke-width: 3px;
 }
-
+.activeAnalysis{
+	stroke : black;
+	stroke-width: 1px;
+}
 /* ==============================================
 				code by Arash - 21-04-2014
 		add new stylesheet for Grant-Pub layout
@@ -110,6 +113,9 @@
 	font-size: 14px;
 	color:black;
 	margin: 0px 0px 4px 0px;
+}
+.boxParagraph.title{
+	font-weight:bold;
 }
 .relationBox{
 	border:3px solid lightgray;
