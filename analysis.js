@@ -557,6 +557,28 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 			analyzed_award._addedKeywordsList.sort(function(a,b) {return a.frequency - b.frequency;});
       callback();
 		},
+		function(callback) {
+			if(analyzed_award._error){
+				callback();
+			}	
+      var uniqAddedKeywordsList = new Array();
+      var uniqkeywords = _.uniq(_.pluck(analyzed_award._addedKeywordsList, 'word'));
+      uniqkeywords.forEach(function(word) {
+        var temp = new Object();
+        temp.word = word;
+        temp.frequency = 0;
+        uniqAddedKeywordsList.push(temp);
+      });
+      uniqAddedKeywordsList.forEach(function(uniq_keyword) {
+        analyzed_award._addedKeywordsList.forEach(function(keyword_tuple) {
+          if(uniq_keyword.word == keyword_tuple.word) {
+            uniq_keyword.frequency += keyword_tuple.frequency;
+          }
+        });
+      });
+
+      callback();
+    },
 		//calculate radius2
 		function(callback) {
 			if(analyzed_award._error){
