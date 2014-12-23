@@ -43,7 +43,7 @@ function filterItems(_item, _list) {
   //award_relationship_extractor("0000031951", [], ["Kero J.", "Blaauw R.C."], 2003, 2012, 0.15, 1, "Algorithm1");  //single investigator example
   // award_relationship_extractor("0000025975", [], ["Kero J.", "Blaauw R.C."], 2003, 2012, 0.2, 0, "Algorithm1");  //multiple investigator example
 
-exports.calculate_analyzable_grants = function calculate_analyzable_grants() {
+exports.calculate_analyzable_grants = function calculate_analyzable_grants(callback) {
   var analyzable_grants = new Object();
   analyzable_grants._id = "analyzable_grants";
   analyzable_grants._grantList = new Array();
@@ -70,7 +70,7 @@ exports.calculate_analyzable_grants = function calculate_analyzable_grants() {
             console.log("No award to be analyzed further!!!");
             console.log(analyzable_grants);
 						connection.end();
-            return analyzable_grants;
+            callback(analyzable_grants);
           }
           else {
             result.forEach(function(record) {
@@ -78,7 +78,7 @@ exports.calculate_analyzable_grants = function calculate_analyzable_grants() {
             });
             console.log(_.size(analyzable_grants._grantList) + " awards returned for further analysis");
 						connection.end();
-            return analyzable_grants;
+            callback(analyzable_grants);
           }
         }
   }); 
