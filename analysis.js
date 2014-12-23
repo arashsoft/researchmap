@@ -59,7 +59,7 @@ exports.calculate_analyzable_grants = function calculate_analyzable_grants(callb
 
   connection.connect();
 
-  var query_text = "SELECT DISTINCT award.Proposal FROM (award INNER JOIN award_professor ON award.ID = award_professor.Grant) INNER JOIN author_2 ON award_professor.Professor = author_2.Professor_ID WHERE author_2.Professor_ID IS NOT NULL AND award.Proposal IS NOT NULL";
+  var query_text = "SELECT DISTINCT award.Proposal FROM (award INNER JOIN award_professor ON award.ID = award_professor.Grant) INNER JOIN author_2 ON award_professor.Professor = author_2.Professor_ID WHERE author_2.Professor_ID IS NOT NULL AND award.Proposal IS NOT NULL and award.BeginDate !='0000-00-00'";
   connection.query(query_text, function(err, result) {
         if(err) {
             //console.log(query_text);
@@ -553,7 +553,8 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 					});
 				});
 			});
-
+			
+			analyzed_award._addedKeywordsList.sort(function(a,b) {return a.frequency - b.frequency;});
       callback();
 		},
 		//calculate radius2
