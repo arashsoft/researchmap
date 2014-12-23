@@ -100,7 +100,7 @@
 }
 .relationLink {
   stroke: #999;
-  stroke-opacity: .6;
+  stroke-opacity: 1;
 }
 .relationText{
 	font-family: sans-serif;

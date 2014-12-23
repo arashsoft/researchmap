@@ -19,7 +19,9 @@ var GRANTPUB = (function () {
 
 	// analysis values
 	var analysis_keyword_filter = [];
+	var analysis_keyword_filter_inactive = [];
 	var analysis_name_filter = [];
+	var analysis_name_filter_inactive = [];
 	var analysis_begin_date = 2003;
 	var analysis_end_date = 2013;
 	var analysis_threshold = 0.13;
@@ -132,11 +134,10 @@ var GRANTPUB = (function () {
 		
 		$("#grantPubSubmitButton").click(function(){
 			if(analysis_selectedGrant==''){
+				$("#submitBox").hide();		
 				return;
 			}
-			//TODO: call analysis and update data
-		
-			//hide submit
+			updateGrantpubRelation2(analysis_selectedGrant);
 			$("#submitBox").hide();		
 		});
 		
@@ -759,7 +760,7 @@ var GRANTPUB = (function () {
 	
 	
 	// create relation layout
-	function constructRelation(myData){
+	function constructRelation(myData , grantObject){
 				
 		var width = $("#grantpubRelation").width();
 		var height = $("#grantpubRelation").height();
@@ -768,48 +769,69 @@ var GRANTPUB = (function () {
 
 		// 550 is height
 
+		d3.select("#grantpubRelation").select("svg").remove();
 		var svg = d3.select("#grantpubRelation").append("svg")
 			 .attr("width", width)
 			 .attr("height", height)
-			 .attr("id", "relationSVG")
+			 .attr("id", "relationSVG");
+		
+		
 
 		var graph = new Object();
 		graph.nodes= new Array();
 		graph.links= new Array();
 		
-		graph.nodes.push({"name":myData["beauchemin_grant_data"].RequestAmt,"name2":"","group":1,"size":50 , 'x':width/2 , 'y':275});
+		graph.nodes.push({"name":grantObject.RequestAmt,"name2":"","group":1,"size":50 , 'x':width/2 , 'y':275});
 		
 		
-		for (var i = 0 ; i < myData["related_publications"].length; i++){
-			var size = myData["related_publications"][i]["radius"]=="MIN"?30:30+myData["related_publications"][i]["radius"]/2.85;
+		for (var i = 0 ; i < myData["_relatedPublicationsList"].length; i++){
+			var size = myData["_relatedPublicationsList"][i]._radius/4;
 			graph.nodes.push({
-				"name": myData["related_publications"][i]["publication"].Type,
-				"name2": myData["related_publications"][i]["publication"].Year,
+				"name": "Publication",
+				"name2": myData["_relatedPublicationsList"][i]._year,
 				"group": 2,
 				"size": size});
 			graph.links.push({"source":i+1,"target":0,"value":3});
 			//+(size-29)/20
 		}
-		
+		var tempBeginDate = parseInt(grantObject.BeginDate.substr(0,4));
+		var leftstep = (width/2-400)/(tempBeginDate-analysis_begin_date+1);
+		var rightstep = (width/2-400)/(analysis_end_date-tempBeginDate+1);
+		var yStep = 400 / graph.nodes.length;
+		for (var i = 1 ; i < graph.nodes.length; i++){
+			if (graph.nodes[i].name2 > tempBeginDate ){
+				graph.nodes[i].x = (width/2)+30+ (graph.nodes[i].name2-tempBeginDate)* rightstep;
+				graph.nodes[i].y = 75+ i* yStep;
+			}else{
+				graph.nodes[i].x = (width/2)-30 - (tempBeginDate-graph.nodes[i].name2)* leftstep;
+				graph.nodes[i].y = 75 + i* yStep;
+			}
+			
+		}
 		
 		var link = svg.selectAll(".relationLink")
 			.data(graph.links)
 		 .enter().append("line")
 			.attr("class", "relationLink")
-			.style("stroke-width", function(d) { return Math.sqrt(d.value); });
-
+			.attr("x1", function(d) { return graph.nodes[d.source].x; })
+			.attr("y1", function(d) { return graph.nodes[d.source].y; })
+			.attr("x2", function(d) { return graph.nodes[d.target].x; })
+			.attr("y2", function(d) { return graph.nodes[d.target].y; })
+			.style("stroke-width", function(d) { return graph.nodes[d.source].size; });
+		
+		var tempR = 300/graph.nodes.length;
 		var node = svg.selectAll(".relationNode")
 			.data(graph.nodes)
 			.enter().append("circle")
 			.attr("class", "relationNode")
-			.attr("r", function(d){return d.size;})
-			.style("fill", function(d) { return d.group==1? "lightblue":"lightgreen"});
-
+			.attr("r", function(d){return d.group==1? 50: tempR})
+			.style("fill", function(d) { return d.group==1? "lightblue":"lightgreen"})
+			.attr("cx", function(d) { return d.x; })
+			.attr("cy", function(d) { return d.y; });
+			
+			
 		node.append("title")
 			.text(function(d) {return d.group==1? d.name: "Type: "+d.name+"\nYear: " + d.name2; });
-		
-		
-		
 		
 		var text = svg.selectAll(".relationText").data(graph.nodes)
 			.enter().append("text")
@@ -818,18 +840,6 @@ var GRANTPUB = (function () {
 			.attr("y", function(d){return d.y;})
 			.attr("fill","black")
 			.text(function(d){return d.group==1?d.name:"";});
-			
-		link.attr("x1", function(d) { return d.source.x; })
-			.attr("y1", function(d) { return d.source.y; })
-			.attr("x2", function(d) { return d.target.x; })
-			.attr("y2", function(d) { return d.target.y; });
-
-		node.attr("cx", function(d) { return d.x; })
-			.attr("cy", function(d) { return d.y; });
-		
-		text.attr("x", function(d){return d.x;})
-			.attr("y", function(d){return d.y;});
-		
 
 	}
 	
@@ -1082,11 +1092,12 @@ var GRANTPUB = (function () {
 	// temp function just for making screenshots - hide confidential informations
 	function updateGrantpubRelation2(grantObject){
 		
+		analysis_selectedGrant = grantObject;
 		// now we request for analysis fucntion
 		var requestText = '/grantpub/analysis/';
 		requestText += grantObject.Proposal + '/';
-		requestText += JSON.stringify(analysis_keyword_filter) + '/';
-		requestText += JSON.stringify(analysis_name_filter) + '/';
+		requestText += JSON.stringify(analysis_keyword_filter_inactive) + '/';
+		requestText += JSON.stringify(analysis_name_filter_inactive) + '/';
 		requestText += analysis_begin_date + '/';
 		requestText += analysis_end_date + '/';
 		requestText += analysis_threshold + '/';
@@ -1097,34 +1108,45 @@ var GRANTPUB = (function () {
 			
 			// Clean grant keywords and add new ones:
 			$("#grantKeywordBox").empty();
-			for (var i=0;i< myData["main_keywords_list"].length;i++)
-			{
-				$("#grantKeywordBox").append('<div class="keywordText2">' + myData["main_keywords_list"][i] + '</div>');
+			var grantKeywords = grantObject.Keyword.split(' ');
+			for (var i=0;i< grantKeywords.length;i++){
+				$("#grantKeywordBox").append('<div class="boxParagraph">' + grantKeywords[i] + '</div>');
 			}
 			// Clean pub keywords and add new ones;
 			$("#pubKeywordBox").empty();
-			for (var i=0;i< myData["added_keywords_list"].length;i++)
+			var tempKeywords = result['_addedKeywordsList'];
+			var tempLength = result['_addedKeywordsList'].length;
+			if ( tempLength > 10){
+				tempKeywords = result['_addedKeywordsList'].slice(tempLength-10,tempLength+1);
+			}
+			analysis_keyword_filter_filter=[];
+			for (var i=0;i< tempKeywords.length;i++)
 			{
-				$("#pubKeywordBox").append('<div class="keywordText pub active">' + myData["added_keywords_list"][i].word + '</div>');
+				analysis_keyword_filter.push(tempKeywords[i].word);
+				$("#pubKeywordBox").append('<div class="keywordText pub active">' + tempKeywords[i].word + '</div>');
 			}
 			// inactive pubs
-			for (var i=0;i< myData["inactive_keywords"].length;i++)
+			analysis_keyword_filter_inactive=result["_inactiveKeywordsList"];
+			for (var i=0;i< result["_inactiveKeywordsList"].length;i++)
 			{
-				$(".keywordText.pub.active:contains('"+ myData["inactive_keywords"][i] +"')").removeClass("active").addClass("inactive");
+				$(".keywordText.pub.active:contains('"+ result["_inactiveKeywordsList"][i] +"')").removeClass("active").addClass("inactive");
 			}
 			
 			// Clean authors and add new ones;
 			$("#authorBox").empty();
-			for (var i=0;i< myData["co_authors"].length;i++)
+			analysis_name_filter = result["_coAuthorsList"];
+			for (var i=0;i< result["_coAuthorsList"].length;i++)
 			{
-				$("#authorBox").append('<div class="keywordText author active">' + myData["co_authors"][i] + '</div>');
+				$("#authorBox").append('<div class="keywordText author active">' + result["_coAuthorsList"][i] + '</div>');
 			}
 			// inactive authors
-			for (var i=0;i< myData["inactive_co_authors"].length;i++)
+			analysis_name_filter_inactive = result['_inactiveCoAuthorsList'];
+			for (var i=0;i< result["_inactiveCoAuthorsList"].length;i++)
 			{
-				$(".keywordText.author.active:contains('"+ myData["inactive_co_authors"][i] +"')").removeClass("active").addClass("inactive");
+				$(".keywordText.author.active:contains('"+ result["_inactiveCoAuthorsList"][i] +"')").removeClass("active").addClass("inactive");
 			}
 			
+			// TODO: handle add or remove to arrays
 			// add onclick event (toggle active - inactive )
 			$(".keywordText.pub , .keywordText.author ").click(function(){
 				$("#submitBox").show();
@@ -1136,16 +1158,17 @@ var GRANTPUB = (function () {
 			});
 			
 			// show grant data :
-			$("#grantTitle").text("Title: "+myData["beauchemin_grant_data"].Title);
-			$("#grantAmount").text("Amount: "+myData["beauchemin_grant_data"].RequestAmt);
-			$("#grantInvestigator").text("Investigator(s): " + myData["beauchemin_grant_data"].Investigators.toString());
-			$("#grantDepartment").text("Department: Computer Science");
-			$("#grantSponsor").text("Sponsor: "+myData["beauchemin_grant_data"].Sponsor);
-			$("#grantProgram").text("Program: "+myData["beauchemin_grant_data"].PgmName);
-			$("#grantBeginDate").text("Begin date: "+myData["beauchemin_grant_data"].BeginDate);
-			$("#grantEndDate").text("End date: "+myData["beauchemin_grant_data"].EndDate);
+			$("#grantTitle").text("Title: "+grantObject.Title);
+			$("#grantAmount").text("Amount: "+grantObject.RequestAmt);
+			$("#grantInvestigator").text("Investigator(s): " + grantObject.PI + ' - ' + grantObject.CoI);
+			$("#grantDepartment").text("Department: "+grantObject.Department);
+			$("#grantSponsor").text("Sponsor: "+grantObject.Sponsor);
+			$("#grantProgram").text("Program: "+grantObject.PgmName);
+			$("#grantBeginDate").text("Begin date: "+grantObject.BeginDate);
+			$("#grantEndDate").text("End date: "+grantObject.EndDate);
 			
 			// set years
+			/*
 			var startYear = myData["beauchemin_grant_data"].BeginDate.substring(0,4)-5;
 			var endYear = parseInt(myData["beauchemin_grant_data"].EndDate.substring(0,4))+5;
 			$( "#relationYearText" ).text( startYear + " - " + endYear );
@@ -1162,7 +1185,8 @@ var GRANTPUB = (function () {
 					
 				}
 			});
-			constructRelation(myData);
+			*/
+			constructRelation(result, grantObject);
 		});
 	} // end of updateGrantpubRelation2
 	
