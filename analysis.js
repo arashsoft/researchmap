@@ -346,42 +346,44 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		function(callback) {
 			if(analyzed_award._error){
 				callback();
-			}	
-			analyzed_award._relatedPublicationsList.forEach(function(publication) {
-				var query_text = "SELECT `Author`, `Fullname`, `Professor_ID` FROM `publication_author_2` INNER JOIN `author_2` ON `publication_author_2`.`Author` = `author_2`.`ID` WHERE `Publication` ="
-								.concat(publication._publicationID);
+			}
+			if(_.size(analyzed_award._relatedPublicationsList) > 0) {
+				analyzed_award._relatedPublicationsList.forEach(function(publication) {
+					var query_text = "SELECT `Author`, `Fullname`, `Professor_ID` FROM `publication_author_2` INNER JOIN `author_2` ON `publication_author_2`.`Author` = `author_2`.`ID` WHERE `Publication` ="
+									.concat(publication._publicationID);
 
-				connection.query(query_text, function(err, result) {
-		            if(err) {
-		              //console.log(query_text);
-                  // console.log(err);
-                  analyzed_award._error = 1;
-                  analyzed_award._note = err;
-									connection.end();
-                  myfunction(analyzed_award);
-		            }
-		            else {
-		            	if(_.size(result) > 0) {
-		            		result.forEach(function(record) {
-		            			var temp = new Object();
-	            				temp._authorID = record.Author;
-	            				temp._fullName = record.Fullname;
-	            				temp._professorID = record.Professor_ID;
-	            				temp._role = "non-investigator";
-	            				publication._authors.push(temp);
-		            		});
-		            	}
-                  else {
-                    analyzed_award._error = 1;
-                    analyzed_award._note = "The investigators listed for this proposal have no publication record in our database.";
+					connection.query(query_text, function(err, result) {
+			            if(err) {
+			              //console.log(query_text);
+	                  // console.log(err);
+	                  analyzed_award._error = 1;
+	                  analyzed_award._note = err;
 										connection.end();
-                    myfunction(analyzed_award);
-                  }
-		            }
+	                  myfunction(analyzed_award);
+			            }
+			            else {
+			            	if(_.size(result) > 0) {
+			            		result.forEach(function(record) {
+			            			var temp = new Object();
+		            				temp._authorID = record.Author;
+		            				temp._fullName = record.Fullname;
+		            				temp._professorID = record.Professor_ID;
+		            				temp._role = "non-investigator";
+		            				publication._authors.push(temp);
+			            		});
+			            	}
+	                  else {
+	                    analyzed_award._error = 1;
+	                    analyzed_award._note = "The investigators listed for this proposal have no publication record in our database.";
+											connection.end();
+	                    myfunction(analyzed_award);
+	                  }
+			            }
 
-                callback();
-		        });
-			});
+	                callback();
+			        });
+				});
+			}
     },
 		//check authors for being investigators
 		function(callback) {
