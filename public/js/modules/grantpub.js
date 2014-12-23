@@ -1,6 +1,18 @@
 // Code by Arash - 27-02-2014
 // New layout for showing relations between grants and publication:
 
+// remove object from Array
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
 var GRANTPUB = (function () {
 	
 	// CSS file
@@ -1123,11 +1135,11 @@ var GRANTPUB = (function () {
 			if ( tempLength > 10){
 				tempKeywords = result['_addedKeywordsList'].slice(tempLength-10,tempLength+1);
 			}
-			analysis_keyword_filter_filter=[];
+			analysis_keyword_filter=[];
 			for (var i=0;i< tempKeywords.length;i++)
 			{
 				analysis_keyword_filter.push(tempKeywords[i].word);
-				$("#pubKeywordBox").append('<div class="keywordText pub active">' + tempKeywords[i].word + '</div>');
+				$("#pubKeywordBox").append('<div class="keywordText pub active" name="'+tempKeywords[i].word  +'">' + tempKeywords[i].word + '</div>');
 			}
 			// inactive pubs
 			analysis_keyword_filter_inactive=result["_inactiveKeywordsList"];
@@ -1141,7 +1153,7 @@ var GRANTPUB = (function () {
 			analysis_name_filter = result["_coAuthorsList"];
 			for (var i=0;i< result["_coAuthorsList"].length;i++)
 			{
-				$("#authorBox").append('<div class="keywordText author active">' + result["_coAuthorsList"][i] + '</div>');
+				$("#authorBox").append('<div class="keywordText author active" name="'+result["_coAuthorsList"][i] +'">' + result["_coAuthorsList"][i] + '</div>');
 			}
 			// inactive authors
 			analysis_name_filter_inactive = result['_inactiveCoAuthorsList'];
@@ -1150,17 +1162,34 @@ var GRANTPUB = (function () {
 				$(".keywordText.author.active:contains('"+ result["_inactiveCoAuthorsList"][i] +"')").removeClass("active").addClass("inactive");
 			}
 			
-			// TODO: handle add or remove to arrays
 			// add onclick event (toggle active - inactive )
-			$(".keywordText.pub , .keywordText.author ").click(function(){
-				$("#submitBox").show();
+			$(".keywordText.pub").click(function(){
 				if ($(this).hasClass("active")==true){
 					$(this).removeClass("active").addClass('inactive');
+					analysis_keyword_filter_inactive.push($(this).attr('name'));
+					analysis_keyword_filter.remove($(this).attr('name'));
+					
 				}else{
 					$(this).removeClass("inactive").addClass('active');
+					analysis_keyword_filter_inactive.remove($(this).attr('name'));
+					analysis_keyword_filter.push($(this).attr('name'));
 				}
+				$("#submitBox").show();
 			});
-			
+	
+			$(".keywordText.author ").click(function(){
+				if ($(this).hasClass("active")==true){
+					$(this).removeClass("active").addClass('inactive');
+					analysis_name_filter.remove($(this).attr('name'));
+					analysis_name_filter_inactive.push($(this).attr('name'));
+				}else{
+					$(this).removeClass("inactive").addClass('active');
+					analysis_name_filter.push($(this).attr('name'));
+					analysis_name_filter_inactive.remove($(this).attr('name'));
+				}
+				$("#submitBox").show();
+			});
+			 
 			// show grant data :
 			$("#grantTitle").text("Title: "+grantObject.Title);
 			$("#grantAmount").text("Amount: "+grantObject.RequestAmt);
