@@ -95,6 +95,9 @@ var GRANTPUB = (function () {
 		});
 		$("#availableAnalysis").on('ifChecked', function(event){
 			$.get('/grantpub/analysis/activeAwards' , function(result){
+				if (result.command=='redirect'){
+					$(location).attr('href',result.path);
+				}
 				var temp1 = d3.select("#grantpubContainer").selectAll(".cell.child");
 				for ( var i=0 , length = result._grantList.length; i< length ; i++){
 					var proposalNumber = parseInt(result._grantList[i].Proposal);
@@ -840,9 +843,7 @@ var GRANTPUB = (function () {
 			.attr("y", function(d){return d.y;})
 			.attr("fill","black")
 			.text(function(d){return d.group==1?d.name:"";});
-
 	}
-	
 	
 	// check for filters
 	function treemapValueAccessor(d) {
@@ -1106,6 +1107,9 @@ var GRANTPUB = (function () {
 		
 		$.get(requestText, function(result) {
 			
+			if (result.command=="redirect"){
+				$(location).attr('href',result.path);
+			}
 			// Clean grant keywords and add new ones:
 			$("#grantKeywordBox").empty();
 			var grantKeywords = grantObject.Keyword.split(' ');

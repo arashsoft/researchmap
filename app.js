@@ -212,7 +212,7 @@ app.get("/grantpub/analysis/activeAwards",function(req, res) {
 	if (req.isAuthenticated()){
 		grantpub.activeAwards(req,res);
 	}else{
-		res.render('loginPage', { message: "Please login first",layout: false });
+		res.send({"command":"redirect","path":"/"});
 	}
 });
  
@@ -220,7 +220,7 @@ app.get("/grantpub/analysis/:proposal_ID/:keyword_filter_array/:name_filter_arra
 	if (req.isAuthenticated()){
 		grantpub.analysis(req,res);
 	}else{
-		res.render('loginPage', { message: "Please login first",layout: false });
+		res.send({"command":"redirect","path":"/"});
 	}
 });
 
