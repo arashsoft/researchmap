@@ -6,7 +6,7 @@ var express = require('express');
 var errorHandler = require('express-error-handler');
 var logger = require('bunyan-request-logger');
 var http = require('http');
-var exphbs = require( 'express3-handlebars' );
+var exphbs = require( 'express-handlebars' );
 var noCache = require('connect-cache-control');
 
 var app = express();
