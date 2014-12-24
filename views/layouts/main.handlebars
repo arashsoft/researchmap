@@ -1,21 +1,21 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>VARSITY | Western University</title>
-  <link rel="stylesheet" href="css/stylesheet.css">
-  <link rel="stylesheet" href="css/iThing.css"/>
-  <link rel="stylesheet" href="css/square/blue.css" >
-  <link rel="stylesheet" href="css/nv.d3.css">
+	<meta charset="utf-8" />
+	<title>VARSITY | Western University</title>
+	<link rel="stylesheet" href="css/stylesheet.css">
+	<link rel="stylesheet" href="css/iThing.css"/>
+	<link rel="stylesheet" href="css/square/blue.css" >
+	<link rel="stylesheet" href="css/nv.d3.css">
 
-  <link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
-  <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
-  <link href='http://fonts.googleapis.com/css?family=Arimo:400,700' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Arimo:400,700' rel='stylesheet' type='text/css'>
 
-  <script src="js/lib/modernizr-2.6.2-dev.js"></script>
+	<script src="js/lib/modernizr-2.6.2-dev.js"></script>
 	<script src="js/lib/d3/d3.v3.min.js"></script>
-  <script src="js/lib/d3/sankey.js"></script> 
-  <script src="js/lib/d3/polybrush.js"></script>     
+	<script src="js/lib/d3/sankey.js"></script>
+	<script src="js/lib/d3/polybrush.js"></script>
 	<script src="js/lib/queue.min.js"></script>
 	<script src="js/lib/jquery-2.0.2.min.js"></script>
 	<script src="js/lib/jquery.dropdownPlain.js"></script>
@@ -24,59 +24,59 @@
 	<script src="js/lib/more-show.js"></script>
 	<script src="js/lib/jquery.colorbox-min.js"></script>
 	<script src="js/lib/jquery.autocomplete.js"></script>
-  <script src="js/lib/store2-2.1.2-min.js"></script>
-  <script src="js/lib/async.js"></script>
-  <script src="js/lib/jquery.icheck.min.js"></script>
+	<script src="js/lib/store2-2.1.2-min.js"></script>
+	<script src="js/lib/async.js"></script>
+	<script src="js/lib/jquery.icheck.min.js"></script>
 	<script src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
 	<script src="js/lib/chosen.jquery.min.js"></script>
-  <script src="js/lib/underscore-deepextend.js"></script>
-  <script src="js/lib/underscore-mixins.js"></script>
-  <script src="js/lib/underscore.string-min.js"></script>
-  <script src="js/lib/rm-extras.js"></script>
-  <script src="js/lib/nv.d3.js"></script>
-  <script type="text/javascript">
-    $(document).ready(function(){
-      $('#menu li:lt(3)').hide(0);
-      $('#menu li:lt(4)').on("mouseover", function(){
-        //$('#menu li:eq(0)').html("<a href='views'><< views</a>");
-        $('#menu li:lt(3)').show('fast');
-      });
-      $('#menu').on("mouseleave", function(){
-        console.log("yup");
-        $('#menu li:lt(3)').hide('fast');
-      });
+	<script src="js/lib/underscore-deepextend.js"></script>
+	<script src="js/lib/underscore-mixins.js"></script>
+	<script src="js/lib/underscore.string-min.js"></script>
+	<script src="js/lib/rm-extras.js"></script>
+	<script src="js/lib/nv.d3.js"></script>
+	<!--<script type="text/javascript">-->
+	<!--$(document).ready(function(){-->
+	<!--$('#menu li:lt(3)').hide(0);-->
+	<!--$('#menu li:lt(4)').on("mouseover", function(){-->
+	<!--//$('#menu li:eq(0)').html("<a href='views'><< views</a>");-->
+	<!--$('#menu li:lt(3)').show('fast');-->
+	<!--});-->
+	<!--$('#menu').on("mouseleave", function(){-->
+	<!--console.log("yup");-->
+	<!--$('#menu li:lt(3)').hide('fast');-->
+	<!--});-->
 
-      // $('#header').on("mouseout", function(){
-      //   //$('#menu li:eq(0)').html("<a href='views'>  views</a>");
-      //   $('#menu li:gt(0):lt(2)').hide('fast');
-      // });
-    });
-  </script>
-	
+	<!--// $('#header').on("mouseout", function(){-->
+	<!--//   //$('#menu li:eq(0)').html("<a href='views'>  views</a>");-->
+	<!--//   $('#menu li:gt(0):lt(2)').hide('fast');-->
+	<!--// });-->
+	<!--});-->
+	<!--</script>-->
+
 </head>
 <body>
 
-  <div id="header">
-    <div id="header_in">
-    <!-- <img src="img/rmlogo.png"></img> -->
-      <h1><a href="/"><b>varsity</b>Western</a></h1>
-      <div id="menu">
-        <ul>
-          <li>{{#if navpub}}<a href="collaborations"  class='active'>Collaborations</a>{{else}} <a href="collaborations">Collaborations</a>{{/if}}
-          </li>
-          <li>{{#if navgrants}}<a href="grants" class='active'>Grants</a>{{else}}<a href="grants">Grants</a>{{/if}}
-          </li>
-          <li>{{#if navgrantpub}}<a href="grantpub" class='active'>Grant-Publication</a>{{else}}<a href="grantpub">Grant-Publication</a>{{/if}}
-			 </li>
-          <li>{{#if views}}<a href="views" class='active'>views</a>{{else}}<a href="views">views</a>{{/if}}
-          </li> 
-          <li>{{#if navhelp}}<a href="help" class='active'>Help</a>{{else}}<a href="help">Help</a>{{/if}}
-          </li>
-        </ul>
-      </div>
-    </div>
+<div id="header">
+	<div id="header_in">
+		<!-- <img src="img/rmlogo.png"></img> -->
+		<h1><a href="/"><b>varsity</b>Western</a></h1>
+		<div id="menu">
+			<ul>
+				<li>{{#if navpub}}<a href="collaborations"  class='active'>Collaborations</a>{{else}} <a href="collaborations">Collaborations</a>{{/if}}
+				</li>
+				<li>{{#if navgrants}}<a href="grants" class='active'>Grants</a>{{else}}<a href="grants">Grants</a>{{/if}}
+				</li>
+				<li>{{#if navgrantpub}}<a href="grantpub" class='active'>Grant-Publication</a>{{else}}<a href="grantpub">Grant-Publication</a>{{/if}}
+				</li>
+				<!--<li>{{#if views}}<a href="views" class='active'>views</a>{{else}}<a href="views">views</a>{{/if}}-->
+				<!--</li> -->
+				<!--<li>{{#if navhelp}}<a href="help" class='active'>Help</a>{{else}}<a href="help">Help</a>{{/if}}-->
+				<!--</li>-->
+			</ul>
+		</div>
+	</div>
 
-<!-- </div>
+	<!-- </div>
  --><!--     <div class="nav right">
       <ul>
         <a href="#login-box" class="login-window">
@@ -87,7 +87,7 @@
         <li>contact</li></a>
       </ul> 
     </div> -->
-  </div>
+</div>
 
 <!-- <div class="navbar group">
   <ul class="dropdown row group">
@@ -103,7 +103,7 @@
     </li>
     <img src="img/settings.png"></img>
   </ul>
-</div> --> 
+</div> -->
 
 <!--   <div class="row group">
     <div id="overview">
@@ -113,50 +113,50 @@
 
 
 
-    {{{body}}}
+{{{body}}}
 
 
-  <div class="secondary group">
-    <div class="row">
-      <a class="logo" href="www.sci.uwo.ca"><img class="pic" src="img/science_logo.png" alt="Western Science"></a>
-    </div>
-  </div>
+<div class="secondary group">
+	<div class="row">
+		<a class="logo" href="www.sci.uwo.ca"><img class="pic" src="img/science_logo.png" alt="Western Science"></a>
+	</div>
+</div>
 
-  <div class="footer group">
-    <div class="row group">
-      <p>contact information
-        <br>
-        <br>
-        <br>
-        science&#64uwo.ca
-        <br><br>
-        (519) 661-2111 x 86152
-        <br>
-        <br>
-        Faculty of Science
-        <br> western science centre
-        <br>
-        room 191
-        <br><br>
-        western university
-        <br>
-        1151 richmond street
-        <br>
-        london, on, canada
-        <br>
-        n6a 5b7
-         <br>
-        <br>
-        <br>
-        &#169 2013 paul parsons
-      </p>
-    </div>
-  </div>    
+<div class="footer group">
+	<div class="row group">
+		<p>contact information
+			<br>
+			<br>
+			<br>
+			science&#64uwo.ca
+			<br><br>
+			(519) 661-2111 x 86152
+			<br>
+			<br>
+			Faculty of Science
+			<br> western science centre
+			<br>
+			room 191
+			<br><br>
+			western university
+			<br>
+			1151 richmond street
+			<br>
+			london, on, canada
+			<br>
+			n6a 5b7
+			<br>
+			<br>
+			<br>
+			&#169 2013 paul parsons
+		</p>
+	</div>
+</div>
 
- 
+
 </body>
 </html>
 
 {{#scripts}}
-<script type="text/javascript"> $(".chzn-select").chosen(); $(".chzn-select-deselect").chosen({allow_single_deselect:true}); </script>
+	<script type="text/javascript"> $(".chzn-select").chosen(); $(".chzn-select-deselect").chosen({allow_single_deselect:true}); </script>
 {{/scripts}}
