@@ -1,5 +1,9 @@
 /*
-script.js: exctarcts relationships between grants and publications
+analysis.js:
+			(.) exctarcts probabilistic relationships between grants and publications
+			(.) includes two functions:
+				(-) calculate_analyzable_grants: returns the grants for which further analysis is semantically sound
+				(-) award_relationship_extractor: calculates an object based on a single award proposal. The object contains related publications, each having a confidence value (simulated as a radius)
 
 copyright Arman Didandeh 2014
 */
@@ -46,8 +50,6 @@ function sigmoid(t) {
 	return 1/(1+Math.pow(Math.E, -t));
 }
 
-var counter = 1;
-
   //GRANT-PUBLICATION RELATIONSHIPS EXTRACTION
   //award_relationship_extractor("0000031951", [], ["Kero J.", "Blaauw R.C."], 2003, 2012, 0.15, 1, "Algorithm1");  //single investigator example
   // award_relationship_extractor("0000025975", [], ["Kero J.", "Blaauw R.C."], 2003, 2012, 0.2, 0, "Algorithm1");  //multiple investigator example
@@ -58,6 +60,7 @@ exports.calculate_analyzable_grants = function calculate_analyzable_grants(callb
 	analyzable_grants._id = "analyzable_grants";
 	analyzable_grants._grantList = new Array();
 
+		//ALL CONNECTION RELATED CODE IS YET KEPT FOR FURTHER USE/ANALYSIS
 	/*var connection = mysql.createConnection({
 		host : '129.100.19.193',
 		port : '3306', 
@@ -110,6 +113,9 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 	//GLOBAL VARIABLES
 	var _stopWords=['a','able','about','above','abroad','according','accordingly','across','actually','adj','after','afterwards','again','against','ago','ahead','aint','all','allow','allows','almost','alone','along','alongside','already','also','although','always','am','amid','amidst','among','amongst','an','and','another','any','anybody','anyhow','anyone','anything','anyway','anyways','anywhere','apart','appear','appreciate','appropriate','are','arent','around','as','as','aside','ask','asking','associated','at','available','away','awfully','b','back','backward','backwards','be','became','because','become','becomes','becoming','been','before','beforehand','begin','behind','being','believe','below','beside','besides','best','better','between','beyond','both','brief','but','by','c','came','can','cannot','cant','cant','caption','cause','causes','certain','certainly','changes','clearly','cmon','co','co.','com','come','comes','concerning','consequently','consider','considering','contain','containing','contains','corresponding','could','couldnt','course','cs','currently','d','dare','darent','definitely','described','despite','did','didnt','different','directly','do','does','doesnt','doing','done','dont','down','downwards','during','e','each','edu','eg','eight','eighty','either','else','elsewhere','end','ending','enough','entirely','especially','et','etc','even','ever','evermore','every','everybody','everyone','everything','everywhere','ex','exactly','example','except','f','fairly','far','farther','few','fewer','fifth','first','five','followed','following','follows','for','forever','former','formerly','forth','forward','found','four','from','further','furthermore','g','get','gets','getting','given','gives','go','goes','going','gone','got','gotten','greetings','h','had','hadnt','half','happens','hardly','has','hasnt','have','havent','having','he','hed','hell','hello','help','hence','her','here','hereafter','hereby','herein','heres','hereupon','hers','herself','hes','hi','him','himself','his','hither','hopefully','how','howbeit','however','hundred','i','id','ie','if','ignored','ill','im','immediate','in','inasmuch','inc','inc.','indeed','indicate','indicated','indicates','inner','inside','insofar','instead','into','inward','is','isnt','it','itd','itll','its','its','itself','ive','j','just','k','keep','keeps','kept','know','known','knows','l','last','lately','later','latter','latterly','least','less','lest','let','lets','like','liked','likely','likewise','little','look','looking','looks','low','lower','ltd','m','made','mainly','make','makes','many','may','maybe','maynt','me','mean','meantime','meanwhile','merely','might','mightnt','mine','minus','miss','more','moreover','most','mostly','mr','mrs','much','must','mustnt','my','myself','n','name','namely','nd','near','nearly','necessary','need','neednt','needs','neither','never','neverf','neverless','nevertheless','new','next','nine','ninety','no','nobody','non','none','nonetheless','noone','no-one','nor','normally','not','nothing','notwithstanding','novel','now','nowhere','o','obviously','of','off','often','oh','ok','okay','old','on','once','one','ones','ones','only','onto','opposite','or','other','others','otherwise','ought','oughtnt','our','ours','ourselves','out','outside','over','overall','own','p','particular','particularly','past','per','perhaps','placed','please','plus','possible','presumably','probably','provided','provides','q','que','quite','qv','r','rather','rd','re','really','reasonably','recent','recently','regarding','regardless','regards','relatively','respectively','right','round','s','said','same','saw','say','saying','says','second','secondly','see','seeing','seem','seemed','seeming','seems','seen','self','selves','sensible','sent','serious','seriously','seven','several','shall','shant','she','shed','shell','shes','should','shouldnt','since','six','so','some','somebody','someday','somehow','someone','something','sometime','sometimes','somewhat','somewhere','soon','sorry','specified','specify','specifying','still','sub','such','sup','sure','t','take','taken','taking','tell','tends','th','than','thank','thanks','thanx','that','thatll','thats','thats','thatve','the','their','theirs','them','themselves','then','thence','there','thereafter','thereby','thered','therefore','therein','therell','therere','theres','theres','thereupon','thereve','these','they','theyd','theyll','theyre','theyve','thing','things','think','third','thirty','this','thorough','thoroughly','those','though','three','through','throughout','thru','thus','till','to','together','too','took','toward','towards','tried','tries','truly','try','trying','ts','twice','two','u','un','under','underneath','undoing','unfortunately','unless','unlike','unlikely','until','unto','up','upon','upwards','us','use','used','useful','uses','using','usually','v','value','various','versus','very','via','viz','vs','w','want','wants','was','wasnt','way','we','wed','welcome','well','well','went','were','were','werent','weve','what','whatever','whatll','whats','whatve','when','whence','whenever','where','whereafter','whereas','whereby','wherein','wheres','whereupon','wherever','whether','which','whichever','while','whilst','whither','who','whod','whoever','whole','wholl','whom','whomever','whos','whose','why','will','willing','wish','with','within','without','wonder','wont','would','wouldnt','x','y','yes','yet','you','youd','youll','your','youre','yours','yourself','yourselves','youve','z','zero'];
 	var _MIN = 2.5;
+		
+		//	MIGHT BE NEEDED FOR FURTHER TEST OF THE LOGIC FLOW; HENCE IS KEPT HERE
+	var counter = 1;
 	
 	/*var connection = mysql.createConnection({
         host : '129.100.19.193',
@@ -597,6 +603,8 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
     	},
 
 		//filter co-authors and corresponding publications
+		//	(.) set the _active flag to false for the publication that has the specific co-author
+		//	(.) will be removed later on
 		function(callback) {
 			//console.log("10: filter co-authors and corresponding publications");
 			if(analyzed_award._error){
@@ -605,24 +613,31 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				return;
 			}
 			
-			var filtered_publications = new Array();
-
 			if(_.size(name_filter_array) > 0) {
-				var flag = false;
-				analyzed_award._relatedPublicationsList.forEach(function(publication) {
-					name_filter_array.forEach(function(name) {
-						publication._authors.forEach(function(author) {
-							if(name == author._fullName) {
-								flag = true;
-								analyzed_award._inactiveCoAuthorsList.push(name);
-							}
+				if(_.size(analyzed_award._relatedPublicationsList) > 0) {
+					analyzed_award._relatedPublicationsList.forEach(function(publication) {
+						var flag = false;
+						name_filter_array.forEach(function(name) {
+							publication._authors.forEach(function(author) {
+								if(name == author._fullName) {
+									flag = true;
+									analyzed_award._inactiveCoAuthorsList.push(name);
+								}
+							});
+							
+							publication._active = !flag;
 						});
-						
-						publication._active = !flag;
 					});
-				});
 
-        		callback();
+	        		callback();
+				}
+				else {
+					analyzed_award._error = 1;
+	        		analyzed_award._note = "None of the publications within our current database are correlated with this award proposal.";
+					//connection.end();
+	        		myfunction(analyzed_award);
+	        		return;
+				}
 			}
       		else {
         		callback();
@@ -658,39 +673,48 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				myfunction(analyzed_award);
 				return;
 			}
-			
-			analyzed_award._relatedPublicationsList.forEach(function(publication) {
-			//tokenize, stem and remove stop words
-        	var _titleTokenized = tokenizer.tokenize(publication._title);
-        	var _authorKeywordTokenized = tokenizer.tokenize(publication._authorKeywords);
-        	var _indexKeywordTokenized = tokenizer.tokenize(publication._indexKeywords);
-        	var _extractedKeywords = _.uniq(_titleTokenized.concat(_authorKeywordTokenized.concat(_indexKeywordTokenized)));
-        	var _extractedKeywordsStopWordsRemoved = _.reject(_extractedKeywords, function(word) { return (filterItems(word.toLowerCase(), _stopWords)) });
-	     		publication._keywords = _extractedKeywordsStopWordsRemoved;
-			});
-
-			analyzed_award._relatedPublicationsList.forEach(function(publication) {
-				publication._keywords.forEach(function(keyword) {
-					var temp = new Object();
-					temp.word = keyword.toLowerCase();
-					temp.frequency = 0
-					analyzed_award._addedKeywordsList.push(temp);
+			if(_.size(analyzed_award._relatedPublicationsList) > 0) {
+				analyzed_award._relatedPublicationsList.forEach(function(publication) {
+					//tokenize, stem and remove stop words
+		        	var _titleTokenized = tokenizer.tokenize(publication._title);
+		        	var _authorKeywordTokenized = tokenizer.tokenize(publication._authorKeywords);
+		        	var _indexKeywordTokenized = tokenizer.tokenize(publication._indexKeywords);
+		        	var _extractedKeywords = _.uniq(_titleTokenized.concat(_authorKeywordTokenized.concat(_indexKeywordTokenized)));
+		        	var _extractedKeywordsStopWordsRemoved = _.reject(_extractedKeywords, function(word) { return (filterItems(word.toLowerCase(), _stopWords)) });
+		     		publication._keywords = _extractedKeywordsStopWordsRemoved;
 				});
-			});
 
-			analyzed_award._relatedPublicationsList.forEach(function(publication) {
-				publication._keywords.forEach(function(keyword) {
-					analyzed_award._addedKeywordsList.forEach(function(keyword_tuple) {
-						if(keyword_tuple.word == keyword) {
-							keyword_tuple.frequency++;
-						}
+				analyzed_award._relatedPublicationsList.forEach(function(publication) {
+					publication._keywords.forEach(function(keyword) {
+						var temp = new Object();
+						temp.word = keyword.toLowerCase();
+						temp.frequency = 0
+						analyzed_award._addedKeywordsList.push(temp);
 					});
 				});
-			});
-			
-			analyzed_award._addedKeywordsList.sort(function(a,b) {return a.frequency - b.frequency;});
-      		
-      		callback();
+
+				analyzed_award._relatedPublicationsList.forEach(function(publication) {
+					publication._keywords.forEach(function(keyword) {
+						analyzed_award._addedKeywordsList.forEach(function(keyword_tuple) {
+							if(keyword_tuple.word == keyword) {
+								keyword_tuple.frequency++;
+							}
+						});
+					});
+				});
+				
+				//sort added by Arash to have the keywords ordered
+				analyzed_award._addedKeywordsList.sort(function(a,b) {return a.frequency - b.frequency;});
+	      		
+	      		callback();
+			}
+			else {
+				analyzed_award._error = 1;
+        		analyzed_award._note = "None of the publications within our current database are correlated with this award proposal.";
+				//connection.end();
+        		myfunction(analyzed_award);
+        		return;
+			}
 		},
 
 		//unify addedKeywordsList and add up the frequencies
@@ -749,52 +773,62 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				myfunction(analyzed_award);
 				return;
 			}
-			
-			analyzed_award._relatedPublicationsList.forEach(function(publication) {
-				var match_count = 0;
-				publication._keywords.forEach(function(publication_keyword) {
-					analyzed_award._awardKeywords.forEach(function(award_keyword) {
-						if((publication_keyword.toLowerCase() == award_keyword.toLowerCase()) ||
-							(natural.PorterStemmer.stem(publication_keyword.toLowerCase()) == natural.PorterStemmer.stem(award_keyword.toLowerCase()))) {
-							match_count++;
-						}
+			if(_.size(analyzed_award._relatedPublicationsList) > 0) {
+				analyzed_award._relatedPublicationsList.forEach(function(publication) {
+					var match_count = 0;
+					publication._keywords.forEach(function(publication_keyword) {
+						analyzed_award._awardKeywords.forEach(function(award_keyword) {
+							if((publication_keyword.toLowerCase() == award_keyword.toLowerCase()) ||
+								(natural.PorterStemmer.stem(publication_keyword.toLowerCase()) == natural.PorterStemmer.stem(award_keyword.toLowerCase()))) {
+								match_count++;
+							}
+						});
 					});
-				});
 
-				//if not keyword match
-				if(match_count == 0) {
-					publication._radius2 = _MIN;
-					// console.log("no match_count");
-				}
-				else {
-					var weight = ((match_count) / (Math.min(_.size(publication._keywords), _.size(analyzed_award._awardKeywords))));
-						//// ***SIMPLE THRESHOLDING***
-					/*if(weight >= threshold) {
-						publication._radius2 = weight * 50;
+					//if not keyword match
+					if(match_count == 0) {
+						publication._radius2 = _MIN;
+						// console.log("no match_count");
 					}
 					else {
-						publication._radius2 = 0;
-					}*/
+						var weight = ((match_count) / (Math.min(_.size(publication._keywords), _.size(analyzed_award._awardKeywords))));
+							//// ***SIMPLE THRESHOLDING***
+							//// NO LONGER USED
+							//// WAS HERE TO TEST FOR THE FIRST TIME ONLY
+						/*if(weight >= threshold) {
+							publication._radius2 = weight * 50;
+						}
+						else {
+							publication._radius2 = 0;
+						}*/
 
-						//// ***SIGMOID THRESHOLDING***
-					var temp = 50 * (sigmoid(weight - (4*threshold)));
-					publication._radius2 = (temp > _MIN) ? temp : _MIN;
-					/*console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-					console.log("algorithm_selection: " + algorithm_selection);
-					console.log("kernel_selection: " + kernel_selection);
-					console.log("weight: " + weight);
-					console.log("threshold: " + 4*threshold);
-					console.log("temp: " + temp);
-					console.log("publication._radius1: " + publication._radius1);
-					console.log("publication._radius2: " + publication._radius2);
-					console.log("--------------------------");
-					console.log();
-					console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");*/
- 				
-				}
-			});
+							//// ***SIGMOID THRESHOLDING***
+						var temp = 50 * (sigmoid(weight - (4*threshold)));
+						publication._radius2 = (temp > _MIN) ? temp : _MIN;
+						/*console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+						console.log("algorithm_selection: " + algorithm_selection);
+						console.log("kernel_selection: " + kernel_selection);
+						console.log("weight: " + weight);
+						console.log("threshold: " + 4*threshold);
+						console.log("temp: " + temp);
+						console.log("publication._radius1: " + publication._radius1);
+						console.log("publication._radius2: " + publication._radius2);
+						console.log("--------------------------");
+						console.log();
+						console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");*/
+	 				
+					}
+				});
 
-			callback();
+				callback();
+			}
+			else {
+				analyzed_award._error = 1;
+        		analyzed_award._note = "None of the publications within our current database are correlated with this award proposal.";
+				//connection.end();
+        		myfunction(analyzed_award);
+        		return;
+			}
 		},
 
 		//calculate radius
@@ -816,7 +850,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 			}
 			else {
 				if(_.size(analyzed_award._relatedPublicationsList) > 0) {
-
 					analyzed_award._relatedPublicationsList.forEach(function(publication) {
 						if(algorithm_selection == "Algorithm1") {
 							publication._radius = (publication._radius1 + publication._radius2) / 2;
@@ -853,22 +886,31 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				callback();
 			}
 			
-			if((_.size(keyword_filter_array) > 0) && _.size(analyzed_award._relatedPublicationsList) > 0) {
-				var flag = false;
-				analyzed_award._relatedPublicationsList.forEach(function(publication) {
-					keyword_filter_array.forEach(function(word) {
-						publication._keywords.forEach(function(keyword) {
-							if(word == keyword) {
-								flag = true;
-								analyzed_award._inactiveKeywordsList.push(word);
-							}
+			if(_.size(keyword_filter_array) > 0) {
+				if(_.size(analyzed_award._relatedPublicationsList) > 0) {
+					var flag = false;
+					analyzed_award._relatedPublicationsList.forEach(function(publication) {
+						keyword_filter_array.forEach(function(word) {
+							publication._keywords.forEach(function(keyword) {
+								if(word == keyword) {
+									flag = true;
+									analyzed_award._inactiveKeywordsList.push(word);
+								}
+							});
+							
+							publication._active = !flag;
 						});
-						
-						publication._active = !flag;
 					});
-				});
 
-        		callback();
+	        		callback();
+				}
+				else {
+					analyzed_award._error = 1;
+	        		analyzed_award._note = "None of the publications within our current database are correlated with this award proposal.";
+					//connection.end();
+	        		myfunction(analyzed_award);
+	        		return;
+				}
 			}
       		else {
         		callback();
@@ -909,8 +951,9 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 			return analyzed_award;
 		}
 		else {
-			//console.log("this called " + (counter++) + " times");
-			//console.log(_.size(analyzed_award._relatedPublicationsList));
+			//	MIGHT BE NEEDED FOR FURTHER TEST OF THE LOGIC FLOW; HENCE IS KEPT HERE
+			/*console.log("this called " + (counter++) + " times");
+			console.log(_.size(analyzed_award._relatedPublicationsList));*/
 			myfunction(analyzed_award);
 			return analyzed_award;
 		}
