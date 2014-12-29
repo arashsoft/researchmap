@@ -97,12 +97,12 @@ var GRANTPUB = (function () {
 		
 		// handle grant-pub analysis box
 		$("input[name='analysisAlgorithm']").on('ifChanged', function(event){
-			analysis_algorithm_selection = $(this).value;
+			analysis_algorithm_selection = $(this)[0].value;
 			$("#submitBox").show();
 		});
 		
 		$("input[name='scoreKernel']").on('ifChanged', function(event){
-			analysis_kernel_selection = $(this).value;
+			analysis_kernel_selection = $(this)[0].value;
 			$("#submitBox").show();
 		});
 		$("#availableAnalysis").on('ifChecked', function(event){
