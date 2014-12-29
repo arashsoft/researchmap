@@ -10,7 +10,7 @@ var analysisArman = require('../analysis')
 exports.page = function(req, res){
 	var data = {
 		maintitle: 'grant-publication explorer',
-		navgrants: true,
+		navgrantpub: true,
 		scripts: [
 			'grantpub'
 		]
