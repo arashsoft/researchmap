@@ -261,12 +261,21 @@ blockquote, q {
 }
 
 .overviewdescription {
-  width: 80%;
+  width: 70%;
   margin: auto;
-  padding: 80px 0px 80px 0px;
+  padding: 100px 0px;
   color: black;
   font-family: 'Arimo', sans-serif;
-  font-size: 1.5em;
+  font-size: 1.7em;
+  line-height: 3.5em;
+}
+
+b.ac {
+  color: #00a2ff;
+}
+
+ol.desc {
+  margin-left: 20px;
   line-height: 1.5em;
 }
 
@@ -383,7 +392,7 @@ blockquote, q {
   display: block;
   margin: auto;
   width: 100%;
-  margin: 60px auto 20px auto;
+  margin: 60px auto 60px auto;
 }
 
 .screenshot {
