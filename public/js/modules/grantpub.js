@@ -776,7 +776,11 @@ var GRANTPUB = (function () {
 	
 	// create relation layout
 	function constructRelation(myData , grantObject){
-				
+		// do not show awards for null begin-date
+		if(grantObject.BeginDate==""){
+			return;
+		}
+		
 		var width = $("#grantpubRelation").width();
 		var height = $("#grantpubRelation").height();
 
@@ -815,10 +819,10 @@ var GRANTPUB = (function () {
 		var yStep = 400 / graph.nodes.length;
 		for (var i = 1 ; i < graph.nodes.length; i++){
 			if (graph.nodes[i].name2 > tempBeginDate ){
-				graph.nodes[i].x = (width/2)+30+ (graph.nodes[i].name2-tempBeginDate)* rightstep;
+				graph.nodes[i].x = (width/2)+45+ (graph.nodes[i].name2-tempBeginDate)* rightstep;
 				graph.nodes[i].y = 75+ i* yStep;
 			}else{
-				graph.nodes[i].x = (width/2)-30 - (tempBeginDate-graph.nodes[i].name2)* leftstep;
+				graph.nodes[i].x = (width/2)-45 - (tempBeginDate-graph.nodes[i].name2)* leftstep;
 				graph.nodes[i].y = 75 + i* yStep;
 			}
 			
@@ -839,7 +843,7 @@ var GRANTPUB = (function () {
 			.data(graph.nodes)
 			.enter().append("circle")
 			.attr("class", "relationNode")
-			.attr("r", function(d){return d.group==1? 50: tempR})
+			.attr("r", function(d){return d.group==1? 40: tempR})
 			.style("fill", function(d) { return d.group==1? "lightblue":"lightgreen"})
 			.attr("cx", function(d) { return d.x; })
 			.attr("cy", function(d) { return d.y; });
