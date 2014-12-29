@@ -685,22 +685,26 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				});
 
 				analyzed_award._relatedPublicationsList.forEach(function(publication) {
-					publication._keywords.forEach(function(keyword) {
+					if(_.size(publication._keywords) > 0) {
+						publication._keywords.forEach(function(keyword) {
 						var temp = new Object();
 						temp.word = keyword.toLowerCase();
 						temp.frequency = 0
 						analyzed_award._addedKeywordsList.push(temp);
 					});
+					}
 				});
 
 				analyzed_award._relatedPublicationsList.forEach(function(publication) {
-					publication._keywords.forEach(function(keyword) {
-						analyzed_award._addedKeywordsList.forEach(function(keyword_tuple) {
-							if(keyword_tuple.word == keyword) {
-								keyword_tuple.frequency++;
-							}
+					if(_.size(publication._keywords) > 0) {
+						publication._keywords.forEach(function(keyword) {
+							analyzed_award._addedKeywordsList.forEach(function(keyword_tuple) {
+								if(keyword_tuple.word == keyword) {
+									keyword_tuple.frequency++;
+								}
+							});
 						});
-					});
+					}
 				});
 				
 				//sort added by Arash to have the keywords ordered
@@ -776,14 +780,16 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 			if(_.size(analyzed_award._relatedPublicationsList) > 0) {
 				analyzed_award._relatedPublicationsList.forEach(function(publication) {
 					var match_count = 0;
-					publication._keywords.forEach(function(publication_keyword) {
-						analyzed_award._awardKeywords.forEach(function(award_keyword) {
-							if((publication_keyword.toLowerCase() == award_keyword.toLowerCase()) ||
-								(natural.PorterStemmer.stem(publication_keyword.toLowerCase()) == natural.PorterStemmer.stem(award_keyword.toLowerCase()))) {
-								match_count++;
-							}
+					if(_.size(publication._keywords) > 0) {
+						publication._keywords.forEach(function(publication_keyword) {
+							analyzed_award._awardKeywords.forEach(function(award_keyword) {
+								if((publication_keyword.toLowerCase() == award_keyword.toLowerCase()) ||
+									(natural.PorterStemmer.stem(publication_keyword.toLowerCase()) == natural.PorterStemmer.stem(award_keyword.toLowerCase()))) {
+									match_count++;
+								}
+							});
 						});
-					});
+					}
 
 					//if not keyword match
 					if(match_count == 0) {
@@ -891,12 +897,14 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 					var flag = false;
 					analyzed_award._relatedPublicationsList.forEach(function(publication) {
 						keyword_filter_array.forEach(function(word) {
-							publication._keywords.forEach(function(keyword) {
-								if(word == keyword) {
-									flag = true;
-									analyzed_award._inactiveKeywordsList.push(word);
-								}
-							});
+							if(_.size(publication._keywords) > 0) {
+								publication._keywords.forEach(function(keyword) {
+									if(word == keyword) {
+										flag = true;
+										analyzed_award._inactiveKeywordsList.push(word);
+									}
+								});
+							}
 							
 							publication._active = !flag;
 						});
