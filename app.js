@@ -216,7 +216,7 @@ app.get("/grantpub/analysis/activeAwards",function(req, res) {
 	}
 });
  
-app.get("/grantpub/analysis/:proposal_ID/:keyword_filter_array/:name_filter_array/:begin_date/:end_date/:threshold/:kernel_selection/:algorithm_selection",function(req, res) {
+app.get("/grantpub/analysis/:proposal_ID/:keyword_filter_array/:name_filter_array/:begin_date/:end_date/:algorithm_selection/:author_correlation/:aggregation/:keyword_correlation/:numberOfTopics/:numberOfKeywords",function(req, res) {
 	if (req.isAuthenticated()){
 		grantpub.analysis(req,res);
 	}else{

@@ -63,7 +63,7 @@ exports.data = function(req, res){
 exports.analysis = function(req, res){
 	// I know it is stupid! but how cares!
 	var tempSent = 0;
-	analysisArman.award_relationship_extractor(req.params.proposal_ID, JSON.parse(req.params.keyword_filter_array), JSON.parse(req.params.name_filter_array), req.params.begin_date, req.params.end_date, req.params.threshold, req.params.kernel_selection, req.params.algorithm_selection, function(result){
+	analysisArman.award_relationship_extractor(req.params.proposal_ID, JSON.parse(req.params.keyword_filter_array), JSON.parse(req.params.name_filter_array), req.params.begin_date, req.params.end_date, req.params.algorithm_selection, req.params.author_correlation, req.params.aggregation, req.params.keyword_correlation, req.params.numberOfTopics, req.params.numberOfKeywords , function(result){
 		if (tempSent ==0){
 			res.send(result);
 			tempSent =1;

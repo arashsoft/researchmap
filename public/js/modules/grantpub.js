@@ -36,9 +36,15 @@ var GRANTPUB = (function () {
 	var analysis_name_filter_inactive = [];
 	var analysis_begin_date = 2003;
 	var analysis_end_date = 2013;
-	var analysis_threshold = 0.13;
-	var analysis_kernel_selection = 0;
+
 	var analysis_algorithm_selection = 'Algorithm1';
+	var analysis_author_correlation = 0;
+	var analysis_aggregation = 0;
+	var analysis_keyword_correlation =0;
+	
+	var analysis_numberOfTopics = 1;
+	var analysis_numberOfKeywords = 3;
+	
 	var analysis_selectedGrant = '';
 	
 	// constructTreemap make these variables and prebuildTreemap use them to build treemaps
@@ -64,6 +70,8 @@ var GRANTPUB = (function () {
 	var boolFilterOthers=true;
 	
 	$(document).ready(function(){
+		//hide algorithm option2
+		$('#optionGroup2').hide();
 		
 		//handlebar implementation
 		$('#verticalText').click(function(){
@@ -98,13 +106,31 @@ var GRANTPUB = (function () {
 		// handle grant-pub analysis box
 		$("input[name='analysisAlgorithm']").on('ifChanged', function(event){
 			analysis_algorithm_selection = $(this)[0].value;
+			if( $(this)[0].value=="Algorithm1" || $(this)[0].value=="Algorithm2"){
+				$('#optionGroup2').hide();
+				$('#optionGroup1').show(1000);
+			}else{
+				$('#optionGroup1').hide();
+				$('#optionGroup2').show(1000);
+			}
 			$("#submitBox").show();
 		});
 		
-		$("input[name='scoreKernel']").on('ifChanged', function(event){
-			analysis_kernel_selection = $(this)[0].value;
+		$("input[name='Aggregation']").on('ifChanged', function(event){
+			analysis_aggregation = $(this)[0].value;
 			$("#submitBox").show();
 		});
+		
+		$("input[name='AuthorCorrelation']").on('ifChanged', function(event){
+			analysis_author_correlation = $(this)[0].value;
+			$("#submitBox").show();
+		});
+		
+		$("input[name='KeywordCorrelation']").on('ifChanged', function(event){
+			analysis_keyword_correlation = $(this)[0].value;
+			$("#submitBox").show();
+		});
+		
 		$("#availableAnalysis").on('ifChecked', function(event){
 			$.get('/grantpub/analysis/activeAwards' , function(result){
 				if (result.command=='redirect'){
@@ -121,13 +147,23 @@ var GRANTPUB = (function () {
 			d3.select("#grantpubContainer").selectAll(".cell.child").classed("activeAnalysis",false);
 		});
 		
-		$("#probabilityFunction").slider({
-			value: 0.13,
-			min: 0.01,
-			max: 0.25,
-			step: 0.01,
+		$("#numberOfTopicsSlider").slider({
+			value: 1,
+			min: 1,
+			max: 3,
+			step: 1,
 			slide: function( event, ui ) {
-				analysis_threshold = ui.value;
+				analysis_numberOfTopics = ui.value;
+				$("#submitBox").show();
+			}
+		});
+		$("#numberOfKeywordsSlider").slider({
+			value: 3,
+			min: 1,
+			max: 5,
+			step: 1,
+			slide: function( event, ui ) {
+				analysis_numberOfKeywords = ui.value;
 				$("#submitBox").show();
 			}
 		});
@@ -1108,7 +1144,8 @@ var GRANTPUB = (function () {
 	
 	// temp function just for making screenshots - hide confidential informations
 	function updateGrantpubRelation2(grantObject){
-		
+
+	
 		analysis_selectedGrant = grantObject;
 		// now we request for analysis fucntion
 		var requestText = '/grantpub/analysis/';
@@ -1117,9 +1154,12 @@ var GRANTPUB = (function () {
 		requestText += JSON.stringify(analysis_name_filter_inactive) + '/';
 		requestText += analysis_begin_date + '/';
 		requestText += analysis_end_date + '/';
-		requestText += analysis_threshold + '/';
-		requestText += analysis_kernel_selection +'/';
-		requestText += analysis_algorithm_selection;
+		requestText += analysis_algorithm_selection + '/';
+		requestText += analysis_author_correlation +'/';
+		requestText += analysis_aggregation +'/';
+		requestText += analysis_keyword_correlation +'/';
+		requestText += analysis_numberOfTopics +'/';
+		requestText += aanalysis_numberOfKeywords;
 		
 		$.get(requestText, function(result) {
 			

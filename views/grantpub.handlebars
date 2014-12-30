@@ -76,34 +76,62 @@
 			<p align="left" class="boxParagraph title">Analytics</p>
 			<div style="border:1px dashed lightgray;">
 				<input type="radio" name="analysisAlgorithm" value="Algorithm1" checked>
-				<p class="boxParagraph">Keyword Matching</label>
+				<p class="boxParagraph">Exploration</label>
 			</div>
 			<div style="border:1px dashed lightgray;">
 				<input type="radio" name="analysisAlgorithm" value="Algorithm2">
-				<p class="boxParagraph" >Topic Extraction</label>
-			</div>
-			<br> 
-			<p align="left"  class="boxParagraph title">Aggregation</p>
-			<div style="border:1px dashed lightgray;">
-				<input type="radio" name="scoreKernel" value="0" checked>
-				<p class="boxParagraph">Uniform</label>
+				<p class="boxParagraph" >Keyword Matching</label>
 			</div>
 			<div style="border:1px dashed lightgray;">
-				<input type="radio" name="scoreKernel" value="1">
-				<p class="boxParagraph">Weighted</label>
+				<input type="radio" name="analysisAlgorithm" value="Algorithm3">
+				<p class="boxParagraph" >Topic Modelling</label>
 			</div>
 			<br>
-			<br>
-			<p align="left" class="boxParagraph title" >Relationship Confidence</p>
-			<p class="boxParagraph" style="color:orange;">Low&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;High</p>
-			<div id="probabilityFunction"></div>
+			<p align="left" class="boxParagraph title">Author Correlation</p>
+				<div style="border:1px dashed lightgray;">
+					<input type="radio" name="AuthorCorrelation" value="0" checked>
+					<p class="boxParagraph">Principal Only</label>
+				</div>
+				<div style="border:1px dashed lightgray;">
+					<input type="radio" name="AuthorCorrelation" value="1">
+					<p class="boxParagraph">All Investigators</label>
+			</div>
+			<p align="left" class="boxParagraph title">Aggregation</p>
+				<div style="border:1px dashed lightgray;">
+					<input type="radio" name="Aggregation" value="0" checked>
+					<p class="boxParagraph">Uniform</label>
+				</div>
+				<div style="border:1px dashed lightgray;">
+					<input type="radio" name="Aggregation" value="1">
+					<p class="boxParagraph">Weighted</label>
+			</div>
+			<div id="optionGroup1">
+				<p align="left" class="boxParagraph title">Keyword Correlation</p>
+				<div style="border:1px dashed lightgray;">
+					<input type="radio" name="KeywordCorrelation" value="0" checked>
+					<p class="boxParagraph">Linear Thresholding</label>
+				</div>
+				<div style="border:1px dashed lightgray;">
+					<input type="radio" name="KeywordCorrelation" value="1">
+					<p class="boxParagraph">Sigmoid Thresholding</label>
+				</div>
+			</div>
+			<div id="optionGroup2">
+				<p align="left" class="boxParagraph title" >Number of Topics</p>
+				<p class="boxParagraph" style="color:orange;">1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3</p>
+				<div id="numberOfTopicsSlider"></div>
+				<br>
+				<p align="left" class="boxParagraph title" >Number of Keywords</p>
+				<p class="boxParagraph" style="color:orange;">1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5</p>
+				<div id="numberOfKeywordsSlider"></div>
+			</div>
 			<br>
 			<p align="left" class="boxParagraph title" >Publications</p>
 			<label id="relationYearText" style="border:0; color:#f6931f; font:bold 14px 'Arimo', sans-serif;">2000 - 2015</label>
 			<div id="relationYearSlider"></div>
 		</div>
 		
-		<div align="center" id="submitBox" class="relationBox" style="position:absolute; top:480px; right:10px; background-color:#FAD9D9; z-index:1; display:none;">
+		<div align="center" id="submitBox" class="relationBox" style="position:absolute; top:480px; right:250px; background-color:#FAD9D9; z-index:1; display:none;">
 			<p class="boxParagraph" style="color:red;">Submit your changes to see the result</p>
 			<button id="grantPubSubmitButton" >Submit</button>
 		</div>
