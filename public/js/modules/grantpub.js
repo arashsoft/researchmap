@@ -874,7 +874,8 @@ var GRANTPUB = (function () {
 			.attr("y2", function(d) { return graph.nodes[d.target].y; })
 			.style("stroke-width", function(d) { return graph.nodes[d.source].size; });
 		
-		var tempR = 300/graph.nodes.length;
+		//var tempR = 300/graph.nodes.length;
+		var tempR = 25;
 		var node = svg.selectAll(".relationNode")
 			.data(graph.nodes)
 			.enter().append("circle")
@@ -1159,7 +1160,7 @@ var GRANTPUB = (function () {
 		requestText += analysis_aggregation +'/';
 		requestText += analysis_keyword_correlation +'/';
 		requestText += analysis_numberOfTopics +'/';
-		requestText += aanalysis_numberOfKeywords;
+		requestText += analysis_numberOfKeywords;
 		
 		$.get(requestText, function(result) {
 			
