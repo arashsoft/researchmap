@@ -867,10 +867,10 @@ var GRANTPUB = (function () {
 		var yStep = 400 / graph.nodes.length;
 		for (var i = 1 ; i < graph.nodes.length; i++){
 			if (graph.nodes[i].name2 > tempBeginDate ){
-				graph.nodes[i].x = (width/2)+45+ (graph.nodes[i].name2-tempBeginDate)* rightstep;
+				graph.nodes[i].x = (width/2)+60+ (graph.nodes[i].name2-tempBeginDate)* rightstep;
 				graph.nodes[i].y = 75+ i* yStep;
 			}else{
-				graph.nodes[i].x = (width/2)-45 - (tempBeginDate-graph.nodes[i].name2)* leftstep;
+				graph.nodes[i].x = (width/2)-60 - (tempBeginDate-graph.nodes[i].name2)* leftstep;
 				graph.nodes[i].y = 75 + i* yStep;
 			}
 			
@@ -1068,7 +1068,7 @@ var GRANTPUB = (function () {
     }
 	}
 		
-	// grants highliter functions
+	// grants highlighter functions
 	function departmentGrantClick(myGrant){
 		d3.select('#rightTreemap').selectAll('.cell.child').filter(function(d){return d.Proposal == myGrant.__data__.Proposal;}).classed('highlighted', true);
 	}
@@ -1085,75 +1085,6 @@ var GRANTPUB = (function () {
 		d3.select("#leftTreemap").selectAll(".cell.child").filter(function(d){return d.PgmName ==myProgram.__data__.name;}).classed('highlighted',true);
 	}
 	
-	/*
-		old code
-	function updateGrantpubRelation(myGrant){
-		
-		// Clean keywords and add new ones:
-		$("#keywordBox").empty();
-		var myKeywords= myGrant.Keyword.split(",");
-		for (var i=0;i<myKeywords.length;i++)
-		{
-			$("#keywordBox").append('<div class="keywordText active">' + myKeywords[i] + '</div>');
-		}
-		$(".keywordText").click(function(){
-			if ($(this).hasClass("active")==true){
-				$(this).removeClass("active").addClass('inactive');
-			}else{
-				$(this).removeClass("inactive").addClass('active');
-			}
-		});
-		
-		// show grant data :
-		$("#grantTitle").text("Grant title: "+myGrant.Title);
-		$("#grantAmount").text("Amount: "+myGrant.RequestAmt);
-		$("#grantDepartment").text("Department: "+myGrant.Department);
-		$("#grantSponsor").text("Sponsor: "+myGrant.Sponsor);
-		$("#grantProgram").text("Program: "+myGrant.PgmName);
-		$("#grantBeginDate").text("Begin date: "+myGrant.BeginDate);
-		$("#grantEndDate").text("End date: "+myGrant.EndDate);
-	
-		// TODO: add investigators
-		
-		// check if selected grant is accepted or not
-		$("#notAcceptedGrant").hide();
-		if (!(myGrant.ProposalStatus == "Accepted" || myGrant.ProposalStatus == "Closed")){
-			$("#notAcceptedGrant").show();
-			$("#relationSVG").hide();
-			// set years to 0-0
-			$("#relationYearSlider").slider({
-				range: true,
-				values: [0, 0 ],
-				min: 0,
-				max: 0,
-				step: 0,
-			});			
-			$( "#relationYearText" ).text("0 - 0");
-			return;
-		}
-		$("#relationSVG").show();
-		
-		// set years
-		var startYear = myGrant.BeginDate.substring(0,4)-5;
-		var endYear = parseInt(myGrant.EndDate.substring(0,4))+5;
-		$( "#relationYearText" ).text( startYear + " - " + endYear );
-		$("#relationYearSlider").slider({
-			range: true,
-			values: [startYear, endYear ],
-			min: startYear,
-			max: endYear,
-			step: 1,
-			slide: function( event, ui ) {
-				$( "#relationYearText" ).text( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
-				// TODO: update relation graph
-			}
-		});
-			
-		// TODO: show progress bar
-		// TODO: call arman function
-
-	}
-	*/
 	
 	// temp function just for making screenshots - hide confidential informations
 	function updateGrantpubRelation2(grantObject){
