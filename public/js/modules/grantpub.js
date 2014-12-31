@@ -852,7 +852,7 @@ var GRANTPUB = (function () {
 		
 		
 		for (var i = 0 ; i < myData["_relatedPublicationsList"].length; i++){
-			var size = myData["_relatedPublicationsList"][i]._radius/4;
+			var size = myData["_relatedPublicationsList"][i]._radius/4 + 0.5;
 			graph.nodes.push({
 				"name": "Publication",
 				"name2": myData["_relatedPublicationsList"][i]._year,
@@ -867,10 +867,10 @@ var GRANTPUB = (function () {
 		var yStep = 400 / graph.nodes.length;
 		for (var i = 1 ; i < graph.nodes.length; i++){
 			if (graph.nodes[i].name2 > tempBeginDate ){
-				graph.nodes[i].x = (width/2)+60+ (graph.nodes[i].name2-tempBeginDate)* rightstep;
+				graph.nodes[i].x = (width/2)+70+ (graph.nodes[i].name2-tempBeginDate)* rightstep;
 				graph.nodes[i].y = 75+ i* yStep;
 			}else{
-				graph.nodes[i].x = (width/2)-60 - (tempBeginDate-graph.nodes[i].name2)* leftstep;
+				graph.nodes[i].x = (width/2)-70 - (tempBeginDate-graph.nodes[i].name2)* leftstep;
 				graph.nodes[i].y = 75 + i* yStep;
 			}
 			
@@ -887,12 +887,12 @@ var GRANTPUB = (function () {
 			.style("stroke-width", function(d) { return graph.nodes[d.source].size; });
 		
 		//var tempR = 300/graph.nodes.length;
-		var tempR = 25;
+		var tempR = 15;
 		var node = svg.selectAll(".relationNode")
 			.data(graph.nodes)
 			.enter().append("circle")
 			.attr("class", "relationNode")
-			.attr("r", function(d){return d.group==1? 40: tempR})
+			.attr("r", function(d){return d.group==1? 30: tempR})
 			.style("fill", function(d) { return d.group==1? "lightblue":"lightgreen"})
 			.attr("cx", function(d) { return d.x; })
 			.attr("cy", function(d) { return d.y; });
