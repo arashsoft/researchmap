@@ -41,6 +41,7 @@ var GRANTPUB = (function () {
 	var analysis_author_correlation = 0;
 	var analysis_aggregation = 0;
 	var analysis_keyword_correlation =0;
+	var analysis_threshold = 0.13;
 	
 	var analysis_numberOfTopics = 1;
 	var analysis_numberOfKeywords = 3;
@@ -145,6 +146,17 @@ var GRANTPUB = (function () {
 		});
 		$("#availableAnalysis").on('ifUnchecked', function(event){
 			d3.select("#grantpubContainer").selectAll(".cell.child").classed("activeAnalysis",false);
+		});
+		
+		$("#probabilityFunction").slider({
+			value: 0.13,
+			min: 0.01,
+			max: 0.25,
+			step: 0.01,
+			slide: function( event, ui ) {
+				analysis_threshold = ui.value;
+				$("#submitBox").show();
+			}
 		});
 		
 		$("#numberOfTopicsSlider").slider({
@@ -439,7 +451,7 @@ var GRANTPUB = (function () {
 							updateGrantpubRelation2(d);
 						}
 						// 700 is grantPubRelation height
-						$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 700 - $(window).height()}, 500);
+						$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 800 - $(window).height()}, 500);
 						
 					});
 					
@@ -1160,7 +1172,8 @@ var GRANTPUB = (function () {
 		requestText += analysis_aggregation +'/';
 		requestText += analysis_keyword_correlation +'/';
 		requestText += analysis_numberOfTopics +'/';
-		requestText += analysis_numberOfKeywords;
+		requestText += analysis_numberOfKeywords +'/';
+		requestText += analysis_threshold;
 		
 		$.get(requestText, function(result) {
 			
