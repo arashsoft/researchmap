@@ -450,6 +450,11 @@ var GRANTPUB = (function () {
 						// create the relation layout at bottom
 					})
 					.on("dblclick", function(d) {
+						// reset keywords
+						var analysis_keyword_filter = [];
+						var analysis_keyword_filter_inactive = [];
+						var analysis_name_filter = [];
+						var analysis_name_filter_inactive = [];
 						//check if award is analysable
 						var analysable = false;
 						for ( var i=0 , length = availableAnalysisGrants.length; i< length ; i++){
