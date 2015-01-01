@@ -48,6 +48,7 @@ var GRANTPUB = (function () {
 	
 	var analysis_selectedGrant = '';
 	
+	var availableAnalysisGrants = [];
 	// constructTreemap make these variables and prebuildTreemap use them to build treemaps
 	var sponsorData, departmentData , grant_sponsors;
 		
@@ -73,6 +74,13 @@ var GRANTPUB = (function () {
 	$(document).ready(function(){
 		//hide algorithm option2
 		$('#optionGroup2').hide();
+		
+		$.get('/grantpub/analysis/activeAwards' , function(result){
+			if (result.command=='redirect'){
+				$(location).attr('href',result.path);
+			}
+			availableAnalysisGrants = result._grantList;
+		});
 		
 		//handlebar implementation
 		$('#verticalText').click(function(){
@@ -132,17 +140,12 @@ var GRANTPUB = (function () {
 			$("#submitBox").show();
 		});
 		
-		$("#availableAnalysis").on('ifChecked', function(event){
-			$.get('/grantpub/analysis/activeAwards' , function(result){
-				if (result.command=='redirect'){
-					$(location).attr('href',result.path);
-				}
-				var temp1 = d3.select("#grantpubContainer").selectAll(".cell.child");
-				for ( var i=0 , length = result._grantList.length; i< length ; i++){
-					var proposalNumber = parseInt(result._grantList[i].Proposal);
-					temp1.filter(function(d){return parseInt(d.Proposal)== proposalNumber}).classed("activeAnalysis",true);
-				}
-			});
+		$("#availableAnalysis").on('ifChecked', function(event){	
+			var temp1 = d3.select("#grantpubContainer").selectAll(".cell.child");
+			for ( var i=0 , length = availableAnalysisGrants.length; i< length ; i++){
+				var proposalNumber = parseInt(availableAnalysisGrants[i].Proposal);
+				temp1.filter(function(d){return parseInt(d.Proposal)== proposalNumber}).classed("activeAnalysis",true);
+			}
 		});
 		$("#availableAnalysis").on('ifUnchecked', function(event){
 			d3.select("#grantpubContainer").selectAll(".cell.child").classed("activeAnalysis",false);
@@ -443,16 +446,25 @@ var GRANTPUB = (function () {
 						// create the relation layout at bottom
 					})
 					.on("dblclick", function(d) {
-						// scroll to related area
-						if($("#imgArrow").hasClass('active') == false) {
-							$("#imgArrow").addClass('active').attr('src', '/img/arrowup.png');
-							$('#grantpubRelation').slideDown(500 , function(){updateGrantpubRelation2(d);} );
-						}else{
-							updateGrantpubRelation2(d);
+						//check if award is analysable
+						var analysable = false;
+						for ( var i=0 , length = availableAnalysisGrants.length; i< length ; i++){
+							if (parseInt(d.Proposal)== parseInt(availableAnalysisGrants[i].Proposal)){
+								analysable = true;
+								break;
+							}
 						}
-						// 700 is grantPubRelation height
-						$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 800 - $(window).height()}, 500);
-						
+						if (analysable){
+							// scroll to related area
+							if($("#imgArrow").hasClass('active') == false) {
+								$("#imgArrow").addClass('active').attr('src', '/img/arrowup.png');
+								$('#grantpubRelation').slideDown(500 , function(){updateGrantpubRelation2(d);} );
+							}else{
+								updateGrantpubRelation2(d);
+							}
+							// 700 is grantPubRelation height
+							$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 800 - $(window).height()}, 500);
+						}
 					});
 					
 		 childCells.append("rect")
