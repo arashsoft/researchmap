@@ -84,7 +84,7 @@
 			<br>
 			<p align="left" class="boxParagraph title">Analytics</p>
 			<div style="border:1px dashed lightgray;">
-				<input type="radio" name="analysisAlgorithm" value="Algorithm1" checked>
+				<input type="radio" name="analysisAlgorithm" value="Algorithm1">
 				<p class="boxParagraph">Exploration</label>
 			</div>
 			<div style="border:1px dashed lightgray;">
@@ -96,7 +96,8 @@
 				<p class="boxParagraph" >Topic Modelling</label>
 			</div>
 			<br>
-			<p align="left" class="boxParagraph title">Author Correlation</p>
+			<div id="optionShared">
+				<p align="left" class="boxParagraph title">Author Correlation</p>
 				<div style="border:1px dashed lightgray;">
 					<input type="radio" name="AuthorCorrelation" value="0" checked>
 					<p class="boxParagraph">Principal Only</label>
@@ -104,8 +105,8 @@
 				<div style="border:1px dashed lightgray;">
 					<input type="radio" name="AuthorCorrelation" value="1">
 					<p class="boxParagraph">All Investigators</label>
-			</div>
-			<p align="left" class="boxParagraph title">Aggregation</p>
+				</div>
+				<p align="left" class="boxParagraph title">Aggregation</p>
 				<div style="border:1px dashed lightgray;">
 					<input type="radio" name="Aggregation" value="0" checked>
 					<p class="boxParagraph">Uniform</label>
@@ -113,6 +114,7 @@
 				<div style="border:1px dashed lightgray;">
 					<input type="radio" name="Aggregation" value="1">
 					<p class="boxParagraph">Weighted</label>
+				</div>
 			</div>
 			<div id="optionGroup1">
 				<p align="left" class="boxParagraph title">Keyword Correlation</p>
