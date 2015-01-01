@@ -1014,11 +1014,6 @@ var GRANTPUB = (function () {
     xscale.domain([d.x, d.x + d.dx]);
     yscale.domain([d.y, d.y + d.dy]);
 
-    // if (node != level) {
-    //     //treemapsvg.selectAll(".cell.child .celllabel").style("display", "none");
-    //     console.log("hahahhah");
-    // }
-
     var zoomTransition = treemapsvg.selectAll("g.cell")
 				.transition().duration(transitionDuration)
             .attr("transform", function(d) {
@@ -1113,7 +1108,7 @@ var GRANTPUB = (function () {
 			}
 			// Clean grant keywords and add new ones:
 			$("#grantKeywordBox").empty();
-			var grantKeywords = grantObject.Keyword.split(' ');
+			var grantKeywords = result.analyzed_award._awardKeywords;
 			for (var i=0;i< grantKeywords.length;i++){
 				$("#grantKeywordBox").append('<div class="boxParagraph">' + grantKeywords[i] + '</div>');
 			}
