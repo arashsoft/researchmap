@@ -841,6 +841,7 @@ var GRANTPUB = (function () {
 	// create relation layout
 	function constructRelation(myData , grantObject){
 		// do not show awards for null begin-date
+		d3.select("#grantpubRelation").select("svg").remove();
 		if(grantObject.BeginDate==""){
 			return;
 		}
@@ -852,7 +853,6 @@ var GRANTPUB = (function () {
 
 		// 550 is height
 
-		d3.select("#grantpubRelation").select("svg").remove();
 		var svg = d3.select("#grantpubRelation").append("svg")
 			 .attr("width", width)
 			 .attr("height", height)
@@ -1101,7 +1101,9 @@ var GRANTPUB = (function () {
 	// temp function just for making screenshots - hide confidential informations
 	function updateGrantpubRelation2(grantObject){
 
-	
+		// clean screen everytime
+		d3.select("#grantpubRelation").select("svg").remove();
+		
 		analysis_selectedGrant = grantObject;
 		// now we request for analysis fucntion
 		var requestText = '/grantpub/analysis/';
