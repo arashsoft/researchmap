@@ -470,7 +470,7 @@ var GRANTPUB = (function () {
 							$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 800 - $(window).height()}, 500);
 						}else{
 							// it means award was not analysable
-							if (analysable){
+							
 							// scroll to related area
 							if($("#imgArrow").hasClass('active') == false) {
 								$("#imgArrow").addClass('active').attr('src', '/img/arrowup.png');
@@ -480,9 +480,6 @@ var GRANTPUB = (function () {
 							}
 							// 700 is grantPubRelation height
 							$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 800 - $(window).height()}, 500);
-						}
-						
-						
 						}
 					});
 					
