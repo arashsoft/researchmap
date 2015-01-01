@@ -1164,10 +1164,12 @@ var GRANTPUB = (function () {
 			
 			// Clean authors and add new ones;
 			$("#authorBox").empty();
-			analysis_name_filter = result["_coAuthorsList"];
+			for (var i=0, length = result["_coAuthorsList"].length; i < length ;i++){
+				analysis_name_filter.push (result["_coAuthorsList"][i].name);
+			}
 			for (var i=0;i< result["_coAuthorsList"].length;i++)
 			{
-				$("#authorBox").append('<div class="keywordText author active" name="'+result["_coAuthorsList"][i] +'">' + result["_coAuthorsList"][i] + '</div>');
+				$("#authorBox").append('<div class="keywordText author active" name="'+result["_coAuthorsList"][i].name +'">' + result["_coAuthorsList"][i] + '</div>');
 			}
 			// inactive authors
 			analysis_name_filter_inactive = result['_inactiveCoAuthorsList'];
