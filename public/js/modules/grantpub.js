@@ -1120,7 +1120,7 @@ var GRANTPUB = (function () {
 			}
 			// Clean grant keywords and add new ones:
 			$("#grantKeywordBox").empty();
-			var grantKeywords = result.analyzed_award._awardKeywords;
+			var grantKeywords = result._awardKeywords;
 			for (var i=0;i< grantKeywords.length;i++){
 				$("#grantKeywordBox").append('<div class="boxParagraph">' + grantKeywords[i] + '</div>');
 			}
