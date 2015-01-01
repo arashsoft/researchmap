@@ -1169,7 +1169,7 @@ var GRANTPUB = (function () {
 			$("#grantKeywordBox").empty();
 			var grantKeywords = result._awardKeywords;
 			for (var i=0;i< grantKeywords.length;i++){
-				$("#grantKeywordBox").append('<div class="boxParagraph" style="float:left">' + grantKeywords[i] + ', </div>');
+				$("#grantKeywordBox").append('<div class="boxParagraph" style="float:left">' + grantKeywords[i] + ',&nbsp;</div>');
 			}
 			// Clean pub keywords and add new ones;
 			$("#pubKeywordBox").empty();
