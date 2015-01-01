@@ -1103,6 +1103,8 @@ var GRANTPUB = (function () {
 
 		// clean screen everytime
 		d3.select("#grantpubRelation").select("svg").remove();
+		$("#authorBox").empty();
+		$("#pubKeywordBox").empty();
 		
 		analysis_selectedGrant = grantObject;
 		// now we request for analysis fucntion
