@@ -1118,6 +1118,19 @@ var GRANTPUB = (function () {
 			if (result.command=="redirect"){
 				$(location).attr('href',result.path);
 			}
+			if (result._error){
+				if (result._note){
+					$('#analysisErrorMessage').text(result._note);
+				}else{
+					$('#analysisErrorMessage').text('Analysis had some errors');
+				}
+				$('#analysisError').show();
+				var tempLeft =  $('#grantpubRelation').width()/2 - $('#analysisError').width()/2;
+				$('#analysisError').css('left',tempLeft);
+				return;
+			}else{
+				$('#analysisError').hide();
+			}
 			// Clean grant keywords and add new ones:
 			$("#grantKeywordBox").empty();
 			var grantKeywords = result._awardKeywords;
