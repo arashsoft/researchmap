@@ -885,11 +885,18 @@ var GRANTPUB = (function () {
 		
 		
 		for (var i = 0 ; i < myData["_relatedPublicationsList"].length; i++){
+			var tempAuthor = "";
+			for (var j=0; j< myData["_relatedPublicationsList"][i]._authors.length ; j++){
+				tempAuthor += myData["_relatedPublicationsList"][i]._authors[j]._fullName + ", ";
+			}
+		
 			var size = myData["_relatedPublicationsList"][i]._radius/4 + 0.5;
 			graph.nodes.push({
 				"name": "Publication",
 				"name2": myData["_relatedPublicationsList"][i]._year,
 				"group": 2,
+				"author": tempAuthor,
+				"title": myData["_relatedPublicationsList"][i]._title,
 				"size": size});
 			graph.links.push({"source":i+1,"target":0,"value":3});
 			//+(size-29)/20
@@ -932,7 +939,7 @@ var GRANTPUB = (function () {
 			
 			
 		node.append("title")
-			.text(function(d) {return d.group==1? d.name: "Type: "+d.name+"\nYear: " + d.name2; });
+			.text(function(d) {return d.group==1? d.name: "Title: "+d.title+"\nYear: " + d.name2 +"\nAuthors: "+d.author; });
 		/*
 		var text = svg.selectAll(".relationText").data(graph.nodes)
 			.enter().append("text")
