@@ -912,7 +912,7 @@ var GRANTPUB = (function () {
 			
 		node.append("title")
 			.text(function(d) {return d.group==1? d.name: "Type: "+d.name+"\nYear: " + d.name2; });
-		
+		/*
 		var text = svg.selectAll(".relationText").data(graph.nodes)
 			.enter().append("text")
 			.attr("class", "relationText")
@@ -920,6 +920,7 @@ var GRANTPUB = (function () {
 			.attr("y", function(d){return d.y;})
 			.attr("fill","black")
 			.text(function(d){return d.group==1?d.name:"";});
+		*/
 	}
 	
 	// check for filters
