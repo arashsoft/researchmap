@@ -468,6 +468,21 @@ var GRANTPUB = (function () {
 							}
 							// 700 is grantPubRelation height
 							$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 800 - $(window).height()}, 500);
+						}else{
+							// it means award was not analysable
+							if (analysable){
+							// scroll to related area
+							if($("#imgArrow").hasClass('active') == false) {
+								$("#imgArrow").addClass('active').attr('src', '/img/arrowup.png');
+								$('#grantpubRelation').slideDown(500 , function(){updateGrantpubRelation2("not analysable");} );
+							}else{
+								updateGrantpubRelation2("not analysable");
+							}
+							// 700 is grantPubRelation height
+							$("html, body").animate({ scrollTop: $("#grantpubRelation").offset().top + 800 - $(window).height()}, 500);
+						}
+						
+						
 						}
 					});
 					
@@ -1105,6 +1120,14 @@ var GRANTPUB = (function () {
 		d3.select("#grantpubRelation").select("svg").remove();
 		$("#authorBox").empty();
 		$("#pubKeywordBox").empty();
+		
+		if (grantObject=="not analysable"){
+			$('#analysisErrorMessage').text('Your selected award is not analysable');
+			$('#analysisError').show();
+			var tempLeft =  $('#grantpubRelation').width()/2 - $('#analysisError').width()/2;
+			$('#analysisError').css('left',tempLeft);
+			return;
+		}
 		
 		analysis_selectedGrant = grantObject;
 		// now we request for analysis fucntion
