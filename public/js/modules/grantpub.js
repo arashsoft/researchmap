@@ -1169,7 +1169,7 @@ var GRANTPUB = (function () {
 			}
 			for (var i=0;i< result["_coAuthorsList"].length;i++)
 			{
-				$("#authorBox").append('<div class="keywordText author active" name="'+result["_coAuthorsList"][i].name +'">' + result["_coAuthorsList"][i] + '</div>');
+				$("#authorBox").append('<div class="keywordText author active" name="'+result["_coAuthorsList"][i].name +'">' + result["_coAuthorsList"][i].name + '</div>');
 			}
 			// inactive authors
 			for (var i=0, length = result["_inactiveCoAuthorsList"].length; i < length ;i++){
