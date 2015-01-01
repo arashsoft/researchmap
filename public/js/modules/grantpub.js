@@ -1165,17 +1165,19 @@ var GRANTPUB = (function () {
 			// Clean authors and add new ones;
 			$("#authorBox").empty();
 			for (var i=0, length = result["_coAuthorsList"].length; i < length ;i++){
-				analysis_name_filter.push (result["_coAuthorsList"][i].name);
+				analysis_name_filter.push(result["_coAuthorsList"][i].name);
 			}
 			for (var i=0;i< result["_coAuthorsList"].length;i++)
 			{
 				$("#authorBox").append('<div class="keywordText author active" name="'+result["_coAuthorsList"][i].name +'">' + result["_coAuthorsList"][i] + '</div>');
 			}
 			// inactive authors
-			analysis_name_filter_inactive = result['_inactiveCoAuthorsList'];
+			for (var i=0, length = result["_inactiveCoAuthorsList"].length; i < length ;i++){
+				analysis_name_filter_inactive.push(result["_inactiveCoAuthorsList"][i].name);
+			}
 			for (var i=0;i< result["_inactiveCoAuthorsList"].length;i++)
 			{
-				$(".keywordText.author.active:contains('"+ result["_inactiveCoAuthorsList"][i] +"')").removeClass("active").addClass("inactive");
+				$(".keywordText.author.active:contains('"+ result["_inactiveCoAuthorsList"][i].name +"')").removeClass("active").addClass("inactive");
 			}
 			
 			// add onclick event (toggle active - inactive )
