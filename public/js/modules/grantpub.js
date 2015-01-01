@@ -116,7 +116,7 @@ var GRANTPUB = (function () {
 		$("#yearText").text( $("#yearSlider").slider( "values", 0 ) + " - " + $( "#yearSlider" ).slider( "values", 1 ) );
 		
 		// handle grant-pub analysis box
-		$("input[name='analysisAlgorithm']").on('ifChanged', function(event){
+		$("input[name='analysisAlgorithm']").on('ifClicked', function(event){
 			analysis_algorithm_selection = $(this)[0].value;
 			$('#optionShared').show(1000);
 			if( $(this)[0].value=="Algorithm1" || $(this)[0].value=="Algorithm2"){
