@@ -453,6 +453,7 @@ var GRANTPUB = (function () {
 						// create the relation layout at bottom
 					})
 					.on("dblclick", function(d) {
+						$("#submitBox").show();
 						// reset keywords
 						analysis_keyword_filter = [];
 						analysis_keyword_filter_inactive = [];
