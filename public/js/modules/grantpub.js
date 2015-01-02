@@ -1211,6 +1211,7 @@ var GRANTPUB = (function () {
 			
 			// Clean authors and add new ones;
 			$("#authorBox").empty();
+			analysis_name_filter = [];
 			for (var i=0, length = result["_coAuthorsList"].length; i < length ;i++){
 				analysis_name_filter.push(result["_coAuthorsList"][i].name);
 			}
@@ -1219,6 +1220,7 @@ var GRANTPUB = (function () {
 				$("#authorBox").append('<div class="keywordText author active" name="'+result["_coAuthorsList"][i].name +'">' + result["_coAuthorsList"][i].name + '</div>');
 			}
 			// inactive authors
+			analysis_name_filter_inactive = [];
 			for (var i=0, length = result["_inactiveCoAuthorsList"].length; i < length ;i++){
 				analysis_name_filter_inactive.push(result["_inactiveCoAuthorsList"][i].name);
 			}
