@@ -117,7 +117,7 @@ var GRANTPUB = (function () {
 		
 		// handle grant-pub analysis box
 		$("input[name='analysisAlgorithm']").on('ifClicked', function(event){
-			if (analysis_algorithm_selection != $(this)[0].value;){
+			if (analysis_algorithm_selection != $(this)[0].value){
 				$("#submitBox").show();
 			}
 			analysis_algorithm_selection = $(this)[0].value;
