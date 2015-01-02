@@ -1187,6 +1187,10 @@ var GRANTPUB = (function () {
 			}
 			// Clean pub keywords and add new ones;
 			$("#pubKeywordBox").empty();
+			// add inactive ones to active list and get the last 10 ones
+			for (var i=0;i < result["_inactiveKeywordsList"].length;i++){
+				result['_addedKeywordsList'].concat({"word":result["_inactiveKeywordsList"][i]});
+			}
 			var tempKeywords = result['_addedKeywordsList'];
 			var tempLength = result['_addedKeywordsList'].length;
 			if ( tempLength > 10){
