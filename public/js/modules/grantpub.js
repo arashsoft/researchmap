@@ -117,6 +117,9 @@ var GRANTPUB = (function () {
 		
 		// handle grant-pub analysis box
 		$("input[name='analysisAlgorithm']").on('ifClicked', function(event){
+			if (analysis_algorithm_selection != $(this)[0].value;){
+				$("#submitBox").show();
+			}
 			analysis_algorithm_selection = $(this)[0].value;
 			$('#optionShared').show(1000);
 			if( $(this)[0].value=="Algorithm1" || $(this)[0].value=="Algorithm2"){
@@ -126,7 +129,7 @@ var GRANTPUB = (function () {
 				$('#optionGroup1').hide();
 				$('#optionGroup2').show(1000);
 			}
-			$("#submitBox").show();
+			
 		});
 		
 		$("input[name='Aggregation']").on('ifChanged', function(event){
