@@ -76,8 +76,8 @@ var GRANTPUB = (function () {
 		$('#optionGroup2').hide();
 		$('#optionGroup1').hide();
 		$('#optionShared').hide();
-		
-		
+		$('#optionShared2').hide();
+	
 		$.get('/grantpub/analysis/activeAwards' , function(result){
 			if (result.command=='redirect'){
 				$(location).attr('href',result.path);
@@ -122,6 +122,7 @@ var GRANTPUB = (function () {
 			}
 			analysis_algorithm_selection = $(this)[0].value;
 			$('#optionShared').show(1000);
+			$('#optionShared2').show(1000);
 			if( $(this)[0].value=="Algorithm1" || $(this)[0].value=="Algorithm2"){
 				$('#optionGroup2').hide();
 				$('#optionGroup1').show(1000);
