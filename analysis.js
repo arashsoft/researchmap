@@ -441,6 +441,14 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				        });
 					});
 					_.delay(function() {
+						/*var temp = new Array();
+						analyzed_award._relatedPublicationsList.forEach(function(publication) {
+							publication._authors.forEach(function(author) {
+								temp.push(author._fullName);
+							});
+						});
+
+						console.log(_.uniq(temp).sort());*/
 						callback();
 					}, 1000);
 				}
@@ -884,24 +892,35 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 							//if no keyword match exists
 							if(weight <= 0) {
 								publication._radius2 = _MIN1;
+								publication._radius1 = _MIN1;
 							}
 							else {
 								if(keyword_correlation == 0) {
 									//// ***SIMPLE LINEAR THRESHOLDING***
-									if(weight >= threshold) {
+									if(weight >= (4*threshold)) {
 										publication._radius2 = weight * 50;
 									}
 									else {
 										publication._radius2 = _MIN2;
+										publication._radius1 = _MIN2;
 									}
 								}
 								else if(keyword_correlation == 1) {
 									//// ***SIGMOID THRESHOLDING***
-									var temp = 50 * (sigmoid(weight - (4*threshold)));
-									publication._radius2 = (temp > _MIN2) ? temp : _MIN2;
+									var temp = 50 * ((2 * (1.01 - (4*threshold))) * sigmoid(weight - (4*threshold)));
+									//console.log("temp: " + temp);
+									// publication._radius2 = (temp > _MIN2) ? temp : _MIN2;
+									publication._radius2 = (temp > 50) ? 50 : temp;
+									//publication._radius2 = temp;
 								}
 			 				
 							}
+							/*console.log("match_count: " + match_count);
+							console.log("weight: " + weight);
+							console.log("threshold: " + threshold);
+							console.log("_radius1: " + publication._radius1);
+							console.log("_radius2: " + publication._radius2);*/
+							console.log();
 						});
 
 						callback();
@@ -940,7 +959,8 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 							//if no keyword match exists
 							if(weight <= 0) {
 								publication._radius2 = 0;
-								publication._active = false;
+								publication._radius1 = _MIN1;
+								// publication._active = false;
 							}
 							else {
 								if(keyword_correlation == 0) {
@@ -950,12 +970,14 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 									}
 									else {
 										publication._radius2 = _MIN2;
+									publication._radius1 = _MIN2;
 									}
 								}
 								else if(keyword_correlation == 1) {
 									//// ***SIGMOID THRESHOLDING***
-									var temp = 50 * (sigmoid(weight - (4*threshold)));
-									publication._radius2 = (temp > _MIN2) ? temp : _MIN2;
+									var temp = 50 * ((2 * (1.01 - (4*threshold))) * sigmoid(weight - (4*threshold)));
+									// publication._radius2 = (temp > _MIN2) ? temp : _MIN2;
+									publication._radius2 = (temp > 50) ? 50 : temp;
 								}
 			 				
 							}
@@ -1102,7 +1124,7 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//calculate radius
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
+				console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -1179,6 +1201,35 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 	        		return;*/
 				}
 			}
+		},
+
+		//check if we still have any other publications
+		function(callback) {
+			if(analyzed_award._error){
+				//console.log("analyzed award has an error: " + analyzed_award._note);
+				myfunction(analyzed_award);
+				return;
+			}
+			else {
+				if(_.size(analyzed_award._relatedPublicationsList) < 1) {
+					analyzed_award._error = 0;
+	        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
+	        		analyzed_award._inactiveKeywordsList = keyword_filter_array;
+	        		var temp_list = new Array();
+	        		_.uniq(name_filter_array).forEach(function(name) {
+	        			var temp = new Object();
+	        			temp.name = name;
+	        			temp.frequency = 0;
+	        			temp_list.push(temp);
+	        		});
+	        		analyzed_award._coAuthorsList = temp_list;
+	        		analyzed_award._inactiveCoAuthorsList = temp_list;
+	        		myfunction(analyzed_award);
+	        		return;
+				}
+			}
+
+			callback();
 		},
 
 		//create final list of co-authors
@@ -1276,6 +1327,7 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 			return;
 		}
 		else {
+			//console.log(analyzed_award._relatedPublicationsList);
 			myfunction(analyzed_award);
 			return;
 		}
