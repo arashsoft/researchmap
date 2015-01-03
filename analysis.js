@@ -78,18 +78,13 @@ exports.calculate_analyzable_grants = function calculate_analyzable_grants(callb
             	result.forEach(function(record) {
               		analyzable_grants._grantList.push(record);
             	});
-            	// console.log(_.size(analyzable_grants._grantList) + " awards returned for further analysis");
+            	console.log(_.size(analyzable_grants._grantList) + " awards returned for further analysis");
             	callback(analyzable_grants);
           	}
         }
 	});
 }
 
-    //@param begin_date and end_date numbers in the form of 2014
-    //@param threshold value that is used as part of the analysis, between 0.01 and 0.25 is a natural choice
-    //@param kernel_selection takes only values 0 or 1
-    //@param algorithm_selection takes only values "Algorithm1" or "Algorithm2"
-		
 exports.award_relationship_extractor =  function award_relationship_extractor(proposal_ID, keyword_filter_array, name_filter_array, begin_date, end_date, algorithm_selection, author_correlation, aggregation, keyword_correlation, number_topics, number_keywords, threshold , myfunction){
 	//GLOBAL VARIABLES
 	var _stopWords=['a','able','about','above','abroad','according','accordingly','across','actually','adj','after','afterwards','again','against','ago','ahead','aint','all','allow','allows','almost','alone','along','alongside','already','also','although','always','am','amid','amidst','among','amongst','an','and','another','any','anybody','anyhow','anyone','anything','anyway','anyways','anywhere','apart','appear','appreciate','appropriate','are','arent','around','as','as','aside','ask','asking','associated','at','available','away','awfully','b','back','backward','backwards','be','became','because','become','becomes','becoming','been','before','beforehand','begin','behind','being','believe','below','beside','besides','best','better','between','beyond','both','brief','but','by','c','came','can','cannot','cant','cant','caption','cause','causes','certain','certainly','changes','clearly','cmon','co','co.','com','come','comes','concerning','consequently','consider','considering','contain','containing','contains','corresponding','could','couldnt','course','cs','currently','d','dare','darent','definitely','described','despite','did','didnt','different','directly','do','does','doesnt','doing','done','dont','down','downwards','during','e','each','edu','eg','eight','eighty','either','else','elsewhere','end','ending','enough','entirely','especially','et','etc','even','ever','evermore','every','everybody','everyone','everything','everywhere','ex','exactly','example','except','f','fairly','far','farther','few','fewer','fifth','first','five','followed','following','follows','for','forever','former','formerly','forth','forward','found','four','from','further','furthermore','g','get','gets','getting','given','gives','go','goes','going','gone','got','gotten','greetings','h','had','hadnt','half','happens','hardly','has','hasnt','have','havent','having','he','hed','hell','hello','help','hence','her','here','hereafter','hereby','herein','heres','hereupon','hers','herself','hes','hi','him','himself','his','hither','hopefully','how','howbeit','however','hundred','i','id','ie','if','ignored','ill','im','immediate','in','inasmuch','inc','inc.','indeed','indicate','indicated','indicates','inner','inside','insofar','instead','into','inward','is','isnt','it','itd','itll','its','its','itself','ive','j','just','k','keep','keeps','kept','know','known','knows','l','last','lately','later','latter','latterly','least','less','lest','let','lets','like','liked','likely','likewise','little','look','looking','looks','low','lower','ltd','m','made','mainly','make','makes','many','may','maybe','maynt','me','mean','meantime','meanwhile','merely','might','mightnt','mine','minus','miss','more','moreover','most','mostly','mr','mrs','much','must','mustnt','my','myself','n','name','namely','nd','near','nearly','necessary','need','neednt','needs','neither','never','neverf','neverless','nevertheless','new','next','nine','ninety','no','nobody','non','none','nonetheless','noone','no-one','nor','normally','not','nothing','notwithstanding','novel','now','nowhere','o','obviously','of','off','often','oh','ok','okay','old','on','once','one','ones','ones','only','onto','opposite','or','other','others','otherwise','ought','oughtnt','our','ours','ourselves','out','outside','over','overall','own','p','particular','particularly','past','per','perhaps','placed','please','plus','possible','presumably','probably','provided','provides','q','que','quite','qv','r','rather','rd','re','really','reasonably','recent','recently','regarding','regardless','regards','relatively','respectively','right','round','s','said','same','saw','say','saying','says','second','secondly','see','seeing','seem','seemed','seeming','seems','seen','self','selves','sensible','sent','serious','seriously','seven','several','shall','shant','she','shed','shell','shes','should','shouldnt','since','six','so','some','somebody','someday','somehow','someone','something','sometime','sometimes','somewhat','somewhere','soon','sorry','specified','specify','specifying','still','sub','such','sup','sure','t','take','taken','taking','tell','tends','th','than','thank','thanks','thanx','that','thatll','thats','thats','thatve','the','their','theirs','them','themselves','then','thence','there','thereafter','thereby','thered','therefore','therein','therell','therere','theres','theres','thereupon','thereve','these','they','theyd','theyll','theyre','theyve','thing','things','think','third','thirty','this','thorough','thoroughly','those','though','three','through','throughout','thru','thus','till','to','together','too','took','toward','towards','tried','tries','truly','try','trying','ts','twice','two','u','un','under','underneath','undoing','unfortunately','unless','unlike','unlikely','until','unto','up','upon','upwards','us','use','used','useful','uses','using','usually','v','value','various','versus','very','via','viz','vs','w','want','wants','was','wasnt','way','we','wed','welcome','well','well','went','were','were','werent','weve','what','whatever','whatll','whats','whatve','when','whence','whenever','where','whereafter','whereas','whereby','wherein','wheres','whereupon','wherever','whether','which','whichever','while','whilst','whither','who','whod','whoever','whole','wholl','whom','whomever','whos','whose','why','will','willing','wish','with','within','without','wonder','wont','would','wouldnt','x','y','yes','yet','you','youd','youll','your','youre','yours','yourself','yourselves','youve','z','zero'];
@@ -128,7 +123,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//check award status and create the object "analyzed_award"
 		function(callback) {
 			if(analyzed_award._error) {
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				analyzed_award._note = "Unknown error with the selected award proposal. No further analysis available at the moment.";
 				myfunction(analyzed_award);
 				return;
@@ -142,8 +136,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 
 			            analyzed_award._error = 1;
 			            analyzed_award._note = err;
-						/*myfunction(analyzed_award);
-			            return;*/
 			        }
 	        		else {
 	          			var temp = new Object();
@@ -154,8 +146,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				          	analyzed_award._awardStatus = "Unknown";
 							analyzed_award._error = 1;
 							analyzed_award._note = "Cannot retrieve this award proposal from the database.";
-							/*myfunction(analyzed_award);
-			            	return;*/
 			        	}
 			        	else if(_.size(result) == 1) {
 				            analyzed_award._awardID = result[0].ID;
@@ -180,7 +170,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//retrieve award information
 		function(callback) {
 			if(analyzed_award._error) {
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 		        return;
 			}
@@ -211,7 +200,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//initialize the object and retrieve the investigators
 		function(callback) {
 			if(analyzed_award._error) {
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return ;
 			}
@@ -234,8 +222,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 	        			
 	        				analyzed_award._error = 1;
 							analyzed_award._note = err;
-							/*myfunction(analyzed_award);
-							return;*/
 			            }
 			            else {
 			            	result.forEach(function(record) {
@@ -252,8 +238,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				else {
 					analyzed_award._error = 1;
 	        		analyzed_award._note = "No awards were granted to this award proposal.";
-	        		/*myfunction(analyzed_award);
-	        		return;*/
 				}
 			}
 		},
@@ -261,7 +245,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//retrieve the publications for the investigator(s)
 		function(callback) {
 			if(analyzed_award._error) {
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return ;
 			}
@@ -272,8 +255,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 						console.log("*************************************************************************************************");
 						analyzed_award._error = 1;
 						analyzed_award._note = "No investigators were associated with this award proposal in the database.";
-						/*myfunction(analyzed_award);
-	          			return;*/
 					}
 					else if(_.size(analyzed_award._investigatorsList) == 1) {
 						var investigator = analyzed_award._investigatorsList[0];
@@ -288,8 +269,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 	        			
 	        					analyzed_award._error = 1;
 			                    analyzed_award._note = err;
-								/*myfunction(analyzed_award);
-	                    		return;*/
 				            }
 				            else {
 				            	if(_.size(result) > 0) {
@@ -338,8 +317,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 	        			
 	        					analyzed_award._error = 1;
 	                    		analyzed_award._note = err;
-								/*myfunction(analyzed_award);
-	                    		return;*/
 				            }
 				            else {
 				            	if(_.size(result) > 0) {
@@ -374,8 +351,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 	        	else {
 	      			analyzed_award._error = 1;
 	        		analyzed_award._note = "No awards were granted to this award proposal.";
-					/*myfunction(analyzed_award);
-	        		return;*/
 	        	}
 			}
     	},
@@ -383,7 +358,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
     	//check if we still have any other publications
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -402,7 +376,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
     	//find professor details for the authors of publications
 		function(callback) {
 			if(analyzed_award._error) {
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -417,8 +390,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				            	console.log(err);
 	        					analyzed_award._error = 1;
 		                  		analyzed_award._note = err;
-								/*myfunction(analyzed_award);
-		                  		return;*/
 				            }
 				            else {
 				            	if(_.size(result) > 0) {
@@ -434,29 +405,17 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				            	else {
 				            		analyzed_award._error = 1;
 		                    		analyzed_award._note = "The investigators listed for this proposal have no publication record in our database.";
-									/*myfunction(analyzed_award);
-		                    		return;*/
 		                  		}
 				            }
 				        });
 					});
 					_.delay(function() {
-						/*var temp = new Array();
-						analyzed_award._relatedPublicationsList.forEach(function(publication) {
-							publication._authors.forEach(function(author) {
-								temp.push(author._fullName);
-							});
-						});
-
-						console.log(_.uniq(temp).sort());*/
 						callback();
-					}, 1000);
+					}, 250);
 				}
 				else {
 					analyzed_award._error = 1;
 	        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-					/*myfunction(analyzed_award);
-	    			return;*/
 				}
 			}
     	},
@@ -464,7 +423,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
     	//check authors for being investigators
 		function(callback) {
 			if(analyzed_award._error) {
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -491,17 +449,13 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				else {
 	        		analyzed_award._error = 1;
 	        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-					/*myfunction(analyzed_award);
-	        		return;*/
 	      		}
 			}
 		},
 
 		//calculate radius1
 		function(callback) {
-			//console.log("9: calculate radius1");
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -511,8 +465,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				console.log("*************************************************************************************************");
       			analyzed_award._error = 1;
       			analyzed_award._note = "Wrong entry for the author_correlation!!!   " + author_correlation;
-				/*myfunction(analyzed_award);
-      			return;*/
 			}
 			else {
 				if(_.size(analyzed_award._relatedPublicationsList) > 0) {
@@ -550,8 +502,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				else {
 					analyzed_award._error = 1;
 	        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-					/*myfunction(analyzed_award);
-	        		return;*/
 				}
 			}
 
@@ -561,7 +511,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
     	//extract keywords for publications
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -583,8 +532,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				else {
 					analyzed_award._error = 1;
 	        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-					/*myfunction(analyzed_award);
-	        		return;*/
 				}
 			}
 		},
@@ -594,7 +541,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 			//	(.) set the _active flag to false for the publication that has a specific co-author
 			//	(.) these publications will be removed later on
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -618,8 +564,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 					else {
 						analyzed_award._error = 1;
 		        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-						/*myfunction(analyzed_award);
-		        		return;*/
 					}
 				}
 	      		else {
@@ -633,7 +577,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 			//	(.) set the _active flag to false for the publication that has a specific keyword
 			//	(.) these publications will be removed later on
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -660,8 +603,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 					else {
 						analyzed_award._error = 1;
 	        			analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-						/*myfunction(analyzed_award);
-	        			return;*/
 					}
 				}
       			else {
@@ -674,13 +615,12 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		function(callback) {
 			_.delay(function() {
 					callback();
-				}, 250);
+				}, 100);
 		},
 
 		//filter publications with !publication._active
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -713,7 +653,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//check if we still have any other publications
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -742,7 +681,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//extract keywords and topics for award
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -780,7 +718,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//create addedKeywordsList and sort
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -852,8 +789,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				else {
 					analyzed_award._error = 1;
 	        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-					/*myfunction(analyzed_award);
-	        		return;*/
 				}
 			}
 		},
@@ -861,7 +796,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//calculate radius2
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -908,19 +842,10 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 								else if(keyword_correlation == 1) {
 									//// ***SIGMOID THRESHOLDING***
 									var temp = 50 * ((2 * (1.01 - (4*threshold))) * sigmoid(weight - (4*threshold)));
-									//console.log("temp: " + temp);
-									// publication._radius2 = (temp > _MIN2) ? temp : _MIN2;
 									publication._radius2 = (temp > 50) ? 50 : temp;
-									//publication._radius2 = temp;
 								}
 			 				
 							}
-							/*console.log("match_count: " + match_count);
-							console.log("weight: " + weight);
-							console.log("threshold: " + threshold);
-							console.log("_radius1: " + publication._radius1);
-							console.log("_radius2: " + publication._radius2);*/
-							console.log();
 						});
 
 						callback();
@@ -960,7 +885,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 							if(weight <= 0) {
 								publication._radius2 = 0;
 								publication._radius1 = _MIN1;
-								// publication._active = false;
 							}
 							else {
 								if(keyword_correlation == 0) {
@@ -976,7 +900,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 								else if(keyword_correlation == 1) {
 									//// ***SIGMOID THRESHOLDING***
 									var temp = 50 * ((2 * (1.01 - (4*threshold))) * sigmoid(weight - (4*threshold)));
-									// publication._radius2 = (temp > _MIN2) ? temp : _MIN2;
 									publication._radius2 = (temp > 50) ? 50 : temp;
 								}
 			 				
@@ -1115,8 +1038,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 					console.log("*************************************************************************************************");
 	      			analyzed_award._error = 1;
 	      			analyzed_award._note = "Wrong entry for the algorithm!!!   " + algorithm_selection;
-					/*myfunction(analyzed_award);
-	      			return;*/
 				}
 			}
 		},
@@ -1134,8 +1055,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 					console.log("*************************************************************************************************");
 		          			analyzed_award._error = 1;
 		          			analyzed_award._note = "Wrong entry for the aggregation!!!   " + aggregation;
-							/*myfunction(analyzed_award);
-		          			return;*/
 				}
 				else {
 					if(_.size(analyzed_award._relatedPublicationsList) > 0) {
@@ -1159,8 +1078,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 					else {
 						analyzed_award._error = 1;
 		        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-						/*myfunction(analyzed_award);
-		        		return;*/
 					}
 				}
 
@@ -1171,7 +1088,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//filter publications with !publication._active
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -1197,8 +1113,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 				else {
 					analyzed_award._error = 1;
 	        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-					/*myfunction(analyzed_award);
-	        		return;*/
 				}
 			}
 		},
@@ -1206,7 +1120,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 		//check if we still have any other publications
 		function(callback) {
 			if(analyzed_award._error){
-				//console.log("analyzed award has an error: " + analyzed_award._note);
 				myfunction(analyzed_award);
 				return;
 			}
@@ -1292,15 +1205,12 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 	        		analyzed_award._coAuthorsList.sort(function(a,b) {return a.frequency - b.frequency;});
 
 	        		_.delay(function() {
-	        				//console.log(analyzed_award._coAuthorsList);
-							callback();
+	        				callback();
 						}, 100);
 	      		}
 	      		else {
 	        		analyzed_award._error = 1;
 	        		analyzed_award._note = "None of the publications within our current database have correlations with this award and/or criteria.";
-					/*myfunction(analyzed_award);
-	        		return;*/
 	      		}
 			}
 		},
@@ -1314,7 +1224,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 	],
 	function(err, results) {
 		if(analyzed_award._error){
-			//console.log("analyzed award has an error: " + analyzed_award._note);
 			myfunction(analyzed_award);
 			return;
 		}
@@ -1327,7 +1236,6 @@ exports.award_relationship_extractor =  function award_relationship_extractor(pr
 			return;
 		}
 		else {
-			//console.log(analyzed_award._relatedPublicationsList);
 			myfunction(analyzed_award);
 			return;
 		}
