@@ -7,8 +7,9 @@ var passport = require('passport');
 // TODO: read users from database
 // set users
 var users = [
-  { id: 1, username: 'insightlab', password: 'secret' },
-  { id: 2, username: 'arash', password: 'secret2'}
+  { id: 1, username: 'insightlab', password: 'rki#$2sd' },
+  { id: 2, username: 'arash', password: 'rki#$2sd'},
+  { id: 3, username: 'bneff', password: 'researchmap'}
 ];
 
 
