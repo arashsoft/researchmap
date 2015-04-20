@@ -38,7 +38,8 @@ exports.scopus = function(req, res) {
 	var elsvr_apiKey = "9cb35f2a298ac707a9de85c32a2fcd63"; //my (Paul Parsons) api key
 	var elsvr_apiKey2 = "7abb8247e0e908453412260a44a926ed"; //my (Arman Didandeh) api key
 	var elsvr_baseURL = "http://api.elsevier.com/content/search/index:SCOPUS?"; 
-	var elsvr_baseURL2 = "http://api.elsevier.com/content/search/author?"; 
+	var elsvr_baseURL2 = "http://api.elsevier.com/content/search/author?";
+	var elsvr_baseURL3 = "http://api.elsevier.com/content/search/author?query=au-id(";
 	var elsvr_resultType = "json";
 	var elsvr_retSize = 200; //number of results that are returned per query. max is 200
 	var elsvr_initialReturn;
@@ -52,7 +53,9 @@ exports.scopus = function(req, res) {
 
 	// getData();
 	// mergeData();
-	saveToMYSQLDB();
+	// saveToMYSQLDB();
+	// modifyMYSQLDB();
+	getAuthorSubjects();
 	
 	function log(logItem) {
 		console.log(logItem);
@@ -104,7 +107,7 @@ exports.scopus = function(req, res) {
 
 	            function(callback) {
 	            	//SHOULD BE READ PARTIALLY AND PERFORMED ON
- 					curDocs=allDocs.slice(100,125);
+ 					curDocs=allDocs.slice(320,332);
  					log(_.size(curDocs) + " selected");
  					log("");
  					callback();
@@ -293,174 +296,6 @@ exports.scopus = function(req, res) {
  					log(_.size(allDocs) + " documents loaded from couchdb");
  					// callback();
 	            },
-
-	            function(callback) {
- 					async.eachSeries(allDocs,
- 						function(doc,callback) {
- 						async.series(
- 							[
- 								//read publications from couchdb
-				 				function(callback) {
-				 					cur_year = doc.slice(0,4);
-				 					db.getDoc(doc, function(err, doc){
-					                    if (err) {
-					                        log(err);
-						                    log("-------------");
-					                    }
-					                    else {
-					                        publications_list = doc.chunk;
-					                        callback(null);
-					                    }
-					                });
-					            },
-
-					            //insert publications into mysqdb
-				 				function(callback) {
-				 					connection.connect();
-				 					var query_text;
-				 					publications_list.forEach(function(publication) {
-				 						query_text = "INSERT INTO `elsvr_publication2`(`dc:identifier`, `prism:url`, `eid`, `pubmed-id`, `prism:doi`, `dc:title`, `prism:aggregationType`, `citedby-count`, `prism:publicationName`, `prism:issn`, `prism:volume`, `prism:startingPage`, `prism:endingPage`, `dc:creator`, `dc:description`, `language`, `year`) VALUES ('"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["dc:identifier"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["dc:identifier"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:url"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:url"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["eid"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["eid"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["pubmed-id"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["pubmed-id"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:doi"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:doi"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["dc:title"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["dc:title"].replace(/'/g, "\'\'")) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:aggregationType"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:aggregationType"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["citedby-count"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["citedby-count"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:publicationName"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:publicationName"].replace(/'/g, "\'\'")) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:issn"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:issn"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:volume"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:volume"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:startingPage"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:startingPage"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:endingPage"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:endingPage"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["dc:creator"]["author"][0]["@auid"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["dc:creator"]["author"][0]["@auid"]) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["coredata"]["dc:description"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["dc:description"].replace(/'/g, "\'\'")) + "', '"
-				 							+ ((publication["abstracts-retrieval-response"]["language"] == null) ? "" : publication["abstracts-retrieval-response"]["language"]["@xml:lang"]) + "', '"
-				 							+ (cur_year) + "')";
-										connection.query(query_text, function(err, result) {
-						                    if(err) {
-						                        log(err);
-						                        log(query_text)
-						                        log("-------------");
-						                    }
-						                    else {
-						                    	
-						                    }
-						                });
-				 					});
-									connection.end(function(err) {
-								        callback();
-								    });
-				 				},
-
-				 				//insert the publication subject relations
-					            function(callback) {
-					            	connection.connect();
-					            	var query_text;
-					            	publications_list.forEach(function(publication) {
-					            		if(publication["abstracts-retrieval-response"]["subject-areas"]) {
-					            			if(publication["abstracts-retrieval-response"]["subject-areas"]["subject-area"]) {
-					            				publication["abstracts-retrieval-response"]["subject-areas"]["subject-area"].forEach(function(subject) {
-						                        	query_text = "INSERT INTO `elsvr_publication_subject2`(`elsvr_Publication`, `elsvr_Subject`) VALUES ('"
-						                        		+ publication["abstracts-retrieval-response"]["coredata"]["dc:identifier"] + "', '" + subject["@code"] + "')";
-						                        	connection.query(query_text, function(err, result) {
-									                    if(err) {
-									                        log(err);
-									                        log(query_text);
-									                        log("-------------");
-									                    }
-									                    else {
-									                        // log("publication's subject insered");
-									                    }
-									                });
-						                        });
-					            			}
-					            		}
-					            	});
-					            	connection.end(function(err) {
-								        callback();
-								    });
-					            },
-
-					            //insert the authors
-					            function(callback) {
-					            	connection.connect();
-					            	var query_text;
-									publications_list.forEach(function(publication) {
-										publication["abstracts-retrieval-response"]["authors"]["author"].forEach(function(author) {
-											query_text ="INSERT INTO `elsvr_author2`(`elsvr_ID`, `elsvr_Initials`, `elsvr_Indexedname`, `elsvr_Surname`, `elsvr_Givenname`, `elsvr_URL`) VALUES ('"
-											 + author["@auid"] + "', '"
-											 + ((author["ce:initials"] == null) ? "" : author["ce:initials"].replace(/'/g, "\'\'")) + "', '"
-											 + ((author["ce:indexed-name"] == null) ? "" : author["ce:indexed-name"].replace(/'/g, "\'\'")) + "', '"
-											 + ((author["ce:surname"] == null) ? "" : author["ce:surname"].replace(/'/g, "\'\'")) + "', '"
-											 + ((author["ce:given-name"] == null) ? "" : author["ce:given-name"].replace(/'/g, "\'\'")) + "', '"
-											 + ((author["author-url"] == null) ? "" : author["author-url"]) + "')";
-
-											connection.query(query_text, function(err, result) {
-							                    if(err) {
-							                        log(err);
-							                        log(query_text);
-							                        log("-------------");
-							                    }
-							                    else {
-							                        // log("author insered");
-							                    }
-							                });
-										});
-									});
-									connection.end(function(err) {
-								        callback();
-								    });
-					            },
-
-					            //insert the publication author relations
-					            function(callback) {
-					            	connection.connect();
-					            	var query_text;
-									publications_list.forEach(function(publication) {
-										publication["abstracts-retrieval-response"]["authors"]["author"].forEach(function(author) {
-											query_text ="INSERT INTO `elsvr_publication_author2`(`elsvr_Publication`, `elsvr_Author`) VALUES ('"
-											+ publication["abstracts-retrieval-response"]["coredata"]["dc:identifier"] + "', '"
-											+ author["@auid"] + "')";
-											connection.query(query_text, function(err, result) {
-							                    if(err) {
-							                        log(err);
-							                        log(query_text);
-							                        log("-------------");
-							                    }
-							                    else {
-							                        // log("publication's subject insered");
-							                    }
-							                });
-										});
-									});
-									connection.end(function(err) {
-								        callback();
-								    });
-					            }
- 							],
- 							function(err) {
-				 				if(err) {
-									console.log(err);
-								}
-								else {
-									log("operations on " + doc + " performed properly");
-									log("----------------------------------------------");
-								}
-				 			}
-				 		);
-						callback();
- 					},
- 					function(err) {
- 						if(err) {
- 							log(err);
- 						}
- 						else {
- 							log("supposed to be done when here!");
- 							callback();
- 						}
- 					});
-	            },
  			],
  			function(err) {
  				if(err) {
@@ -475,35 +310,34 @@ exports.scopus = function(req, res) {
  		);
 	}
 
-	function saveMYSQLDB() {
-		var publications_list;
-		var scopus_subjects_list;
-		
+	function modifyMYSQLDB() {
+		var all_professors;
+		var selected_professors;
 		connection.connect();
-		var cur_year=2001;
 
 		async.series(
  			[
- 				//read publications from couchdb
+ 				//read all Science profesors from mysql db
  				function(callback) {
- 					log("loading publications for " + cur_year + " . . .");
-	                //read grant_data for cur_year
-
-	                db.getDoc(cur_year+'-1', function(err, doc){
-	                    if (err) {
-	                        callback(err);
+ 					// var query_text = "SELECT `professor_2`.`ID`, `professor_2`.`Fullname`, `professor_2`.`Firstname`, `professor_2`.`Middlename`, `professor_2`.`Lastname` FROM `professor_2` inner join `department` on `professor_2`.`Department_Primary`=`department`.`ID` where `department`.`Faculty`=4";
+ 					var query_text = "select p.ID , p.Fullname, p.Lastname, p.Firstname , count(ap.ID) as awardNumber from professor_2 as p join award_professor_2 as ap on ap.Professor=p.ID where p.ID not in (select e.Professor_ID from elsvr_author2 as e) group by p.ID order by awardNumber DESC";
+ 					connection.query(query_text, function(err, result) {
+	                    if(err) {
+	                        // log(err);
+	                        log("-------------");
+	                        log(query_text)
+	                        log("-------------");
 	                    }
 	                    else {
-	                        // log(_.size(doc.chunk) + " were read from couchdb");
-	                        publications_list = doc.chunk;
-	                        log(_.size(publications_list) + " publications loaded");
-	                        callback(null);
+	                    	all_professors = result;
+	                    	log(_.size(all_professors) + " professors loaded");
+	                    	callback();
 	                    }
 	                });
 	            },
 
 	            //send authorization request
-		        /*function(callback){
+		        function(callback){
 		        	//if the authtoken hasn't been fetched yet
 		        	if (elsvr_authtoken == undefined){
 			        	//initial query to the scopus api
@@ -528,179 +362,134 @@ exports.scopus = function(req, res) {
 			            });
 		        	}
 		        	//if the authtoken has already been fetched
-		        	else
+		        	else {
 		        		callback(null);
-		        },*/
-	            
-	            //retrieve all the subjects from scopus and insert them into elsvr_subject
-	            /*function(callback) {
-	            	var elsvr_auth = "http://api.elsevier.com/content/subject/scopus";
-	            	//ajax request based on the query above
-		            $.ajax({
-		            	url: elsvr_auth,
-		            	type: 'GET',
-		            	beforeSend: function(request){
-		            		request.setRequestHeader("X-ELS-APIKey", elsvr_apiKey);
-				            request.setRequestHeader("X-ELS-Authtoken", elsvr_authtoken);
-		            	},
-		            	dataType: 'json',
-	                    success: function(result){
-	                    	scopus_subjects_list = result["subject-classifications"]["subject-classification"];
-	                    	var query_text;
-	                    	scopus_subjects_list.forEach(function(scopus_subject) {
-	                    		query_text = "INSERT INTO elsvr_subject(elsvr_Code, elsvr_Description, elsvr_Subjectname, elsvr_Abbrev) VALUES (" + scopus_subject["code"] + ", '" + scopus_subject["description"] + "', '" + scopus_subject["detail"] + "', '" + scopus_subject["abbrev"] + "')";
-	                    		connection.query(query_text, function(err, result) {
-				                    if(err) {
-				                        console.log(err);
-				                    }
-				                    else {
-				                        console.log("subject insered");
-				                    }
-				                });
-	                    	});
-	                    	callback(null);
-	                    },
-	                    error: function(err){
-	                    	callback(err);
-	                    }
+		        	}
+		        },
 
-		            });
-	            },*/
-	            
-	            /*function(callback) {
-	            	log(publications_list[2]["abstracts-retrieval-response"]["authkeywords"]);
-	            	log("");
-	            	log(publications_list[2]["abstracts-retrieval-response"]["idxterms"]);
-	            	log(publications_list[0]["abstracts-retrieval-response"]["language"]["@xml:lang"]);
-	            	log(publications_list[1]["abstracts-retrieval-response"]["language"]["@xml:lang"]);
-	            },*/
-
-	            //process publications into mysqdb
- 				function(callback) {
- 					log("process publications into mysqdb");
- 					var query_text;
- 					// log(publications_list[0])
- 					publications_list.forEach(function(publication) {
- 						//insert the publication into the elsvr_publication table
-						query_text = "INSERT INTO `elsvr_publication`(`dc:identifier`, `prism:url`, `eid`, `pubmed-id`, `prism:doi`, `dc:title`, `prism:aggregationType`, `citedby-count`, `prism:publicationName`, `prism:issn`, `prism:volume`, `prism:startingPage`, `prism:endingPage`, `dc:creator`, `dc:description`, `language`, `year`) VALUES ('"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["dc:identifier"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["dc:identifier"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:url"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:url"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["eid"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["eid"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["pubmed-id"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["pubmed-id"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:doi"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:doi"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["dc:title"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["dc:title"].replace(/'/g, "\'\'")) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:aggregationType"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:aggregationType"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["citedby-count"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["citedby-count"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:publicationName"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:publicationName"].replace(/'/g, "\'\'")) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:issn"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:issn"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:volume"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:volume"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:startingPage"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:startingPage"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["prism:endingPage"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["prism:endingPage"]) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["dc:creator"]["author"][0]["@auid"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["dc:creator"]["author"][0]["@auid"]) + "', '"
- 							/*+ ((publication["abstracts-retrieval-response"]["authkeywords"] == null) ? "" : publication["abstracts-retrieval-response"]["authkeywords"].replace(/'/g, "\'\'")) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["idxterms"] == null) ? "" : publication["abstracts-retrieval-response"]["idxterms"].replace(/'/g, "\'\'")) + "', '"*/
- 							+ ((publication["abstracts-retrieval-response"]["coredata"]["dc:description"] == null) ? "" : publication["abstracts-retrieval-response"]["coredata"]["dc:description"].replace(/'/g, "\'\'")) + "', '"
- 							+ ((publication["abstracts-retrieval-response"]["language"] == null) ? "" : publication["abstracts-retrieval-response"]["language"]["@xml:lang"]) + "', '"
- 							+ (cur_year) + "')";
-							// log("*********************************************");
-
-						connection.query(query_text, function(err, result) {
-		                    if(err) {
-		                        log(err);
-		                        log(query_text)
-		                        log("-------------");
-		                    }
-		                    else {
-		                    	// publication.insertId = result.insertId;
-		                    	// log("publication inserted");
-		                    }
-		                });
- 					});
- 					callback(null);
-	            },
-	            
-	            //insert the publication subject relations
-	            function(callback) {
-	            	log("insert the publication subject relations");
-	            	var query_text;
-	            	publications_list.forEach(function(publication) {
-	            		if(publication["abstracts-retrieval-response"]["subject-areas"]) {
-	            			if(publication["abstracts-retrieval-response"]["subject-areas"]["subject-area"]) {
-	            				publication["abstracts-retrieval-response"]["subject-areas"]["subject-area"].forEach(function(subject) {
-		                        	query_text = "INSERT INTO `elsvr_publication_subject`(`elsvr_Publication`, `elsvr_Subject`) VALUES ('"
-		                        		+ publication["abstracts-retrieval-response"]["coredata"]["dc:identifier"] + "', '" + subject["@code"] + "')";
-		                        	connection.query(query_text, function(err, result) {
-					                    if(err) {
-					                        log(err);
-					                        log(query_text);
-					                        log("-------------");
-					                    }
-					                    else {
-					                        // log("publication's subject insered");
-					                    }
-					                });
-		                        });
-	            			}
-	            		}
-	            	});
-	            	callback();
+		        function(callback) {
+ 					selected_professors = all_professors.slice(0,_.size(all_professors));
+ 					// selected_professors = all_professors.slice(0,10);
+ 					callback();
 	            },
 
-	            //insert the authors
-	            function(callback) {
-	            	log("insert the authors");
-	            	var query_text;
+		        //
+		        function(callback) {
+ 					log("operating on " + _.size(selected_professors) + " professors");
+ 					async.eachSeries(
+ 						selected_professors,
+ 						function(professor, callback) {
+ 							//query for current document (i.e., individual publication)
+			                var profQuery = elsvr_baseURL2 + "query=af-id(" + elsvr_ID + ")+AND+authlast("+professor.Lastname+")+AND+authfirst("+professor.Firstname+")";
+			                var elsvr_professors = new Array();
+			                
+			                //ajax request based on the query above
+			                $.ajax({
+			                    url: profQuery,
+			                    type: 'GET',
+			     				beforeSend: function(request){
+			            			request.setRequestHeader("X-ELS-APIKey", elsvr_apiKey);
+			            			request.setRequestHeader("X-ELS-Authtoken", elsvr_authtoken);
+			            		},	               
+			                    dataType: 'json',
+			                    success: function(result){
+			                        // log("");
+			                        // log("processing " + professor.Fullname);
 
-					publications_list.forEach(function(publication) {
-						publication["abstracts-retrieval-response"]["authors"]["author"].forEach(function(author) {
-							//check if the authors already exists in the db
-							query_text ="INSERT INTO `elsvr_author`(`elsvr_ID`, `elsvr_Initials`, `elsvr_Indexedname`, `elsvr_Surname`, `elsvr_Givenname`, `elsvr_URL`) VALUES ('"
-							 + author["@auid"] + "', '"
-							 + ((author["ce:initials"] == null) ? "" : author["ce:initials"].replace(/'/g, "\'\'")) + "', '"
-							 + ((author["ce:indexed-name"] == null) ? "" : author["ce:indexed-name"].replace(/'/g, "\'\'")) + "', '"
-							 + ((author["ce:surname"] == null) ? "" : author["ce:surname"].replace(/'/g, "\'\'")) + "', '"
-							 + ((author["ce:given-name"] == null) ? "" : author["ce:given-name"].replace(/'/g, "\'\'")) + "', '"
-							 + ((author["author-url"] == null) ? "" : author["author-url"]) + "')";
-
-							connection.query(query_text, function(err, result) {
-			                    if(err) {
-			                        log(err);
-			                        log(query_text);
-			                        log("-------------");
-			                    }
-			                    else {
-			                        // log("author insered");
+			                        if(result["search-results"]["opensearch:totalResults"] < 1) {
+			                        	// log("--------------------------------");
+			                        	// log("no result for professor " + professor.ID + " : " + professor.Fullname);
+			                        	// log(profQuery+"&apiKey=7abb8247e0e908453412260a44a926ed");
+			                        	// log("--------------------------------");
+			                        	callback();
+			                        }
+			                        /*else if(result["search-results"]["opensearch:totalResults"] == 1) {
+			                        	log("");
+			                        	log("professor " + professor.ID + " is author " + result["search-results"]["entry"][0]["dc:identifier"]);
+			                        	var query_text = "UPDATE `elsvr_author2` SET `Professor_ID`=" + professor.ID + " WHERE `elsvr_ID`=" + result["search-results"]["entry"][0]["dc:identifier"].slice(10, _.size(result["search-results"]["entry"][0]["dc:identifier"]));
+			                        	connection.query(query_text, function(err, result) {
+						                    if(err) {
+						                        // log(err);
+						                        log("-------------");
+						                        log(query_text)
+						                        log("-------------");
+						                        callback();
+						                    }
+						                    else {
+						                    	// log(query_text + " successful");
+						                    	// log("professor " + professor.ID + " is author " + result["search-results"]["entry"][0]["dc:identifier"]);
+						                    	callback();
+						                    }
+						                })
+										// log("1 result for professor " + professor.ID + " : " + professor.Fullname);
+										callback();
+			                        };*/
+			                        else  {
+			                        	async.eachSeries(
+			                        		result["search-results"]["entry"],
+			                        		function(entry, callback) {
+			                        			if (entry["affiliation-current"]["affiliation-id"] == elsvr_ID) {
+			                        				var query_text = "UPDATE `elsvr_author2` SET `Professor_ID`=" + professor.ID + " WHERE `elsvr_ID`=" + entry["dc:identifier"].slice(10, _.size(entry["dc:identifier"]));
+			                        				// log(query_text);
+			                        				// callback();
+			                        				connection.query(query_text, function(err, result) {
+									                    if(err) {
+									                        log("-------------");
+									                        log(query_text)
+									                        log("-------------");
+									                        callback();
+									                    }
+									                    else {
+									                    	log(professor.ID + " <--> " + entry["dc:identifier"].slice(10, _.size(entry["dc:identifier"])) + " linked");
+									                    	callback();
+									                    }
+									                });
+			                        			}
+			                        			else {
+			                        				// log("");
+			                        				// log(profQuery+"&apiKey=7abb8247e0e908453412260a44a926ed");
+			                        				// log(professor.ID + " <--> " + entry["dc:identifier"].slice(10, _.size(entry["dc:identifier"])) + " not linked");
+			                        				// log("");
+			                        				callback();
+			                        			}
+			                        		},
+			                        		function(err) {
+			                        			if(err) {
+					 								log("");
+			                        				log(err);
+					 								log("--------------------------------");
+					 								callback();
+					 							}
+					 							else {
+					 								// log("");
+			                        				// log("--------------------------------");
+					 								callback();
+					 							}
+			                        		}
+			                        	);
+			                        }
+			                    },
+			                    error: function(err){
+			                    	// log("processing " + professor.Fullname + " with error!");
+			                     //    log("");
+			                     //    log(profQuery+"&apiKey=7abb8247e0e908453412260a44a926ed");
+			                     //    log("");
+			                        callback();
 			                    }
 			                });
-						});
-					});
-					callback();
+ 						},
+ 						function(err) {
+ 							if(err) {
+ 								log(err);
+ 								log("--------------------------------");
+ 								callback();
+ 							}
+ 							else {
+ 								callback();
+ 							}
+ 						}
+ 					);
 	            },
-
-	            //insert the publication author relations
-	            function(callback) {
-	            	log("insert the publication author relations");
-	            	var query_text;
-
-					publications_list.forEach(function(publication) {
-						publication["abstracts-retrieval-response"]["authors"]["author"].forEach(function(author) {
-							query_text ="INSERT INTO `elsvr_publication_author`(`elsvr_Publication`, `elsvr_Author`) VALUES ('"
-							+ publication["abstracts-retrieval-response"]["coredata"]["dc:identifier"] + "', '"
-							+ author["@auid"] + "')";
-							connection.query(query_text, function(err, result) {
-			                    if(err) {
-			                        log(err);
-			                        log(query_text);
-			                        log("-------------");
-			                    }
-			                    else {
-			                        // log("publication's subject insered");
-			                    }
-			                });
-						});
-					});
-					callback();
-	            }
  			],
  			function(err) {
  				connection.end(function(err) {
@@ -708,9 +497,195 @@ exports.scopus = function(req, res) {
 						console.log(err);
 					}
 					else {
-						log("***************************");
-						log("operation successful with " + _.size(publications_list) + " publications");
-						log("***************************");
+						log("******************************************************");
+						log("operation successfull");
+						log("******************************************************");
+					}
+ 				});
+ 			}
+ 		);
+	}
+
+	function getAuthorSubjects() {
+		var all_authors;
+		var selected_authors;
+		connection.connect();
+
+		async.series(
+ 			[
+ 				//read all authors from mysql db
+ 				function(callback) {
+ 					// var query_text = "SELECT `professor_2`.`ID`, `professor_2`.`Fullname`, `professor_2`.`Firstname`, `professor_2`.`Middlename`, `professor_2`.`Lastname` FROM `professor_2` inner join `department` on `professor_2`.`Department_Primary`=`department`.`ID` where `department`.`Faculty`=4";
+ 					var query_text = "SELECT DISTINCT `elsvr_ID` FROM `elsvr_author2`";
+ 					connection.query(query_text, function(err, result) {
+	                    if(err) {
+	                        // log(err);
+	                        log("-------------");
+	                        log(query_text)
+	                        log("-------------");
+	                    }
+	                    else {
+	                    	all_authors = result;
+	                    	log(_.size(all_authors) + " distinct authors loaded");
+	                    	callback();
+	                    }
+	                });
+	            },
+
+	            //send authorization request
+		        function(callback){
+		        	//if the authtoken hasn't been fetched yet
+		        	if (elsvr_authtoken == undefined){
+			        	//initial query to the scopus api
+			            var elsvr_auth = "http://api.elsevier.com/authenticate?platform=SCOPUS";
+
+			            //ajax request based on the query above
+			            $.ajax({
+			            	url: elsvr_auth,
+			            	type: 'GET',
+			            	beforeSend: function(request){
+			            		request.setRequestHeader("X-ELS-APIKey", elsvr_apiKey);
+			            	},
+			            	dataType: 'json',
+		                    success: function(result){
+		                    	elsvr_authtoken = result["authenticate-response"].authtoken;
+	                            callback(null);
+		                    },
+		                    error: function(err){
+		                        callback(err);
+		                    }
+
+			            });
+		        	}
+		        	//if the authtoken has already been fetched
+		        	else {
+		        		callback(null);
+		        	}
+		        },
+
+		        function(callback) {
+ 					selected_authors = all_authors.slice(0, 500);
+ 					// selected_authors = all_authors.slice(100,_.size(all_authors));
+ 					log("operating on " + _.size(selected_authors) + " authors . . .");
+ 					callback();
+	            },
+
+		        //
+		        function(callback) {
+ 					async.eachSeries(
+ 						selected_authors,
+ 						function(author, callback) {
+ 							//query for current document (i.e., individual publication)
+			                var authorQuery = elsvr_baseURL3+author["elsvr_ID"]+")";
+							var elsvr_professors = new Array();
+			                
+			                //ajax request based on the query above
+			                $.ajax({
+			                    url: authorQuery,
+			                    type: 'GET',
+			     				beforeSend: function(request){
+			     					// log("	processing " + author["elsvr_ID"]);
+			            			request.setRequestHeader("X-ELS-APIKey", elsvr_apiKey);
+			            			request.setRequestHeader("X-ELS-Authtoken", elsvr_authtoken);
+			            		},
+			                    dataType: 'json',
+			                    success: function(result){
+			                    	if(result["search-results"]["opensearch:totalResults"] < 1) {
+			                    		// log("--------------------------------");
+			                      //   	log("no result for author " + author["elsvr_ID"]);
+			                      //   	log(authorQuery+"&apiKey=7abb8247e0e908453412260a44a926ed");
+			                      //   	log("--------------------------------");
+			                        	callback();
+			                    	}
+			                    	else {
+			                    		if(result["search-results"]["entry"][0]["subject-area"]) {
+											async.eachSeries(
+				                    			result["search-results"]["entry"],
+				                    			function(entry, callback) {
+				                    				async.eachSeries(
+				                    					entry["subject-area"],
+				                    					function(subject, callback) {
+				                    						var query_text = "INSERT INTO `elsvr_author_subject2`(`elsvr_Author`, `elsvr_Subjectname`, `elsvr_Abbrev`, `elsvr_Subject_Frequency`) VALUES ('"
+				                    							+ author["elsvr_ID"] + "', '"
+				                    							+ subject["$"] + "', '"
+				                    							+ subject["@abbrev"] + "', "
+				                    							+ subject["@frequency"] + ")";
+
+				                    						connection.query(query_text, function(err, result) {
+											                    if(err) {
+											                        log("-------------");
+											                        log(query_text)
+											                        log("-------------");
+											                    }
+											                    else {
+											                    	callback();
+											                    }
+											                });
+				                    					},
+				                    					function(err) {
+				                    						if(err) {
+										                        log("-------------");
+										                        log(err);
+										                        log("-------------");
+										                        callback();
+										                    }
+										                    else {
+										                    	callback();
+										                    }
+				                    					}
+				                    				);
+				                    			},
+				                    			function(err) {
+				                    				if(err) {
+								                        log("-------------");
+								                        log(err);
+								                        log("-------------");
+								                        callback();
+								                    }
+								                    else {
+								                    	callback();
+								                    }
+				                    			}
+				                    		);
+			                    		}
+			                    		else {
+			                    			log("--------------------------------");
+			                        		// log("no subjects for author " + author["elsvr_ID"]);
+			                        		log(authorQuery+"&apiKey=7abb8247e0e908453412260a44a926ed");
+			                        		log("--------------------------------");
+			                        		callback();
+			                    		}
+			                    	}
+			                    },
+			                    error: function(err){
+			                    	log(err);
+			                    	log("--------------------------------");
+			                    	callback();
+			                    }
+			                });
+ 						},
+ 						function(err) {
+ 							if(err) {
+ 								log(err);
+ 								log("--------------------------------");
+ 								callback();
+ 							}
+ 							else {
+ 								callback();
+ 							}
+ 						}
+ 					);
+	            },
+ 			],
+ 			function(err) {
+ 				connection.end(function(err) {
+ 					if(err) {
+						console.log(err);
+					}
+					else {
+						log("******************************************************");
+						log("operation successfull");
+						log("******************************************************");
 					}
  				});
  			}
